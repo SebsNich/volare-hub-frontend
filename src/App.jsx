@@ -1,15 +1,20 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Feed from './pages/Feed'
+import Login from './pages/Login'
+import { AuthProvider } from './context/AuthContext'
+import Navbar from './components/Navbar'
+
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white rounded-xl shadow-md p-8">
-        <h1 className="text-3xl font-bold text-blue-600">
-          Volare Hub
-        </h1>
-        <p className="text-gray-500 mt-2">
-          Plataforma web de la Urbanización Volare
-        </p>
-      </div>
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+          <Navbar />
+          <Routes>
+              <Route path="/" element={<Feed />} />
+              <Route path="/login" element={<Login />} />
+          </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 
