@@ -24,8 +24,13 @@ function AuthProvider({ children }) {
         verificarSesion()
     }, [])
 
+    function logout() {
+        localStorage.removeItem('token')
+        setUsuario(null)
+    }
+
     return (
-        <AuthContext.Provider value={{ usuario, setUsuario }}>
+        <AuthContext.Provider value={{ usuario, setUsuario, logout }}>
             {children}
         </AuthContext.Provider>
     )
