@@ -4,6 +4,7 @@ import Login from './pages/Login'
 import Registro from './pages/registro'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
+import PerfilPublico from './pages/PerfilPublico'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
               <Route path="/" element={<Feed />} />
               <Route path="/login" element={<Login />} />
               <Route path='/registro' element={<Registro />}/>
+              <Route path="/perfil/:id" element={<PerfilPublico />} />
           </Routes>
       </BrowserRouter>
     </AuthProvider>

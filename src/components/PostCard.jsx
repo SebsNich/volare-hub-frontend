@@ -1,6 +1,9 @@
+import { Link } from "react-router-dom"
+
 function PostCard({ post }) {
     return (
         <div>
+            <Link to={`/perfil/${post.autorId}`}>{post.autor.nombre}</Link>
             <h2>{post.titulo}</h2>
             <p>{post.tipo}</p>
             <p>{post.descripcion}</p>
