@@ -8,6 +8,7 @@ function PostCard({ post, usuario, eliminar, onEditar    }) {
     const [titulo, setTitulo] = useState(post.titulo)
     const [descripcion, setDescripcion] = useState(post.descripcion)
     const [tipo, setTipo] = useState(post.tipo)
+    const [imagenesAEliminar, setImagenesAEliminar] = useState([])
 
     async function handleSubmit(e) {
         e.preventDefault()
@@ -16,6 +17,9 @@ function PostCard({ post, usuario, eliminar, onEditar    }) {
         formData.append('titulo', titulo)
         formData.append('descripcion', descripcion)
         formData.append('tipo', tipo)
+        imagenesAEliminar.forEach(url => {
+            formData.append('imagenesAEliminar', url)
+        })
         
         const respuesta = await fetch(`http://localhost:3000/api/posts/${post.id}`, {
             method: 'PUT',
@@ -74,6 +78,17 @@ function PostCard({ post, usuario, eliminar, onEditar    }) {
                             value={descripcion} 
                             onChange={(e) => setDescripcion(e.target.value)} 
                         />
+                        {post.imagenUrl.map(url => (
+                            <div key={url}>
+                                <img src={url} style={{ width: '100px' }} />
+                                <button 
+                                    type="button" 
+                                    onClick={() => setImagenesAEliminar([...imagenesAEliminar, url])}
+                                >
+                                    Quitar
+                                </button>
+                            </div>
+                        ))}
                         <button type="submit">Publicar</button>
                     </form>
                 </Modal>
