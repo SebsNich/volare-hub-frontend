@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { useContext } from 'react'
+import { AuthContext } from '../context/AuthContext'
 import { useParams } from 'react-router-dom'
 import PostCard from '../components/PostCard'
 
@@ -6,6 +8,7 @@ function PerfilPublico() {
     const { id } = useParams()
     const [usuario, setUsuario] = useState(null)
     const [posts, setPosts] = useState([])
+    const { usuario: usuarioLogueado } = useContext(AuthContext) 
     
     useEffect(() => {
         async function cargarPerfilPublico(){
@@ -27,7 +30,7 @@ function PerfilPublico() {
                 </div>
             )}
 
-            {posts.map(post => <PostCard key={post.id} post={post} />)}
+            {posts.map(post => <PostCard key={post.id} post={post} usuario={usuarioLogueado} />)}
         </div>
     )
 }

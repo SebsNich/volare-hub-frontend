@@ -46,26 +46,31 @@ function Registro() {
             <input 
                 type="text" 
                 value={nombre} 
+                placeholder='nombre'
                 onChange={(e) => setNombre(e.target.value)} 
             />
             <input 
                 type="email" 
                 value={email} 
+                placeholder='email'
                 onChange={(e) => setEmail(e.target.value)} 
             />
             <input 
                 type="password" 
                 value={password} 
+                placeholder='contraseña'
                 onChange={(e) => setPassword(e.target.value)} 
             />
             <input 
                 type="text" 
-                value={manzana} 
+                value={manzana}
+                placeholder='manzana' 
                 onChange={(e) => setManzana(e.target.value)} 
             />
             <input 
                 type="text" 
-                value={villa} 
+                value={villa}
+                placeholder='villa' 
                 onChange={(e) => setVilla(e.target.value)} 
             />
             <button type='submit'>Registrar</button>

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom"
 
-function PostCard({ post }) {
+function PostCard({ post, usuario  }) {
+    const puedeEditar = usuario && (usuario.id === post.autorId || usuario.rol === 'ADMIN')
     return (
         <div>
             <Link to={`/perfil/${post.autorId}`}>{post.autor.nombre}</Link>
@@ -10,6 +11,14 @@ function PostCard({ post }) {
             <p>{new Date(post.creadoEn).toLocaleDateString()}</p>
             {post.imagenUrl.length > 0 && <img src={post.imagenUrl[0]} />}
             {post.archivoUrl.length > 0 && <a href={post.archivoUrl[0]}>Descargar PDF</a>}
+            <div>
+                {puedeEditar && (
+                    <>
+                        <button onClick={() => console.log('editar')}>Editar</button>
+                        <button onClick={() => console.log('eliminar')}>Eliminar</button>
+                    </>
+                )}
+            </div>
         </div>
     )
 }

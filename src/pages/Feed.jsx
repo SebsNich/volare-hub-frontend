@@ -96,7 +96,7 @@ function Feed() {
                     <button type="submit">Publicar</button>
                 </form>
             )}
-            {posts.map(post => <PostCard key={post.id} post={post} />)}
+            {posts.map(post => <PostCard key={post.id} post={post} usuario={usuario} />)}
         </div>
     )
 }
