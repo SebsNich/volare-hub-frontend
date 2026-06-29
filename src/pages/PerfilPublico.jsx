@@ -50,7 +50,7 @@ function PerfilPublico() {
                 </div>
             )}
 
-            {posts.map(post => <PostCard key={post.id} post={post} usuario={usuarioLogueado} eliminar={eliminarPost} />)}
+            {posts.map(post => <PostCard key={post.id} post={post} usuario={usuarioLogueado} eliminar={eliminarPost} onEditar={cargarPerfilPublico} />)}
         </div>
     )
 }

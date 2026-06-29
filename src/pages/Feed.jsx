@@ -113,7 +113,7 @@ function Feed() {
                     <button type="submit">Publicar</button>
                 </form>
             )}
-            {posts.map(post => <PostCard key={post.id} post={post} usuario={usuario} eliminar={eliminarPost}/>)}
+            {posts.map(post => <PostCard key={post.id} post={post} usuario={usuario} eliminar={eliminarPost} onEditar={cargarPosts}/>)}
         </div>
     )
 }
