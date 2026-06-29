@@ -15,7 +15,24 @@ function Feed() {
         const respuesta = await fetch('http://localhost:3000/api/posts')
         const datos = await respuesta.json()
         setPosts(datos)
-    }       
+    }
+    
+    async function eliminarPost(id) {
+        const confirmado = confirm('¿Estás seguro de eliminar este post?')
+        
+        if (confirmado) {
+            const respuesta = await fetch(`http://localhost:3000/api/posts/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            
+            if (respuesta.ok) {
+                cargarPosts()
+            }
+        }
+    }
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -96,7 +113,7 @@ function Feed() {
                     <button type="submit">Publicar</button>
                 </form>
             )}
-            {posts.map(post => <PostCard key={post.id} post={post} usuario={usuario} />)}
+            {posts.map(post => <PostCard key={post.id} post={post} usuario={usuario} eliminar={eliminarPost}/>)}
         </div>
     )
 }

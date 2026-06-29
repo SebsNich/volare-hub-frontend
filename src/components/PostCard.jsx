@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 
-function PostCard({ post, usuario  }) {
+function PostCard({ post, usuario, eliminar   }) {
     const puedeEditar = usuario && (usuario.id === post.autorId || usuario.rol === 'ADMIN')
     return (
         <div>
@@ -15,7 +15,7 @@ function PostCard({ post, usuario  }) {
                 {puedeEditar && (
                     <>
                         <button onClick={() => console.log('editar')}>Editar</button>
-                        <button onClick={() => console.log('eliminar')}>Eliminar</button>
+                        <button onClick={() => eliminar(post.id)}>Eliminar</button>
                     </>
                 )}
             </div>
