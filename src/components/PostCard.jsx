@@ -59,7 +59,7 @@ function PostCard({ post, usuario, eliminar, onEditar    }) {
             <p>{post.descripcion}</p>
             <p>{new Date(post.creadoEn).toLocaleDateString()}</p>
             {post.imagenUrl.length > 0 && <img src={post.imagenUrl[0]} />}
-            {post.archivoUrl.length > 0 && <a href={post.archivoUrl[0]}>{obtenerNombreArchivo(post.archivoUrl[0])}</a>}
+            {post.archivoUrl.length > 0 && <a href={post.archivoUrl[0]} target="_blank" rel="noopener noreferrer">{obtenerNombreArchivo(post.archivoUrl[0])}</a>}
             <div>
                 {puedeEditar && (
                     <>
@@ -107,7 +107,7 @@ function PostCard({ post, usuario, eliminar, onEditar    }) {
                         ))}
                         {archivosVisibles.map(url => (
                             <div key={url}>
-                                <a href={url}>{obtenerNombreArchivo(url)}</a>
+                                <a href={url} target="_blank" rel="noopener noreferrer">{obtenerNombreArchivo(url)}</a>
                                 <button 
                                     type="button" 
                                     onClick={() => setArchivosAEliminar([...archivosAEliminar, url])}
