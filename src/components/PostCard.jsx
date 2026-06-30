@@ -10,6 +10,8 @@ function PostCard({ post, usuario, eliminar, onEditar    }) {
     const [tipo, setTipo] = useState(post.tipo)
     const [imagenesAEliminar, setImagenesAEliminar] = useState([])
 
+    const imagenesVisibles = post.imagenUrl.filter(url => !imagenesAEliminar.includes(url))
+
     async function handleSubmit(e) {
         e.preventDefault()
         
@@ -78,7 +80,7 @@ function PostCard({ post, usuario, eliminar, onEditar    }) {
                             value={descripcion} 
                             onChange={(e) => setDescripcion(e.target.value)} 
                         />
-                        {post.imagenUrl.map(url => (
+                        {imagenesVisibles.map(url => (
                             <div key={url}>
                                 <img src={url} style={{ width: '100px' }} />
                                 <button 
