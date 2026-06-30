@@ -9,8 +9,12 @@ function PostCard({ post, usuario, eliminar, onEditar    }) {
     const [descripcion, setDescripcion] = useState(post.descripcion)
     const [tipo, setTipo] = useState(post.tipo)
     const [imagenesAEliminar, setImagenesAEliminar] = useState([])
+    const [imagenesNuevas, setImagenesNuevas] = useState([])
+    const [archivosAEliminar, setArchivosAEliminar] = useState([])
+    const [archivosNuevos, setArchivosNuevos] = useState([])
 
     const imagenesVisibles = post.imagenUrl.filter(url => !imagenesAEliminar.includes(url))
+    const archivosVisibles = post.archivoUrl.filter(url => !archivosAEliminar.includes(url))
 
     async function handleSubmit(e) {
         e.preventDefault()
@@ -21,6 +25,15 @@ function PostCard({ post, usuario, eliminar, onEditar    }) {
         formData.append('tipo', tipo)
         imagenesAEliminar.forEach(url => {
             formData.append('imagenesAEliminar', url)
+        })
+        archivosAEliminar.forEach(url => {
+            formData.append('archivosAEliminar', url)
+        })
+        imagenesNuevas.forEach(imagen => {
+            formData.append('imagenes', imagen)
+        })
+        archivosNuevos.forEach(archivo => {
+            formData.append('archivos', archivo)
         })
         
         const respuesta = await fetch(`http://localhost:3000/api/posts/${post.id}`, {
@@ -91,6 +104,27 @@ function PostCard({ post, usuario, eliminar, onEditar    }) {
                                 </button>
                             </div>
                         ))}
+                        {archivosVisibles.map(url => (
+                            <div key={url}>
+                                <a href={url}>Ver PDF</a>
+                                <button 
+                                    type="button" 
+                                    onClick={() => setArchivosAEliminar([...archivosAEliminar, url])}
+                                >
+                                    Quitar
+                                </button>
+                            </div>
+                        ))}
+                        <input 
+                            type="file" 
+                            multiple 
+                            onChange={(e) => setImagenesNuevas(Array.from(e.target.files))} 
+                        />
+                        <input 
+                            type="file" 
+                            multiple 
+                            onChange={(e) => setArchivosNuevos(Array.from(e.target.files))} 
+                        />
                         <button type="submit">Publicar</button>
                     </form>
                 </Modal>
