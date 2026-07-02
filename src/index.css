@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+@theme {
+    --color-volare-azul: #1A75BB;
+    --color-volare-verde: #43B02A;
+    --color-volare-naranja: #E98324;
+    --color-volare-amarillo: #F7D117;
+    --color-volare-morado: #7F4095;
+}
