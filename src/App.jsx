@@ -6,6 +6,7 @@ import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import PerfilPublico from './pages/PerfilPublico'
 import Admin from './pages/Admin'
+import RutaProtegida from './components/RutaProtegida'
 
 function App() {
   return (
@@ -17,7 +18,11 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path='/registro' element={<Registro />}/>
               <Route path="/perfil/:id" element={<PerfilPublico />} />
-              <Route path="/admin" element={<Admin />} />
+              <Route path="/admin" element={
+                <RutaProtegida rolRequerido="ADMIN">
+                    <Admin />
+                </RutaProtegida>
+            } />
           </Routes>
       </BrowserRouter>
     </AuthProvider>

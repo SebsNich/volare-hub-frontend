@@ -4,6 +4,7 @@ const AuthContext = createContext()
 
 function AuthProvider({ children }) {
     const [usuario, setUsuario] = useState(null)
+    const [cargando, setCargando] = useState(true)
 
     useEffect(() => {
         async function verificarSesion() {
@@ -20,6 +21,7 @@ function AuthProvider({ children }) {
                 setUsuario(datos.user)
                 console.log(datos.user)
             }
+            setCargando(false)
         }
         verificarSesion()
     }, [])
@@ -30,7 +32,7 @@ function AuthProvider({ children }) {
     }
 
     return (
-        <AuthContext.Provider value={{ usuario, setUsuario, logout }}>
+        <AuthContext.Provider value={{ usuario, setUsuario, logout, cargando }}>
             {children}
         </AuthContext.Provider>
     )
