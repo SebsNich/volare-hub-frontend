@@ -21,6 +21,7 @@ function PerfilPublico() {
     const [emailNuevo, setEmailNuevo] = useState('')
     const [passwordParaEmail, setPasswordParaEmail] = useState('')
     const [modalSeguridadAbierto, setModalSeguridadAbierto] = useState(false)
+    const [postAEliminar, setPostAEliminar] = useState(null)
 
     const { usuario: usuarioLogueado } = useContext(AuthContext) 
     
@@ -34,19 +35,20 @@ function PerfilPublico() {
     }, [id])
 
     async function eliminarPost(id) {
-        const confirmado = confirm('¿Estás seguro de eliminar este post?')
-        
-        if (confirmado) {
-            const respuesta = await fetch(`http://localhost:3000/api/posts/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            })
-            
-            if (respuesta.ok) {
-                cargarPerfilPublico()
+        setPostAEliminar(id)
+    }
+
+    async function confirmarEliminar() {
+        const respuesta = await fetch(`http://localhost:3000/api/posts/${postAEliminar}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
+        })
+        
+        if (respuesta.ok) {
+            setPostAEliminar(null)
+            cargarPerfilPublico()
         }
     }
 
@@ -170,6 +172,14 @@ function PerfilPublico() {
             {posts.map(post => <PostCard key={post.id} post={post} usuario={usuarioLogueado} eliminar={eliminarPost} onEditar={cargarPerfilPublico} />)}
 
             <BotonSugerencia />
+
+            {postAEliminar && (
+                <Modal onClose={() => setPostAEliminar(null)}>
+                    <p>¿Estás seguro de eliminar este post?</p>
+                    <button onClick={confirmarEliminar}>Sí, eliminar</button>
+                    <button onClick={() => setPostAEliminar(null)}>Cancelar</button>
+                </Modal>
+            )}
         </div>
     )
 }

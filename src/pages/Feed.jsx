@@ -2,6 +2,7 @@ import { useState, useEffect, useContext  } from 'react'
 import PostCard from '../components/PostCard'
 import { AuthContext } from '../context/AuthContext'
 import BotonSugerencia from '../components/BotonSugerencia'
+import Modal from '../components/Modal'
 
 function Feed() {
     const [posts, setPosts] = useState([])
@@ -11,6 +12,7 @@ function Feed() {
     const [imagenes, setImagenes] = useState([])
     const [archivos, setArchivos] = useState([])
     const { usuario } = useContext(AuthContext)
+    const [postAEliminar, setPostAEliminar] = useState(null)
 
     async function cargarPosts(){
         const respuesta = await fetch('http://localhost:3000/api/posts')
@@ -19,19 +21,20 @@ function Feed() {
     }
     
     async function eliminarPost(id) {
-        const confirmado = confirm('¿Estás seguro de eliminar este post?')
-        
-        if (confirmado) {
-            const respuesta = await fetch(`http://localhost:3000/api/posts/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            })
-            
-            if (respuesta.ok) {
-                cargarPosts()
+        setPostAEliminar(id)
+    }
+
+    async function confirmarEliminar() {
+        const respuesta = await fetch(`http://localhost:3000/api/posts/${postAEliminar}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
+        })
+        
+        if (respuesta.ok) {
+            setPostAEliminar(null)
+            cargarPosts()
         }
     }
 
@@ -117,6 +120,14 @@ function Feed() {
             {posts.map(post => <PostCard key={post.id} post={post} usuario={usuario} eliminar={eliminarPost} onEditar={cargarPosts}/>)}
             
             <BotonSugerencia />
+
+            {postAEliminar && (
+                <Modal onClose={() => setPostAEliminar(null)}>
+                    <p>¿Estás seguro de eliminar este post?</p>
+                    <button onClick={confirmarEliminar}>Sí, eliminar</button>
+                    <button onClick={() => setPostAEliminar(null)}>Cancelar</button>
+                </Modal>
+            )}
         </div>
     )
 }
