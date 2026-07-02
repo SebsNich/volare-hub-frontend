@@ -5,6 +5,7 @@ import Registro from './pages/registro'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import PerfilPublico from './pages/PerfilPublico'
+import Admin from './pages/Admin'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path='/registro' element={<Registro />}/>
               <Route path="/perfil/:id" element={<PerfilPublico />} />
+              <Route path="/admin" element={<Admin />} />
           </Routes>
       </BrowserRouter>
     </AuthProvider>
