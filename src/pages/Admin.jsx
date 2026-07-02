@@ -7,6 +7,31 @@ function Admin() {
     const [emailAdmin, setEmailAdmin] = useState('')
     const [passwordAdmin, setPasswordAdmin] = useState('')
     const [modalCrearAdminAbierto, setModalCrearAdminAbierto] = useState(false)
+    const [sugerencias, setSugerencias] = useState([])
+    const [sugerenciaSeleccionada, setSugerenciaSeleccionada] = useState(null)
+
+    async function cargarSugerencias() {
+        const respuesta = await fetch('http://localhost:3000/api/buzon', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })
+        const datos = await respuesta.json()
+        setSugerencias(datos)
+    }
+
+    async function marcarLeida(id) {
+        const respuesta = await fetch(`http://localhost:3000/api/buzon/${id}/leida`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })
+        if (respuesta.ok) {
+            cargarSugerencias()
+            setSugerenciaSeleccionada(null)
+        }
+    }
 
     async function cargarUsuarios() {
         const respuesta = await fetch('http://localhost:3000/api/usuarios', {
@@ -21,6 +46,7 @@ function Admin() {
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         cargarUsuarios()
+        cargarSugerencias()
     }, [])
 
     async function cambiarEstado(usuarioId, activoActual) {
@@ -93,6 +119,31 @@ function Admin() {
                     </button>
                 </div>
             ))}
+
+            <h2>Buzón de Sugerencias</h2>
+            {sugerencias.map(sugerencia => (
+                <div key={sugerencia.id} onClick={() => setSugerenciaSeleccionada(sugerencia)}>
+                    <p>{sugerencia.nombre}</p>
+                    <p>{sugerencia.tipo}</p>
+                    <p>{sugerencia.estado}</p>
+                    <p>{new Date(sugerencia.creadoEn).toLocaleDateString()}</p>
+                </div>
+            ))}
+
+            {sugerenciaSeleccionada && (
+                <Modal onClose={() => setSugerenciaSeleccionada(null)}>
+                    <h3>{sugerenciaSeleccionada.nombre}</h3>
+                    <p>{sugerenciaSeleccionada.tipo}</p>
+                    <p>{sugerenciaSeleccionada.mensaje}</p>
+                    <p>{sugerenciaSeleccionada.estado}</p>
+                    <p>{new Date(sugerenciaSeleccionada.creadoEn).toLocaleDateString()}</p>
+                    {sugerenciaSeleccionada.estado === 'SIN_LEER' && (
+                        <button onClick={() => marcarLeida(sugerenciaSeleccionada.id)}>
+                            Marcar como leída
+                        </button>
+                    )}
+                </Modal>
+            )}
         </div>
     )
 }

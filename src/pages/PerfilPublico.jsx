@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'
 import PostCard from '../components/PostCard'
 import { useCallback } from 'react'
 import Modal from '../components/Modal'
+import BotonSugerencia from '../components/BotonSugerencia'
 
 function PerfilPublico() {
     const { id } = useParams()
@@ -167,6 +168,8 @@ function PerfilPublico() {
                 </>
             )}
             {posts.map(post => <PostCard key={post.id} post={post} usuario={usuarioLogueado} eliminar={eliminarPost} onEditar={cargarPerfilPublico} />)}
+
+            <BotonSugerencia />
         </div>
     )
 }

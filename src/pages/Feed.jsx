@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext  } from 'react'
 import PostCard from '../components/PostCard'
 import { AuthContext } from '../context/AuthContext'
+import BotonSugerencia from '../components/BotonSugerencia'
 
 function Feed() {
     const [posts, setPosts] = useState([])
@@ -114,6 +115,8 @@ function Feed() {
                 </form>
             )}
             {posts.map(post => <PostCard key={post.id} post={post} usuario={usuario} eliminar={eliminarPost} onEditar={cargarPosts}/>)}
+            
+            <BotonSugerencia />
         </div>
     )
 }
