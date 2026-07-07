@@ -7,23 +7,27 @@ import Navbar from './components/Navbar'
 import PerfilPublico from './pages/PerfilPublico'
 import Admin from './pages/Admin'
 import RutaProtegida from './components/RutaProtegida'
+import BotonSugerencia from './components/BotonSugerencia'
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-          <Navbar />
-          <Routes>
-              <Route path="/" element={<Feed />} />
-              <Route path="/login" element={<Login />} />
-              <Route path='/registro' element={<Registro />}/>
-              <Route path="/perfil/:id" element={<PerfilPublico />} />
-              <Route path="/admin" element={
-                <RutaProtegida rolRequerido="ADMIN">
-                    <Admin />
-                </RutaProtegida>
-            } />
-          </Routes>
+          <div className="min-h-screen bg-gray-50">
+            <Navbar />
+            <Routes>
+                <Route path="/" element={<Feed />} />
+                <Route path="/login" element={<Login />} />
+                <Route path='/registro' element={<Registro />}/>
+                <Route path="/perfil/:id" element={<PerfilPublico />} />
+                <Route path="/admin" element={
+                  <RutaProtegida rolRequerido="ADMIN">
+                      <Admin />
+                  </RutaProtegida>
+              } />
+            </Routes>
+            <BotonSugerencia />
+          </div>
       </BrowserRouter>
     </AuthProvider>
   )

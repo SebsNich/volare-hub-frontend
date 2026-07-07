@@ -35,19 +35,34 @@ function Login() {
     }
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-            />
-            <input 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-            />
-            <button type="submit">Iniciar sesión</button>
-        </form>
+        <div className="min-h-[80vh] flex items-center justify-center px-4">
+            <form
+                onSubmit={handleSubmit}
+                className="bg-white rounded-2xl shadow-md p-8 w-full max-w-sm flex flex-col gap-4 border border-gray-100"
+            >
+                <h1 className="text-2xl font-bold text-volare-azul text-center mb-2">Iniciar sesión</h1>
+                <input
+                    type="email"
+                    value={email}
+                    placeholder="Email"
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                />
+                <input
+                    type="password"
+                    value={password}
+                    placeholder="Contraseña"
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                />
+                <button
+                    type="submit"
+                    className="bg-volare-azul text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition mt-2"
+                >
+                    Iniciar sesión
+                </button>
+            </form>
+        </div>
     )
 }
 export default Login
