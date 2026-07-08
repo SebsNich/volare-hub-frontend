@@ -1,10 +1,12 @@
 import { createContext, useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const AuthContext = createContext()
 
 function AuthProvider({ children }) {
     const [usuario, setUsuario] = useState(null)
     const [cargando, setCargando] = useState(true)
+    const navigate = useNavigate()
 
     useEffect(() => {
         async function verificarSesion() {
@@ -29,6 +31,7 @@ function AuthProvider({ children }) {
     function logout() {
         localStorage.removeItem('token')
         setUsuario(null)
+        navigate('/')
     }
 
     return (

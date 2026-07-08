@@ -8,7 +8,7 @@ function RutaProtegida({ children, rolRequerido }) {
     if (cargando) return null // o un spinner
 
     if (!usuario) {
-        return <Navigate to="/login" />
+        return <Navigate to="/" />
     }
 
     if (rolRequerido && usuario.rol !== rolRequerido) {

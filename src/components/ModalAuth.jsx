@@ -1,4 +1,5 @@
 import { useState, useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import Modal from './Modal'
@@ -7,6 +8,7 @@ function ModalAuth({ onClose }) {
     const [modo, setModo] = useState('login')
     const { setUsuario } = useContext(AuthContext)
     const { mostrarToast } = useToast()
+    const navigate = useNavigate()
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -29,6 +31,7 @@ function ModalAuth({ onClose }) {
         const datosPerfil = await respuestaPerfil.json()
         setUsuario(datosPerfil.user)
         mostrarToast(mensajeExito, 'exito')
+        navigate('/')
         onClose()
     }
 

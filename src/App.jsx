@@ -12,9 +12,9 @@ import BotonSugerencia from './components/BotonSugerencia'
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <ToastProvider>
+    <BrowserRouter>
+      <ToastProvider>
+        <AuthProvider>
           <div className="min-h-screen bg-gray-50">
             <Navbar />
             <Routes>
@@ -30,9 +30,9 @@ function App() {
             </Routes>
             <BotonSugerencia />
           </div>
-        </ToastProvider>
-      </BrowserRouter>
-    </AuthProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </BrowserRouter>
   )
 }
 
