@@ -8,7 +8,7 @@ import Modal from '../components/Modal'
 import FormularioPost from '../components/FormularioPost'
 import AvatarUsuario from '../components/AvatarUsuario'
 import Tooltip from '../components/Tooltip'
-import { HiXMark } from 'react-icons/hi2'
+import { HiXMark, HiOutlineEye } from 'react-icons/hi2'
 
 function PerfilPublico() {
     const { id } = useParams()
@@ -164,15 +164,19 @@ function PerfilPublico() {
 
     return (
         <div className="max-w-5xl mx-auto px-4 py-8">
-            <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6 items-start">
+            <div className="flex flex-col md:grid md:grid-cols-[280px_1fr] gap-6 items-start">
                 {usuario && (
-                    <div className="sticky top-24 flex flex-col gap-6">
+                    <div className="w-full md:sticky md:top-24 flex flex-col gap-6">
                         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4">
                             <AvatarUsuario foto={usuario.foto} size={96} className="mx-auto border border-gray-200 shadow-sm" />
                             <div className="border-b border-gray-200" />
                             <div className="text-center">
                                 <h2 className="text-xl font-bold text-volare-azul">{usuario.nombre}</h2>
                                 <p className="text-gray-600 text-sm mt-1">{usuario.bio}</p>
+                                <p className="flex items-center justify-center gap-1 text-xs text-gray-400 mt-2">
+                                    <HiOutlineEye size={14} />
+                                    {usuario.visitasPerfil ?? 0} visitas
+                                </p>
                             </div>
                         </div>
 
@@ -212,7 +216,7 @@ function PerfilPublico() {
                     </div>
                 )}
 
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 w-full">
                     {posts.map(post => <PostCard key={post.id} post={post} usuario={usuarioLogueado} eliminar={eliminarPost} onEditar={cargarPerfilPublico} contexto="perfil" />)}
                 </div>
             </div>
