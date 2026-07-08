@@ -1,13 +1,19 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { HiOutlineChatBubbleLeftRight } from 'react-icons/hi2'
 import Modal from './Modal'
 import Tooltip from './Tooltip'
+import { AuthContext } from '../context/AuthContext'
 
 function BotonSugerencia() {
+    const { usuario } = useContext(AuthContext)
     const [modalAbierto, setModalAbierto] = useState(false)
     const [nombre, setNombre] = useState('')
     const [tipo, setTipo] = useState('')
     const [mensaje, setMensaje] = useState('')
+
+    if (usuario?.rol === 'ADMIN') {
+        return null
+    }
 
     async function enviarSugerencia(e){
         e.preventDefault()
