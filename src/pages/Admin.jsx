@@ -1,11 +1,29 @@
 import { useState, useEffect } from 'react'
 import Modal from '../components/Modal'
-import { HiOutlineUsers, HiOutlineInbox, HiBars3, HiXMark } from 'react-icons/hi2'
+import {
+    HiOutlineUsers,
+    HiOutlineInbox,
+    HiBars3,
+    HiXMark,
+    HiOutlineChartBar,
+    HiOutlineDocumentText,
+    HiOutlineUserGroup,
+    HiOutlineBuildingOffice2,
+    HiOutlineEnvelope
+} from 'react-icons/hi2'
 import { normalizarTexto } from '../utilities/helpers'
 
 const SECCIONES = [
+    { id: 'resumen', label: 'Resumen', icono: HiOutlineChartBar },
     { id: 'usuarios', label: 'Usuarios', icono: HiOutlineUsers },
     { id: 'sugerencias', label: 'Buzón de Sugerencias', icono: HiOutlineInbox },
+]
+
+const TARJETAS_RESUMEN = [
+    { id: 'publicacionesTotales', label: 'Publicaciones totales', icono: HiOutlineDocumentText, color: 'text-volare-azul' },
+    { id: 'residentesActivos', label: 'Residentes activos', icono: HiOutlineUserGroup, color: 'text-volare-verde' },
+    { id: 'obrasActivas', label: 'Obras activas', icono: HiOutlineBuildingOffice2, color: 'text-volare-naranja' },
+    { id: 'mensajesSinLeer', label: 'Mensajes sin leer', icono: HiOutlineEnvelope, color: 'text-volare-morado' },
 ]
 
 const TIPOS_SUGERENCIA = [
@@ -49,8 +67,9 @@ function Admin() {
     const [modalCrearAdminAbierto, setModalCrearAdminAbierto] = useState(false)
     const [sugerencias, setSugerencias] = useState([])
     const [sugerenciaSeleccionada, setSugerenciaSeleccionada] = useState(null)
-    const [seccionActiva, setSeccionActiva] = useState('usuarios')
+    const [seccionActiva, setSeccionActiva] = useState('resumen')
     const [menuAbierto, setMenuAbierto] = useState(false)
+    const [resumen, setResumen] = useState(null)
 
     const [busquedaUsuarios, setBusquedaUsuarios] = useState('')
     const [filtroManzanaVilla, setFiltroManzanaVilla] = useState('')
@@ -60,6 +79,16 @@ function Admin() {
     const [busquedaSugerencias, setBusquedaSugerencias] = useState('')
     const [filtroTipoSugerencia, setFiltroTipoSugerencia] = useState('TODOS')
     const [paginaSugerencias, setPaginaSugerencias] = useState(1)
+
+    async function cargarResumen() {
+        const respuesta = await fetch('http://localhost:3000/api/admin/resumen', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })
+        const datos = await respuesta.json()
+        setResumen(datos)
+    }
 
     async function cargarSugerencias() {
         const respuesta = await fetch('http://localhost:3000/api/buzon', {
@@ -96,6 +125,7 @@ function Admin() {
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
+        cargarResumen()
         cargarUsuarios()
         cargarSugerencias()
     }, [])
@@ -253,6 +283,26 @@ function Admin() {
                 </aside>
 
                 <div className="flex-1 w-full min-w-0">
+                    {seccionActiva === 'resumen' && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {TARJETAS_RESUMEN.map(tarjeta => {
+                                const Icono = tarjeta.icono
+                                return (
+                                    <div
+                                        key={tarjeta.id}
+                                        className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-3"
+                                    >
+                                        <Icono size={28} className={tarjeta.color} />
+                                        <span className="text-3xl font-bold text-volare-azul">
+                                            {resumen ? resumen[tarjeta.id] : '—'}
+                                        </span>
+                                        <span className="text-sm text-gray-500">{tarjeta.label}</span>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    )}
+
                     {seccionActiva === 'usuarios' && (
                         <div className="flex flex-col gap-3">
                             <div className="flex flex-col sm:flex-row gap-3">
