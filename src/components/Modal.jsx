@@ -1,4 +1,4 @@
-function Modal({ children, onClose }) {
+function Modal({ children, onClose, className = '' }) {
     return (
         <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md max-h-[85vh] overflow-y-auto relative">
@@ -9,7 +9,7 @@ function Modal({ children, onClose }) {
                 >
                     ✕
                 </button>
-                <div className="flex flex-col gap-4 pt-6">
+                <div className={`flex flex-col gap-4 pt-6 rounded-xl transition-all duration-300 ${className}`}>
                     {children}
                 </div>
             </div>

@@ -7,3 +7,21 @@
     --color-volare-amarillo: #F7D117;
     --color-volare-morado: #7F4095;
 }
+
+@keyframes volare-barrido-derecha {
+    from { opacity: 0; transform: translateX(24px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes volare-barrido-izquierda {
+    from { opacity: 0; transform: translateX(-24px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-volare-barrido-derecha {
+    animation: volare-barrido-derecha 300ms ease-out;
+}
+
+.animate-volare-barrido-izquierda {
+    animation: volare-barrido-izquierda 300ms ease-out;
+}
