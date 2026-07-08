@@ -1,11 +1,45 @@
 import { useState, useEffect } from 'react'
 import Modal from '../components/Modal'
 import { HiOutlineUsers, HiOutlineInbox, HiBars3, HiXMark } from 'react-icons/hi2'
+import { normalizarTexto } from '../utilities/helpers'
 
 const SECCIONES = [
     { id: 'usuarios', label: 'Usuarios', icono: HiOutlineUsers },
     { id: 'sugerencias', label: 'Buzón de Sugerencias', icono: HiOutlineInbox },
 ]
+
+const TIPOS_SUGERENCIA = [
+    { value: 'SUGERENCIA', label: 'Sugerencia' },
+    { value: 'QUEJA', label: 'Queja' },
+    { value: 'CONSULTA', label: 'Consulta' },
+    { value: 'OTRO', label: 'Otro' },
+]
+
+const TAMANO_PAGINA = 10
+
+function ControlesPaginacion({ paginaActual, totalPaginas, onAnterior, onSiguiente }) {
+    return (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+            <button
+                type="button"
+                onClick={onAnterior}
+                disabled={paginaActual === 1}
+                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${paginaActual === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-volare-azul text-white hover:opacity-90'}`}
+            >
+                Anterior
+            </button>
+            <span className="text-sm text-gray-500">Página {paginaActual} de {totalPaginas}</span>
+            <button
+                type="button"
+                onClick={onSiguiente}
+                disabled={paginaActual === totalPaginas}
+                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${paginaActual === totalPaginas ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-volare-azul text-white hover:opacity-90'}`}
+            >
+                Siguiente
+            </button>
+        </div>
+    )
+}
 
 function Admin() {
     const [usuarios, setUsuarios] = useState([])
@@ -17,6 +51,15 @@ function Admin() {
     const [sugerenciaSeleccionada, setSugerenciaSeleccionada] = useState(null)
     const [seccionActiva, setSeccionActiva] = useState('usuarios')
     const [menuAbierto, setMenuAbierto] = useState(false)
+
+    const [busquedaUsuarios, setBusquedaUsuarios] = useState('')
+    const [filtroManzanaVilla, setFiltroManzanaVilla] = useState('')
+    const [filtroEstadoUsuario, setFiltroEstadoUsuario] = useState('TODOS')
+    const [paginaUsuarios, setPaginaUsuarios] = useState(1)
+
+    const [busquedaSugerencias, setBusquedaSugerencias] = useState('')
+    const [filtroTipoSugerencia, setFiltroTipoSugerencia] = useState('TODOS')
+    const [paginaSugerencias, setPaginaSugerencias] = useState(1)
 
     async function cargarSugerencias() {
         const respuesta = await fetch('http://localhost:3000/api/buzon', {
@@ -101,6 +144,29 @@ function Admin() {
         setSeccionActiva(id)
         setMenuAbierto(false)
     }
+
+    const usuariosFiltrados = usuarios.filter(usuario => {
+        const coincideNombre = normalizarTexto(usuario.nombre).includes(normalizarTexto(busquedaUsuarios))
+        const textoManzanaVilla = normalizarTexto(`${usuario.manzana || ''} ${usuario.villa || ''}`)
+        const coincideManzanaVilla = textoManzanaVilla.includes(normalizarTexto(filtroManzanaVilla))
+        const coincideEstado = filtroEstadoUsuario === 'TODOS'
+            || (filtroEstadoUsuario === 'ACTIVO' && usuario.activo)
+            || (filtroEstadoUsuario === 'INACTIVO' && !usuario.activo)
+        return coincideNombre && coincideManzanaVilla && coincideEstado
+    })
+    const totalPaginasUsuarios = Math.max(1, Math.ceil(usuariosFiltrados.length / TAMANO_PAGINA))
+    const paginaUsuariosEfectiva = Math.min(paginaUsuarios, totalPaginasUsuarios)
+    const usuariosPagina = usuariosFiltrados.slice((paginaUsuariosEfectiva - 1) * TAMANO_PAGINA, paginaUsuariosEfectiva * TAMANO_PAGINA)
+
+    const sugerenciasFiltradas = sugerencias.filter(sugerencia => {
+        const coincideNombre = busquedaSugerencias === ''
+            || (sugerencia.nombre && normalizarTexto(sugerencia.nombre).includes(normalizarTexto(busquedaSugerencias)))
+        const coincideTipo = filtroTipoSugerencia === 'TODOS' || sugerencia.tipo === filtroTipoSugerencia
+        return coincideNombre && coincideTipo
+    })
+    const totalPaginasSugerencias = Math.max(1, Math.ceil(sugerenciasFiltradas.length / TAMANO_PAGINA))
+    const paginaSugerenciasEfectiva = Math.min(paginaSugerencias, totalPaginasSugerencias)
+    const sugerenciasPagina = sugerenciasFiltradas.slice((paginaSugerenciasEfectiva - 1) * TAMANO_PAGINA, paginaSugerenciasEfectiva * TAMANO_PAGINA)
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col gap-6">
@@ -188,76 +254,152 @@ function Admin() {
 
                 <div className="flex-1 w-full min-w-0">
                     {seccionActiva === 'usuarios' && (
-                        <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-x-auto">
-                            <table className="w-full text-sm text-left">
-                                <thead>
-                                    <tr className="border-b border-gray-100 text-gray-500 text-xs uppercase">
-                                        <th className="px-4 py-3 whitespace-nowrap">Nombre</th>
-                                        <th className="px-4 py-3 whitespace-nowrap">Correo</th>
-                                        <th className="px-4 py-3 whitespace-nowrap">Rol</th>
-                                        <th className="px-4 py-3 whitespace-nowrap">Manzana/Villa</th>
-                                        <th className="px-4 py-3 whitespace-nowrap">Estado</th>
-                                        <th className="px-4 py-3 whitespace-nowrap">Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {usuarios.map(usuario => (
-                                        <tr key={usuario.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
-                                            <td className="px-4 py-3 font-semibold text-volare-azul whitespace-nowrap">{usuario.nombre}</td>
-                                            <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.email}</td>
-                                            <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.rol}</td>
-                                            <td className="px-4 py-3 text-gray-500 whitespace-nowrap">Mz. {usuario.manzana} Villa {usuario.villa}</td>
-                                            <td className="px-4 py-3 whitespace-nowrap">
-                                                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold text-white ${usuario.activo ? 'bg-volare-verde' : 'bg-gray-400'}`}>
-                                                    {usuario.activo ? 'Activo' : 'Inactivo'}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 whitespace-nowrap">
-                                                <button
-                                                    onClick={() => cambiarEstado(usuario.id, usuario.activo)}
-                                                    className="bg-volare-naranja text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition"
-                                                >
-                                                    {usuario.activo ? 'Desactivar' : 'Activar'}
-                                                </button>
-                                            </td>
+                        <div className="flex flex-col gap-3">
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <input
+                                    type="text"
+                                    value={busquedaUsuarios}
+                                    onChange={(e) => { setBusquedaUsuarios(e.target.value); setPaginaUsuarios(1) }}
+                                    placeholder="Buscar por nombre..."
+                                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-volare-azul flex-1"
+                                />
+                                <input
+                                    type="text"
+                                    value={filtroManzanaVilla}
+                                    onChange={(e) => { setFiltroManzanaVilla(e.target.value); setPaginaUsuarios(1) }}
+                                    placeholder="Manzana o Villa"
+                                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-volare-azul sm:w-48"
+                                />
+                                <select
+                                    value={filtroEstadoUsuario}
+                                    onChange={(e) => { setFiltroEstadoUsuario(e.target.value); setPaginaUsuarios(1) }}
+                                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-volare-azul sm:w-44"
+                                >
+                                    <option value="TODOS">Todos los estados</option>
+                                    <option value="ACTIVO">Activo</option>
+                                    <option value="INACTIVO">Desactivado</option>
+                                </select>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-x-auto">
+                                <table className="w-full text-sm text-left">
+                                    <thead>
+                                        <tr className="border-b border-gray-100 text-gray-500 text-xs uppercase">
+                                            <th className="px-4 py-3 whitespace-nowrap">Nombre</th>
+                                            <th className="px-4 py-3 whitespace-nowrap">Correo</th>
+                                            <th className="px-4 py-3 whitespace-nowrap">Rol</th>
+                                            <th className="px-4 py-3 whitespace-nowrap">Manzana/Villa</th>
+                                            <th className="px-4 py-3 whitespace-nowrap">Estado</th>
+                                            <th className="px-4 py-3 whitespace-nowrap">Acción</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {usuariosPagina.map(usuario => (
+                                            <tr key={usuario.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
+                                                <td className="px-4 py-3 font-semibold text-volare-azul whitespace-nowrap">{usuario.nombre}</td>
+                                                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.email}</td>
+                                                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.rol}</td>
+                                                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">Mz. {usuario.manzana} Villa {usuario.villa}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold text-white ${usuario.activo ? 'bg-volare-verde' : 'bg-gray-400'}`}>
+                                                        {usuario.activo ? 'Activo' : 'Inactivo'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    <button
+                                                        onClick={() => cambiarEstado(usuario.id, usuario.activo)}
+                                                        className="bg-volare-naranja text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition"
+                                                    >
+                                                        {usuario.activo ? 'Desactivar' : 'Activar'}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {usuariosPagina.length === 0 && (
+                                            <tr>
+                                                <td colSpan={6} className="px-4 py-6 text-center text-gray-400">
+                                                    No se encontraron usuarios con esos filtros
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                                <ControlesPaginacion
+                                    paginaActual={paginaUsuariosEfectiva}
+                                    totalPaginas={totalPaginasUsuarios}
+                                    onAnterior={() => setPaginaUsuarios(paginaUsuariosEfectiva - 1)}
+                                    onSiguiente={() => setPaginaUsuarios(paginaUsuariosEfectiva + 1)}
+                                />
+                            </div>
                         </div>
                     )}
 
                     {seccionActiva === 'sugerencias' && (
-                        <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-x-auto">
-                            <table className="w-full text-sm text-left">
-                                <thead>
-                                    <tr className="border-b border-gray-100 text-gray-500 text-xs uppercase">
-                                        <th className="px-4 py-3 whitespace-nowrap">Usuario</th>
-                                        <th className="px-4 py-3 whitespace-nowrap">Tipo</th>
-                                        <th className="px-4 py-3 whitespace-nowrap">Fecha</th>
-                                        <th className="px-4 py-3 whitespace-nowrap">Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {sugerencias.map(sugerencia => (
-                                        <tr
-                                            key={sugerencia.id}
-                                            onClick={() => setSugerenciaSeleccionada(sugerencia)}
-                                            className="border-b border-gray-50 last:border-0 hover:bg-gray-50 cursor-pointer"
-                                        >
-                                            <td className="px-4 py-3 font-medium text-volare-azul whitespace-nowrap">{sugerencia.nombre}</td>
-                                            <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{sugerencia.tipo}</td>
-                                            <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{new Date(sugerencia.creadoEn).toLocaleDateString()}</td>
-                                            <td className="px-4 py-3 whitespace-nowrap">
-                                                <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${sugerencia.estado === 'SIN_LEER' ? 'text-volare-naranja' : 'text-volare-verde'}`}>
-                                                    <span className={`w-2 h-2 rounded-full ${sugerencia.estado === 'SIN_LEER' ? 'bg-volare-naranja' : 'bg-volare-verde'}`} />
-                                                    {sugerencia.estado === 'SIN_LEER' ? 'No leído' : 'Leído'}
-                                                </span>
-                                            </td>
-                                        </tr>
+                        <div className="flex flex-col gap-3">
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <input
+                                    type="text"
+                                    value={busquedaSugerencias}
+                                    onChange={(e) => { setBusquedaSugerencias(e.target.value); setPaginaSugerencias(1) }}
+                                    placeholder="Buscar por nombre del remitente..."
+                                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-volare-azul flex-1"
+                                />
+                                <select
+                                    value={filtroTipoSugerencia}
+                                    onChange={(e) => { setFiltroTipoSugerencia(e.target.value); setPaginaSugerencias(1) }}
+                                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-volare-azul sm:w-48"
+                                >
+                                    <option value="TODOS">Todos los tipos</option>
+                                    {TIPOS_SUGERENCIA.map(({ value, label }) => (
+                                        <option key={value} value={value}>{label}</option>
                                     ))}
-                                </tbody>
-                            </table>
+                                </select>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-x-auto">
+                                <table className="w-full text-sm text-left">
+                                    <thead>
+                                        <tr className="border-b border-gray-100 text-gray-500 text-xs uppercase">
+                                            <th className="px-4 py-3 whitespace-nowrap">Usuario</th>
+                                            <th className="px-4 py-3 whitespace-nowrap">Tipo</th>
+                                            <th className="px-4 py-3 whitespace-nowrap">Fecha</th>
+                                            <th className="px-4 py-3 whitespace-nowrap">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {sugerenciasPagina.map(sugerencia => (
+                                            <tr
+                                                key={sugerencia.id}
+                                                onClick={() => setSugerenciaSeleccionada(sugerencia)}
+                                                className="border-b border-gray-50 last:border-0 hover:bg-gray-50 cursor-pointer"
+                                            >
+                                                <td className="px-4 py-3 font-medium text-volare-azul whitespace-nowrap">{sugerencia.nombre || 'Anónimo'}</td>
+                                                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{sugerencia.tipo}</td>
+                                                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{new Date(sugerencia.creadoEn).toLocaleDateString()}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${sugerencia.estado === 'SIN_LEER' ? 'text-volare-naranja' : 'text-volare-verde'}`}>
+                                                        <span className={`w-2 h-2 rounded-full ${sugerencia.estado === 'SIN_LEER' ? 'bg-volare-naranja' : 'bg-volare-verde'}`} />
+                                                        {sugerencia.estado === 'SIN_LEER' ? 'No leído' : 'Leído'}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {sugerenciasPagina.length === 0 && (
+                                            <tr>
+                                                <td colSpan={4} className="px-4 py-6 text-center text-gray-400">
+                                                    No se encontraron sugerencias con esos filtros
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                                <ControlesPaginacion
+                                    paginaActual={paginaSugerenciasEfectiva}
+                                    totalPaginas={totalPaginasSugerencias}
+                                    onAnterior={() => setPaginaSugerencias(paginaSugerenciasEfectiva - 1)}
+                                    onSiguiente={() => setPaginaSugerencias(paginaSugerenciasEfectiva + 1)}
+                                />
+                            </div>
                         </div>
                     )}
                 </div>
@@ -265,7 +407,7 @@ function Admin() {
 
             {sugerenciaSeleccionada && (
                 <Modal onClose={() => setSugerenciaSeleccionada(null)}>
-                    <h3 className="text-lg font-bold text-volare-azul">{sugerenciaSeleccionada.nombre}</h3>
+                    <h3 className="text-lg font-bold text-volare-azul">{sugerenciaSeleccionada.nombre || 'Anónimo'}</h3>
                     <span className="self-start px-2 py-0.5 rounded-full text-xs font-semibold text-white bg-volare-azul">
                         {sugerenciaSeleccionada.tipo}
                     </span>

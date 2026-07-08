@@ -9,5 +9,13 @@ function formatearMesAnio(fecha) {
     return texto.charAt(0).toUpperCase() + texto.slice(1)
 }
 
+function normalizarTexto(texto) {
+    return texto
+        .toString()
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .toLowerCase()
+}
+
 export default obtenerNombreArchivo
-export { formatearMesAnio }
+export { formatearMesAnio, normalizarTexto }
