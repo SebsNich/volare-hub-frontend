@@ -4,4 +4,10 @@ function obtenerNombreArchivo(url) {
     return nombreConId
 }
 
+function formatearMesAnio(fecha) {
+    const texto = new Date(fecha).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
+    return texto.charAt(0).toUpperCase() + texto.slice(1)
+}
+
 export default obtenerNombreArchivo
+export { formatearMesAnio }
