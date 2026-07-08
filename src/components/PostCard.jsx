@@ -131,21 +131,21 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
                 <img
                     src={post.imagenUrl[0]}
                     onClick={() => setLightboxAbierto(true)}
-                    className="max-h-48 w-auto object-contain rounded-xl border border-gray-200 shadow-sm mt-1 cursor-pointer"
+                    className="w-full h-72 object-contain rounded-xl border border-gray-200 shadow-sm bg-gray-50 mt-1 cursor-pointer"
                 />
             )}
 
             {post.imagenUrl.length > 1 && (
-                <div className="relative mt-1 flex flex-col items-center gap-2">
+                <div className="relative mt-1">
                     <img
                         src={post.imagenUrl[imagenIndex]}
                         onClick={() => setLightboxAbierto(true)}
-                        className="max-h-48 w-auto object-contain rounded-xl border border-gray-200 shadow-sm cursor-pointer"
+                        className="w-full h-72 object-contain rounded-xl border border-gray-200 shadow-sm bg-gray-50 cursor-pointer"
                     />
                     <button
                         type="button"
                         onClick={() => setImagenIndex((imagenIndex - 1 + post.imagenUrl.length) % post.imagenUrl.length)}
-                        className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-1 shadow transition"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-1 shadow transition"
                         aria-label="Imagen anterior"
                     >
                         <HiChevronLeft size={20} />
@@ -153,16 +153,16 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
                     <button
                         type="button"
                         onClick={() => setImagenIndex((imagenIndex + 1) % post.imagenUrl.length)}
-                        className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-1 shadow transition"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-1 shadow transition"
                         aria-label="Imagen siguiente"
                     >
                         <HiChevronRight size={20} />
                     </button>
-                    <div className="flex gap-1">
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
                         {post.imagenUrl.map((_, i) => (
                             <span
                                 key={i}
-                                className={`w-1.5 h-1.5 rounded-full ${i === imagenIndex ? 'bg-volare-azul' : 'bg-gray-300'}`}
+                                className={`w-1.5 h-1.5 rounded-full ${i === imagenIndex ? 'bg-white' : 'bg-white/50'}`}
                             />
                         ))}
                     </div>
