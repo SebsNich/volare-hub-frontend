@@ -9,6 +9,7 @@ import ArchivoAdjunto from './ArchivoAdjunto'
 import Tooltip from './Tooltip'
 import AvatarUsuario from './AvatarUsuario'
 import obtenerNombreArchivo from "../utilities/helpers"
+import { useToast } from '../context/ToastContext'
 
 const tipoColores = {
     AVISO: 'bg-volare-naranja',
@@ -18,6 +19,7 @@ const tipoColores = {
 }
 
 function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
+    const { mostrarToast } = useToast()
     const puedeEditar = usuario && (usuario.id === post.autorId || usuario.rol === 'ADMIN')
     const puedeAnclar = contexto === 'perfil'
         ? usuario && usuario.id === post.autorId
@@ -60,7 +62,10 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
             }
         })
         if (respuesta.ok) {
+            mostrarToast(ancladoActivo ? 'Publicación desanclada' : 'Publicación anclada', 'exito')
             onEditar()
+        } else {
+            mostrarToast('No se pudo anclar la publicación', 'error')
         }
     }
 
@@ -94,10 +99,13 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
             },
             body: formData
         })
-        
+
         if (respuesta.ok) {
             setModalAbierto(false)
+            mostrarToast('Publicación actualizada', 'exito')
             onEditar()
+        } else {
+            mostrarToast('No se pudo actualizar la publicación', 'error')
         }
     }
 

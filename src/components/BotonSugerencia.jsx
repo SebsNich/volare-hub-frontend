@@ -3,9 +3,11 @@ import { HiOutlineChatBubbleLeftRight } from 'react-icons/hi2'
 import Modal from './Modal'
 import Tooltip from './Tooltip'
 import { AuthContext } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 
 function BotonSugerencia() {
     const { usuario } = useContext(AuthContext)
+    const { mostrarToast } = useToast()
     const [modalAbierto, setModalAbierto] = useState(false)
     const [nombre, setNombre] = useState('')
     const [tipo, setTipo] = useState('')
@@ -30,6 +32,10 @@ function BotonSugerencia() {
             setTipo('')
             setMensaje('')
             setModalAbierto(false)
+            mostrarToast('Sugerencia enviada, gracias por tu mensaje', 'exito')
+        } else {
+            const datos = await respuesta.json()
+            mostrarToast(datos.error || 'No se pudo enviar la sugerencia', 'error')
         }
     }
 

@@ -25,3 +25,12 @@
 .animate-volare-barrido-izquierda {
     animation: volare-barrido-izquierda 300ms ease-out;
 }
+
+@keyframes volare-toast-entrada {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-volare-toast-in {
+    animation: volare-toast-entrada 250ms ease-out;
+}

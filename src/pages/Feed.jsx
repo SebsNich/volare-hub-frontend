@@ -2,6 +2,7 @@ import { useState, useEffect, useContext  } from 'react'
 import { Link } from 'react-router-dom'
 import PostCard from '../components/PostCard'
 import { AuthContext } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import Modal from '../components/Modal'
 import FormularioPost from '../components/FormularioPost'
 import AvatarUsuario from '../components/AvatarUsuario'
@@ -20,6 +21,7 @@ const TIPOS_FILTRO = [
 function Feed() {
     const [posts, setPosts] = useState([])
     const { usuario } = useContext(AuthContext)
+    const { mostrarToast } = useToast()
     const [postAEliminar, setPostAEliminar] = useState(null)
     const [filtroTipo, setFiltroTipo] = useState('TODOS')
 
@@ -45,7 +47,10 @@ function Feed() {
 
         if (respuesta.ok) {
             setPostAEliminar(null)
+            mostrarToast('Publicación eliminada', 'exito')
             cargarPosts()
+        } else {
+            mostrarToast('No se pudo eliminar la publicación', 'error')
         }
     }
 

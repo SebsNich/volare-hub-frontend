@@ -12,6 +12,7 @@ import {
     HiOutlineEnvelope
 } from 'react-icons/hi2'
 import { normalizarTexto } from '../utilities/helpers'
+import { useToast } from '../context/ToastContext'
 
 const SECCIONES = [
     { id: 'resumen', label: 'Resumen', icono: HiOutlineChartBar },
@@ -60,6 +61,7 @@ function ControlesPaginacion({ paginaActual, totalPaginas, onAnterior, onSiguien
 }
 
 function Admin() {
+    const { mostrarToast } = useToast()
     const [usuarios, setUsuarios] = useState([])
     const [nombreAdmin, setNombreAdmin] = useState('')
     const [emailAdmin, setEmailAdmin] = useState('')
@@ -108,8 +110,11 @@ function Admin() {
             }
         })
         if (respuesta.ok) {
+            mostrarToast('Sugerencia marcada como leída', 'exito')
             cargarSugerencias()
             setSugerenciaSeleccionada(null)
+        } else {
+            mostrarToast('No se pudo marcar la sugerencia como leída', 'error')
         }
     }
 
@@ -141,7 +146,10 @@ function Admin() {
         })
 
         if (respuesta.ok) {
+            mostrarToast(activoActual ? 'Usuario desactivado' : 'Usuario activado', 'exito')
             cargarUsuarios()
+        } else {
+            mostrarToast('No se pudo cambiar el estado del usuario', 'error')
         }
     }
 
@@ -166,7 +174,11 @@ function Admin() {
             setEmailAdmin('')
             setPasswordAdmin('')
             setModalCrearAdminAbierto(false)
+            mostrarToast('Administrador creado', 'exito')
             cargarUsuarios()
+        } else {
+            const datos = await respuesta.json()
+            mostrarToast(datos.mensaje || 'No se pudo crear el administrador', 'error')
         }
     }
 

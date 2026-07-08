@@ -1,10 +1,12 @@
 import { useState, useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import Modal from './Modal'
 
 function ModalAuth({ onClose }) {
     const [modo, setModo] = useState('login')
     const { setUsuario } = useContext(AuthContext)
+    const { mostrarToast } = useToast()
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -19,13 +21,14 @@ function ModalAuth({ onClose }) {
 
     const esLogin = modo === 'login'
 
-    async function iniciarSesionConToken(token) {
+    async function iniciarSesionConToken(token, mensajeExito) {
         localStorage.setItem('token', token)
         const respuestaPerfil = await fetch('http://localhost:3000/api/auth/perfil', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         const datosPerfil = await respuestaPerfil.json()
         setUsuario(datosPerfil.user)
+        mostrarToast(mensajeExito, 'exito')
         onClose()
     }
 
@@ -42,10 +45,11 @@ function ModalAuth({ onClose }) {
 
         if (!respuesta.ok) {
             setError(datos.mensaje || 'No se pudo iniciar sesión')
+            mostrarToast(datos.mensaje || 'No se pudo iniciar sesión', 'error')
             return
         }
 
-        await iniciarSesionConToken(datos.token)
+        await iniciarSesionConToken(datos.token, 'Bienvenido de nuevo')
     }
 
     async function handleRegistro(e) {
@@ -61,10 +65,11 @@ function ModalAuth({ onClose }) {
 
         if (!respuesta.ok) {
             setError(datos.mensaje || 'No se pudo completar el registro')
+            mostrarToast(datos.mensaje || 'No se pudo completar el registro', 'error')
             return
         }
 
-        await iniciarSesionConToken(datos.token)
+        await iniciarSesionConToken(datos.token, 'Cuenta creada correctamente')
     }
 
     return (

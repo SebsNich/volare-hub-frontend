@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import { useParams } from 'react-router-dom'
 import PostCard from '../components/PostCard'
 import { useCallback } from 'react'
@@ -30,6 +31,7 @@ function PerfilPublico() {
     const [postAEliminar, setPostAEliminar] = useState(null)
 
     const { usuario: usuarioLogueado, setUsuario: setUsuarioLogueado } = useContext(AuthContext)
+    const { mostrarToast } = useToast()
 
     const cargarPerfilPublico = useCallback(async () => {
         const respuesta = await fetch(`http://localhost:3000/api/usuarios/${id}`)
@@ -54,7 +56,10 @@ function PerfilPublico() {
 
         if (respuesta.ok) {
             setPostAEliminar(null)
+            mostrarToast('Publicación eliminada', 'exito')
             cargarPerfilPublico()
+        } else {
+            mostrarToast('No se pudo eliminar la publicación', 'error')
         }
     }
 
@@ -111,7 +116,10 @@ function PerfilPublico() {
             setFotoPreview(null)
             setEliminarFoto(false)
             setModalPerfilAbierto(false)
+            mostrarToast('Perfil actualizado', 'exito')
             cargarPerfilPublico()
+        } else {
+            mostrarToast('No se pudo actualizar el perfil', 'error')
         }
     }
 
@@ -136,7 +144,10 @@ function PerfilPublico() {
         setPasswordActual('')
         setPasswordNueva('')
         setConfirmarPassword('')
-        alert('Contraseña actualizada correctamente')
+        mostrarToast('Contraseña actualizada', 'exito')
+    } else {
+        const datos = await respuesta.json()
+        mostrarToast(datos.mensaje || 'No se pudo actualizar la contraseña', 'error')
     }
 }
 
@@ -155,7 +166,10 @@ function PerfilPublico() {
         if (respuesta.ok) {
             setEmailNuevo('')
             setPasswordParaEmail('')
-            alert('Email actualizado correctamente')
+            mostrarToast('Email actualizado', 'exito')
+        } else {
+            const datos = await respuesta.json()
+            mostrarToast(datos.mensaje || 'No se pudo actualizar el email', 'error')
         }
     }
 

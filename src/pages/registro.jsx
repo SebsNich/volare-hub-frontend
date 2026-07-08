@@ -1,5 +1,6 @@
 import { useState, useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import { useNavigate } from 'react-router-dom'
 
 function Registro() {
@@ -9,11 +10,12 @@ function Registro() {
     const [manzana, setManzana] = useState('')
     const [villa, setVilla] = useState('')
     const { setUsuario } = useContext(AuthContext)
+    const { mostrarToast } = useToast()
     const navigate = useNavigate()
 
     async function handleSubmit(e) {
         e.preventDefault()
-        
+
         const respuesta = await fetch('http://localhost:3000/api/auth/registrar', {
             method: 'POST',
             headers: {
@@ -22,9 +24,14 @@ function Registro() {
             body: JSON.stringify({ nombre, email, password, manzana, villa })
         })
         const datos = await respuesta.json()
-        console.log(datos)
+
+        if (!respuesta.ok) {
+            mostrarToast(datos.mensaje || 'No se pudo completar el registro', 'error')
+            return
+        }
+
         localStorage.setItem('token', datos.token)
-        
+
         const respuestaPerfil = await fetch('http://localhost:3000/api/auth/perfil', {
             headers: {
                 'Authorization': `Bearer ${datos.token}`
@@ -36,6 +43,7 @@ function Registro() {
         setPassword('')
         setManzana('')
         setVilla('')
+        mostrarToast('Cuenta creada correctamente', 'exito')
 
         navigate('/')
     }

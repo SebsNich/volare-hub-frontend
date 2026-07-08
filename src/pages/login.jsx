@@ -1,16 +1,18 @@
 import { useState, useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import { useNavigate } from 'react-router-dom'
 
 function Login() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const { setUsuario } = useContext(AuthContext)
+    const { mostrarToast } = useToast()
     const navigate = useNavigate()
 
     async function handleSubmit(e) {
         e.preventDefault()
-        
+
         const respuesta = await fetch('http://localhost:3000/api/auth/login', {
             method: 'POST',
             headers: {
@@ -19,8 +21,14 @@ function Login() {
             body: JSON.stringify({ email, password })
         })
         const datos = await respuesta.json()
+
+        if (!respuesta.ok) {
+            mostrarToast(datos.mensaje || 'No se pudo iniciar sesión', 'error')
+            return
+        }
+
         localStorage.setItem('token', datos.token)
-        
+
         const respuestaPerfil = await fetch('http://localhost:3000/api/auth/perfil', {
             headers: {
                 'Authorization': `Bearer ${datos.token}`
@@ -30,6 +38,7 @@ function Login() {
         setUsuario(datosPerfil.user)
         setEmail('')
         setPassword('')
+        mostrarToast('Bienvenido de nuevo', 'exito')
 
         navigate('/')
     }

@@ -1,5 +1,6 @@
 import { useContext, useState } from 'react'
 import { AuthContext } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import { Link } from 'react-router-dom'
 import { HiOutlineHome, HiOutlineArrowRightOnRectangle } from 'react-icons/hi2'
 import AvatarUsuario from './AvatarUsuario'
@@ -7,7 +8,13 @@ import ModalAuth from './ModalAuth'
 
 function Navbar() {
     const { usuario, logout } = useContext(AuthContext)
+    const { mostrarToast } = useToast()
     const [modalAuthAbierto, setModalAuthAbierto] = useState(false)
+
+    function manejarLogout() {
+        logout()
+        mostrarToast('Sesión cerrada', 'exito')
+    }
 
     return (
         <nav className="sticky top-0 z-50 bg-white text-volare-azul shadow-lg">
@@ -40,8 +47,7 @@ function Navbar() {
                     )}
                     {usuario && (
                         <button
-                            onClick={logout}
-                            title="Cerrar sesión"
+                            onClick={manejarLogout}
                             aria-label="Cerrar sesión"
                             className="w-9 h-9 flex items-center justify-center rounded-full bg-volare-azul text-white hover:opacity-90 transition"
                         >

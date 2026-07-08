@@ -1,11 +1,13 @@
 import { useContext, useState } from 'react'
 import { AuthContext } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import ArchivoAdjunto from './ArchivoAdjunto'
 import Tooltip from './Tooltip'
 import { HiOutlineMapPin, HiMapPin, HiOutlinePhoto, HiOutlineDocumentText, HiPlusSmall, HiXMark } from 'react-icons/hi2'
 
 function FormularioPost({ origen = 'feed', onPublicado, enModal = false }) {
     const { usuario } = useContext(AuthContext)
+    const { mostrarToast } = useToast()
     const [titulo, setTitulo] = useState('')
     const [descripcion, setDescripcion] = useState('')
     const [tipo, setTipo] = useState('')
@@ -66,10 +68,11 @@ function FormularioPost({ origen = 'feed', onPublicado, enModal = false }) {
             setArchivos([])
             setAnclado(false)
             setAncladoPerfil(false)
+            mostrarToast('Publicación creada correctamente', 'exito')
             onPublicado?.()
         } else {
             const datos = await respuesta.json()
-            console.error('Error al crear post:', datos)
+            mostrarToast(datos.error || 'No se pudo crear la publicación', 'error')
         }
     }
 

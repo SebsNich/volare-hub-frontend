@@ -3,6 +3,7 @@ import Feed from './pages/Feed'
 import Login from './pages/Login'
 import Registro from './pages/registro'
 import { AuthProvider } from './context/AuthContext'
+import { ToastProvider } from './context/ToastContext'
 import Navbar from './components/Navbar'
 import PerfilPublico from './pages/PerfilPublico'
 import Admin from './pages/Admin'
@@ -13,6 +14,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <ToastProvider>
           <div className="min-h-screen bg-gray-50">
             <Navbar />
             <Routes>
@@ -28,6 +30,7 @@ function App() {
             </Routes>
             <BotonSugerencia />
           </div>
+        </ToastProvider>
       </BrowserRouter>
     </AuthProvider>
   )
