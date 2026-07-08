@@ -68,10 +68,7 @@ function ModalAuth({ onClose }) {
     }
 
     return (
-        <Modal
-            onClose={onClose}
-            className={esLogin ? 'bg-gradient-to-br from-white to-blue-50' : 'bg-gradient-to-br from-white to-green-50'}
-        >
+        <Modal onClose={onClose}>
             <div
                 key={modo}
                 className={esLogin ? 'flex flex-col gap-4 animate-volare-barrido-izquierda' : 'flex flex-col gap-4 animate-volare-barrido-derecha'}
