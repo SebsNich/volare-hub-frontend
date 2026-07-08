@@ -9,14 +9,8 @@ import ArchivoAdjunto from './ArchivoAdjunto'
 import Tooltip from './Tooltip'
 import AvatarUsuario from './AvatarUsuario'
 import obtenerNombreArchivo from "../utilities/helpers"
+import { tipoColores } from "../utilities/constantes"
 import { useToast } from '../context/ToastContext'
-
-const tipoColores = {
-    AVISO: 'bg-volare-naranja',
-    OBRA: 'bg-volare-azul',
-    COMUNICADO: 'bg-volare-morado',
-    EMPRENDIMIENTO: 'bg-volare-verde',
-}
 
 function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
     const { mostrarToast } = useToast()

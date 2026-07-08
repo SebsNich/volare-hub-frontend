@@ -6,17 +6,10 @@ import { useToast } from '../context/ToastContext'
 import Modal from '../components/Modal'
 import FormularioPost from '../components/FormularioPost'
 import AvatarUsuario from '../components/AvatarUsuario'
+import FiltroTipoPublicacion, { obtenerMensajeVacio } from '../components/FiltroTipoPublicacion'
 import { HiOutlinePhone, HiOutlineMapPin, HiOutlineEye } from 'react-icons/hi2'
 import { FaFacebook, FaInstagram } from 'react-icons/fa6'
 import { formatearMesAnio } from '../utilities/helpers'
-
-const TIPOS_FILTRO = [
-    { value: 'TODOS', label: 'Todos' },
-    { value: 'OBRA', label: 'Obras' },
-    { value: 'AVISO', label: 'Avisos' },
-    { value: 'COMUNICADO', label: 'Comunicados' },
-    { value: 'EMPRENDIMIENTO', label: 'Emprendimientos' },
-]
 
 function Feed() {
     const [posts, setPosts] = useState([])
@@ -154,6 +147,11 @@ function Feed() {
 
                     <div className="flex flex-col gap-4">
                         {postsFiltrados.map(post => <PostCard key={post.id} post={post} usuario={usuario} eliminar={eliminarPost} onEditar={cargarPosts} contexto="feed" />)}
+                        {postsFiltrados.length === 0 && (
+                            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-10 text-center text-gray-400">
+                                {obtenerMensajeVacio(filtroTipo)}
+                            </div>
+                        )}
                     </div>
 
                     {postAEliminar && (
@@ -173,21 +171,7 @@ function Feed() {
                     )}
                 </div>
 
-                <aside className="w-full md:sticky md:top-24 bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-3">
-                    <h2 className="text-lg font-semibold text-volare-azul">Filtrar por tipo</h2>
-                    <div className="flex flex-col gap-2">
-                        {TIPOS_FILTRO.map(({ value, label }) => (
-                            <button
-                                key={value}
-                                type="button"
-                                onClick={() => setFiltroTipo(value)}
-                                className={`px-3 py-2 rounded-lg text-sm font-semibold text-left transition ${filtroTipo === value ? 'bg-volare-azul text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                            >
-                                {label}
-                            </button>
-                        ))}
-                    </div>
-                </aside>
+                <FiltroTipoPublicacion filtroTipo={filtroTipo} setFiltroTipo={setFiltroTipo} />
             </div>
         </div>
     )

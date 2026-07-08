@@ -9,6 +9,7 @@ import Modal from '../components/Modal'
 import FormularioPost from '../components/FormularioPost'
 import AvatarUsuario from '../components/AvatarUsuario'
 import Tooltip from '../components/Tooltip'
+import FiltroTipoPublicacion, { obtenerMensajeVacio } from '../components/FiltroTipoPublicacion'
 import { HiXMark, HiOutlineEye } from 'react-icons/hi2'
 
 function PerfilPublico() {
@@ -29,6 +30,7 @@ function PerfilPublico() {
     const [passwordParaEmail, setPasswordParaEmail] = useState('')
     const [modalSeguridadAbierto, setModalSeguridadAbierto] = useState(false)
     const [postAEliminar, setPostAEliminar] = useState(null)
+    const [filtroTipo, setFiltroTipo] = useState('TODOS')
 
     const { usuario: usuarioLogueado, setUsuario: setUsuarioLogueado } = useContext(AuthContext)
     const { mostrarToast } = useToast()
@@ -174,11 +176,13 @@ function PerfilPublico() {
     }
 
     const esPropioPerfil = usuarioLogueado?.id === usuario?.id
+    const esAdmin = usuarioLogueado?.rol === 'ADMIN'
     const fotoAMostrarEnPreview = eliminarFoto ? null : (fotoPreview || usuario?.foto)
+    const postsFiltrados = filtroTipo === 'TODOS' ? posts : posts.filter(post => post.tipo === filtroTipo)
 
     return (
         <div className="max-w-5xl mx-auto px-4 py-8">
-            <div className="flex flex-col md:grid md:grid-cols-[280px_1fr] gap-6 items-start">
+            <div className={`flex flex-col md:grid ${esAdmin ? 'md:grid-cols-[280px_1fr_240px]' : 'md:grid-cols-[280px_1fr]'} gap-6 items-start`}>
                 {usuario && (
                     <div className="w-full md:sticky md:top-24 flex flex-col gap-6">
                         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4">
@@ -231,8 +235,17 @@ function PerfilPublico() {
                 )}
 
                 <div className="flex flex-col gap-4 w-full">
-                    {posts.map(post => <PostCard key={post.id} post={post} usuario={usuarioLogueado} eliminar={eliminarPost} onEditar={cargarPerfilPublico} contexto="perfil" />)}
+                    {postsFiltrados.map(post => <PostCard key={post.id} post={post} usuario={usuarioLogueado} eliminar={eliminarPost} onEditar={cargarPerfilPublico} contexto="perfil" />)}
+                    {postsFiltrados.length === 0 && (
+                        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-10 text-center text-gray-400">
+                            {obtenerMensajeVacio(filtroTipo)}
+                        </div>
+                    )}
                 </div>
+
+                {esAdmin && (
+                    <FiltroTipoPublicacion filtroTipo={filtroTipo} setFiltroTipo={setFiltroTipo} />
+                )}
             </div>
 
             {usuario && (
