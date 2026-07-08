@@ -9,10 +9,21 @@ import { HiOutlinePhone, HiOutlineMapPin, HiOutlineEye } from 'react-icons/hi2'
 import { FaFacebook, FaInstagram } from 'react-icons/fa6'
 import { formatearMesAnio } from '../utilities/helpers'
 
+const TIPOS_FILTRO = [
+    { value: 'TODOS', label: 'Todos' },
+    { value: 'OBRA', label: 'Obras' },
+    { value: 'AVISO', label: 'Avisos' },
+    { value: 'COMUNICADO', label: 'Comunicados' },
+    { value: 'EMPRENDIMIENTO', label: 'Emprendimientos' },
+]
+
 function Feed() {
     const [posts, setPosts] = useState([])
     const { usuario } = useContext(AuthContext)
     const [postAEliminar, setPostAEliminar] = useState(null)
+    const [filtroTipo, setFiltroTipo] = useState('TODOS')
+
+    const postsFiltrados = filtroTipo === 'TODOS' ? posts : posts.filter(post => post.tipo === filtroTipo)
 
     async function cargarPosts(){
         const respuesta = await fetch('http://localhost:3000/api/posts')
@@ -44,11 +55,11 @@ function Feed() {
 }, [])
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4 py-8">
             {usuario && (
                 <h1 className="text-2xl font-bold text-volare-azul mb-6">Hola, {usuario.nombre}</h1>
             )}
-            <div className="flex flex-col md:grid md:grid-cols-[280px_1fr] gap-6 items-start">
+            <div className="flex flex-col md:grid md:grid-cols-[280px_1fr_240px] gap-6 items-start">
                 <aside className="w-full md:sticky md:top-24 bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4">
                     {usuario ? (
                         <>
@@ -137,7 +148,7 @@ function Feed() {
                     )}
 
                     <div className="flex flex-col gap-4">
-                        {posts.map(post => <PostCard key={post.id} post={post} usuario={usuario} eliminar={eliminarPost} onEditar={cargarPosts} contexto="feed" />)}
+                        {postsFiltrados.map(post => <PostCard key={post.id} post={post} usuario={usuario} eliminar={eliminarPost} onEditar={cargarPosts} contexto="feed" />)}
                     </div>
 
                     {postAEliminar && (
@@ -156,6 +167,22 @@ function Feed() {
                         </Modal>
                     )}
                 </div>
+
+                <aside className="w-full md:sticky md:top-24 bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-3">
+                    <h2 className="text-lg font-semibold text-volare-azul">Filtrar por tipo</h2>
+                    <div className="flex flex-col gap-2">
+                        {TIPOS_FILTRO.map(({ value, label }) => (
+                            <button
+                                key={value}
+                                type="button"
+                                onClick={() => setFiltroTipo(value)}
+                                className={`px-3 py-2 rounded-lg text-sm font-semibold text-left transition ${filtroTipo === value ? 'bg-volare-azul text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                </aside>
             </div>
         </div>
     )
