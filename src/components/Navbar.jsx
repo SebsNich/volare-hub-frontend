@@ -2,9 +2,10 @@ import { useContext, useState } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { Link } from 'react-router-dom'
-import { HiOutlineHome, HiOutlineArrowRightOnRectangle } from 'react-icons/hi2'
+import { HiOutlineHome, HiOutlineArrowRightOnRectangle, HiOutlineCog6Tooth } from 'react-icons/hi2'
 import AvatarUsuario from './AvatarUsuario'
 import ModalAuth from './ModalAuth'
+import Tooltip from './Tooltip'
 
 function Navbar() {
     const { usuario, logout } = useContext(AuthContext)
@@ -25,17 +26,26 @@ function Navbar() {
                     <span className="hidden sm:inline text-xl font-bold tracking-wide text-volare-azul truncate">Volare Hub</span>
                 </Link>
                 <div className="flex items-center gap-3 sm:gap-5">
-                    <Link to="/" className="text-gray-600 hover:text-volare-azul transition" aria-label="Inicio">
-                        <HiOutlineHome size={22} />
-                    </Link>
+                    <Tooltip texto="Inicio" posicion="abajo">
+                        <Link to="/" className="text-gray-600 hover:text-volare-azul transition" aria-label="Inicio">
+                            <HiOutlineHome size={22} />
+                        </Link>
+                    </Tooltip>
                     {usuario && usuario.rol === 'ADMIN' && (
-                        <Link to="/admin" className="hover:text-volare-azul transition">Panel Admin</Link>
+                        <Tooltip texto="Panel de administración" posicion="abajo">
+                            <Link to="/admin" className="flex items-center gap-1.5 hover:text-volare-azul transition">
+                                <HiOutlineCog6Tooth size={20} />
+                                <span className="hidden sm:inline">Panel Admin</span>
+                            </Link>
+                        </Tooltip>
                     )}
                     {usuario && (
-                        <Link to={`/perfil/${usuario.id}`} className="flex items-center gap-2 hover:text-volare-azul transition">
-                            <AvatarUsuario foto={usuario.foto} size={36} />
-                            <span className="hidden sm:inline font-medium">{usuario.nombre}</span>
-                        </Link>
+                        <Tooltip texto="Mi perfil" posicion="abajo">
+                            <Link to={`/perfil/${usuario.id}`} className="flex items-center gap-2 hover:text-volare-azul transition">
+                                <AvatarUsuario foto={usuario.foto} size={36} />
+                                <span className="hidden sm:inline font-medium">{usuario.nombre}</span>
+                            </Link>
+                        </Tooltip>
                     )}
                     {!usuario && (
                         <button
@@ -46,13 +56,15 @@ function Navbar() {
                         </button>
                     )}
                     {usuario && (
-                        <button
-                            onClick={manejarLogout}
-                            aria-label="Cerrar sesión"
-                            className="w-9 h-9 flex items-center justify-center rounded-full bg-volare-azul text-white hover:opacity-90 transition"
-                        >
-                            <HiOutlineArrowRightOnRectangle size={20} />
-                        </button>
+                        <Tooltip texto="Cerrar sesión" posicion="abajo">
+                            <button
+                                onClick={manejarLogout}
+                                aria-label="Cerrar sesión"
+                                className="w-9 h-9 flex items-center justify-center rounded-full bg-volare-azul text-white hover:opacity-90 transition"
+                            >
+                                <HiOutlineArrowRightOnRectangle size={20} />
+                            </button>
+                        </Tooltip>
                     )}
                 </div>
             </div>
