@@ -11,6 +11,7 @@ import AvatarUsuario from '../components/AvatarUsuario'
 import Tooltip from '../components/Tooltip'
 import FiltroTipoPublicacion, { obtenerMensajeVacio } from '../components/FiltroTipoPublicacion'
 import { HiXMark, HiOutlineEye } from 'react-icons/hi2'
+import { API_URL } from '../config/api'
 
 function PerfilPublico() {
     const { id } = useParams()
@@ -36,7 +37,7 @@ function PerfilPublico() {
     const { mostrarToast } = useToast()
 
     const cargarPerfilPublico = useCallback(async () => {
-        const respuesta = await fetch(`http://localhost:3000/api/usuarios/${id}`)
+        const respuesta = await fetch(`${API_URL}/api/usuarios/${id}`)
         const datos = await respuesta.json()
         setUsuario(datos.user)
         setNombre(datos.user.nombre)
@@ -49,7 +50,7 @@ function PerfilPublico() {
     }
 
     async function confirmarEliminar() {
-        const respuesta = await fetch(`http://localhost:3000/api/posts/${postAEliminar}`, {
+        const respuesta = await fetch(`${API_URL}/api/posts/${postAEliminar}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -103,7 +104,7 @@ function PerfilPublico() {
         formData.append('nombre', nombre)
         formData.append('bio', bio)
 
-        const respuesta = await fetch(`http://localhost:3000/api/auth/editar-perfil`, {
+        const respuesta = await fetch(`${API_URL}/api/auth/editar-perfil`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -133,7 +134,7 @@ function PerfilPublico() {
         return
     }
 
-    const respuesta = await fetch('http://localhost:3000/api/auth/cambiar-password', {
+    const respuesta = await fetch(`${API_URL}/api/auth/cambiar-password`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -156,7 +157,7 @@ function PerfilPublico() {
     async function handleSubmitEmail(e) {
         e.preventDefault()
 
-        const respuesta = await fetch('http://localhost:3000/api/auth/cambiar-email', {
+        const respuesta = await fetch(`${API_URL}/api/auth/cambiar-email`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

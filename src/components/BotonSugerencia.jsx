@@ -4,6 +4,7 @@ import Modal from './Modal'
 import Tooltip from './Tooltip'
 import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
+import { API_URL } from '../config/api'
 
 function BotonSugerencia() {
     const { usuario } = useContext(AuthContext)
@@ -19,7 +20,7 @@ function BotonSugerencia() {
 
     async function enviarSugerencia(e){
         e.preventDefault()
-        const respuesta = await fetch('http://localhost:3000/api/buzon', {
+        const respuesta = await fetch(`${API_URL}/api/buzon`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

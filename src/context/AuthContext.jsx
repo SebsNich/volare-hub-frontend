@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { API_URL } from '../config/api'
 
 const AuthContext = createContext()
 
@@ -13,7 +14,7 @@ function AuthProvider({ children }) {
             const token = localStorage.getItem('token')
 
             if (token) {
-                const peticion = await fetch('http://localhost:3000/api/auth/perfil', {
+                const peticion = await fetch(`${API_URL}/api/auth/perfil`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`

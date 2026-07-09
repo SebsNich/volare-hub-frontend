@@ -11,6 +11,7 @@ import AvatarUsuario from './AvatarUsuario'
 import obtenerNombreArchivo from "../utilities/helpers"
 import { tipoColores } from "../utilities/constantes"
 import { useToast } from '../context/ToastContext'
+import { API_URL } from '../config/api'
 
 function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
     const { mostrarToast } = useToast()
@@ -49,7 +50,7 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
 
     async function toggleAnclado() {
         const endpoint = contexto === 'perfil' ? 'anclar-perfil' : 'anclar'
-        const respuesta = await fetch(`http://localhost:3000/api/posts/${post.id}/${endpoint}`, {
+        const respuesta = await fetch(`${API_URL}/api/posts/${post.id}/${endpoint}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -86,7 +87,7 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
             formData.append('archivos', archivo)
         })
         
-        const respuesta = await fetch(`http://localhost:3000/api/posts/${post.id}`, {
+        const respuesta = await fetch(`${API_URL}/api/posts/${post.id}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`

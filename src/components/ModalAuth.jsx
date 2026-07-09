@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import Modal from './Modal'
+import { API_URL } from '../config/api'
 
 function ModalAuth({ onClose }) {
     const [modo, setModo] = useState('login')
@@ -25,7 +26,7 @@ function ModalAuth({ onClose }) {
 
     async function iniciarSesionConToken(token, mensajeExito) {
         localStorage.setItem('token', token)
-        const respuestaPerfil = await fetch('http://localhost:3000/api/auth/perfil', {
+        const respuestaPerfil = await fetch(`${API_URL}/api/auth/perfil`, {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         const datosPerfil = await respuestaPerfil.json()
@@ -39,7 +40,7 @@ function ModalAuth({ onClose }) {
         e.preventDefault()
         setError('')
 
-        const respuesta = await fetch('http://localhost:3000/api/auth/login', {
+        const respuesta = await fetch(`${API_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -59,7 +60,7 @@ function ModalAuth({ onClose }) {
         e.preventDefault()
         setError('')
 
-        const respuesta = await fetch('http://localhost:3000/api/auth/registrar', {
+        const respuesta = await fetch(`${API_URL}/api/auth/registrar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ nombre, email: emailRegistro, password: passwordRegistro, manzana, villa })

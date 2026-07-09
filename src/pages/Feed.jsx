@@ -10,6 +10,7 @@ import FiltroTipoPublicacion, { obtenerMensajeVacio } from '../components/Filtro
 import { HiOutlinePhone, HiOutlineMapPin, HiOutlineEye } from 'react-icons/hi2'
 import { FaFacebook, FaInstagram } from 'react-icons/fa6'
 import { formatearMesAnio } from '../utilities/helpers'
+import { API_URL } from '../config/api'
 
 function Feed() {
     const [posts, setPosts] = useState([])
@@ -21,7 +22,7 @@ function Feed() {
     const postsFiltrados = filtroTipo === 'TODOS' ? posts : posts.filter(post => post.tipo === filtroTipo)
 
     async function cargarPosts(){
-        const respuesta = await fetch('http://localhost:3000/api/posts')
+        const respuesta = await fetch(`${API_URL}/api/posts`)
         const datos = await respuesta.json()
         setPosts(datos)
     }
@@ -31,7 +32,7 @@ function Feed() {
     }
 
     async function confirmarEliminar() {
-        const respuesta = await fetch(`http://localhost:3000/api/posts/${postAEliminar}`, {
+        const respuesta = await fetch(`${API_URL}/api/posts/${postAEliminar}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`

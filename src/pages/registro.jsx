@@ -2,6 +2,7 @@ import { useState, useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { useNavigate } from 'react-router-dom'
+import { API_URL } from '../config/api'
 
 function Registro() {
     const [nombre, setNombre] = useState('')
@@ -16,7 +17,7 @@ function Registro() {
     async function handleSubmit(e) {
         e.preventDefault()
 
-        const respuesta = await fetch('http://localhost:3000/api/auth/registrar', {
+        const respuesta = await fetch(`${API_URL}/api/auth/registrar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -32,7 +33,7 @@ function Registro() {
 
         localStorage.setItem('token', datos.token)
 
-        const respuestaPerfil = await fetch('http://localhost:3000/api/auth/perfil', {
+        const respuestaPerfil = await fetch(`${API_URL}/api/auth/perfil`, {
             headers: {
                 'Authorization': `Bearer ${datos.token}`
             }

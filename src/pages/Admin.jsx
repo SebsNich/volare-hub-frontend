@@ -13,6 +13,7 @@ import {
 } from 'react-icons/hi2'
 import { normalizarTexto } from '../utilities/helpers'
 import { useToast } from '../context/ToastContext'
+import { API_URL } from '../config/api'
 
 const SECCIONES = [
     { id: 'resumen', label: 'Resumen', icono: HiOutlineChartBar },
@@ -83,7 +84,7 @@ function Admin() {
     const [paginaSugerencias, setPaginaSugerencias] = useState(1)
 
     async function cargarResumen() {
-        const respuesta = await fetch('http://localhost:3000/api/admin/resumen', {
+        const respuesta = await fetch(`${API_URL}/api/admin/resumen`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -93,7 +94,7 @@ function Admin() {
     }
 
     async function cargarSugerencias() {
-        const respuesta = await fetch('http://localhost:3000/api/buzon', {
+        const respuesta = await fetch(`${API_URL}/api/buzon`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -103,7 +104,7 @@ function Admin() {
     }
 
     async function marcarLeida(id) {
-        const respuesta = await fetch(`http://localhost:3000/api/buzon/${id}/leida`, {
+        const respuesta = await fetch(`${API_URL}/api/buzon/${id}/leida`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -119,7 +120,7 @@ function Admin() {
     }
 
     async function cargarUsuarios() {
-        const respuesta = await fetch('http://localhost:3000/api/usuarios', {
+        const respuesta = await fetch(`${API_URL}/api/usuarios`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -136,7 +137,7 @@ function Admin() {
     }, [])
 
     async function cambiarEstado(usuarioId, activoActual) {
-        const respuesta = await fetch(`http://localhost:3000/api/usuarios/${usuarioId}/estado`, {
+        const respuesta = await fetch(`${API_URL}/api/usuarios/${usuarioId}/estado`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -156,7 +157,7 @@ function Admin() {
     async function crearAdmin(e) {
         e.preventDefault()
 
-        const respuesta = await fetch('http://localhost:3000/api/usuarios/crear-admin', {
+        const respuesta = await fetch(`${API_URL}/api/usuarios/crear-admin`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

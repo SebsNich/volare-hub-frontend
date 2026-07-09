@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext'
 import ArchivoAdjunto from './ArchivoAdjunto'
 import Tooltip from './Tooltip'
 import { HiOutlineMapPin, HiMapPin, HiOutlinePhoto, HiOutlineDocumentText, HiPlusSmall, HiXMark } from 'react-icons/hi2'
+import { API_URL } from '../config/api'
 
 function FormularioPost({ origen = 'feed', onPublicado, enModal = false }) {
     const { usuario } = useContext(AuthContext)
@@ -52,7 +53,7 @@ function FormularioPost({ origen = 'feed', onPublicado, enModal = false }) {
             formData.append('archivos', archivo)
         })
 
-        const respuesta = await fetch('http://localhost:3000/api/posts', {
+        const respuesta = await fetch(`${API_URL}/api/posts`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
