@@ -29,6 +29,12 @@ function ModalAuth({ onClose }) {
         const respuestaPerfil = await fetch(`${API_URL}/api/auth/perfil`, {
             headers: { 'Authorization': `Bearer ${token}` }
         })
+
+        if (!respuestaPerfil.ok) {
+            mostrarToast('No se pudo cargar tu perfil', 'error')
+            return
+        }
+
         const datosPerfil = await respuestaPerfil.json()
         setUsuario(datosPerfil.user)
         mostrarToast(mensajeExito, 'exito')

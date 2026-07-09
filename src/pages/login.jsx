@@ -35,6 +35,12 @@ function Login() {
                 'Authorization': `Bearer ${datos.token}`
             }
         })
+
+        if (!respuestaPerfil.ok) {
+            mostrarToast('Sesión iniciada, pero no se pudo cargar tu perfil', 'error')
+            return
+        }
+
         const datosPerfil = await respuestaPerfil.json()
         setUsuario(datosPerfil.user)
         setEmail('')

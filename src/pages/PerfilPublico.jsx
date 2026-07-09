@@ -130,7 +130,7 @@ function PerfilPublico() {
     e.preventDefault()
 
     if (passwordNueva !== confirmarPassword) {
-        alert('Las contraseñas no coinciden')
+        mostrarToast('Las contraseñas no coinciden', 'error')
         return
     }
 

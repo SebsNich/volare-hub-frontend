@@ -38,6 +38,12 @@ function Registro() {
                 'Authorization': `Bearer ${datos.token}`
             }
         })
+
+        if (!respuestaPerfil.ok) {
+            mostrarToast('Cuenta creada, pero no se pudo cargar tu perfil', 'error')
+            return
+        }
+
         const datosPerfil = await respuestaPerfil.json()
         setUsuario(datosPerfil.user)
         setEmail('')

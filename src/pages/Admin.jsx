@@ -35,6 +35,12 @@ const TIPOS_SUGERENCIA = [
     { value: 'OTRO', label: 'Otro' },
 ]
 
+const ESTILOS_ESTADO_SUGERENCIA = {
+    SIN_LEER: { color: 'text-volare-naranja', punto: 'bg-volare-naranja', label: 'No leído' },
+    LEIDA: { color: 'text-volare-verde', punto: 'bg-volare-verde', label: 'Leído' },
+    ARCHIVADA: { color: 'text-gray-400', punto: 'bg-gray-400', label: 'Archivada' },
+}
+
 const TAMANO_PAGINA = 10
 
 function ControlesPaginacion({ paginaActual, totalPaginas, onAnterior, onSiguiente }) {
@@ -81,6 +87,7 @@ function Admin() {
 
     const [busquedaSugerencias, setBusquedaSugerencias] = useState('')
     const [filtroTipoSugerencia, setFiltroTipoSugerencia] = useState('TODOS')
+    const [mostrarArchivadas, setMostrarArchivadas] = useState(false)
     const [paginaSugerencias, setPaginaSugerencias] = useState(1)
 
     async function cargarResumen() {
@@ -116,6 +123,22 @@ function Admin() {
             setSugerenciaSeleccionada(null)
         } else {
             mostrarToast('No se pudo marcar la sugerencia como leída', 'error')
+        }
+    }
+
+    async function archivarSugerencia(id) {
+        const respuesta = await fetch(`${API_URL}/api/buzon/${id}/archivar`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })
+        if (respuesta.ok) {
+            mostrarToast('Sugerencia archivada', 'exito')
+            cargarSugerencias()
+            setSugerenciaSeleccionada(null)
+        } else {
+            mostrarToast('No se pudo archivar la sugerencia', 'error')
         }
     }
 
@@ -205,7 +228,8 @@ function Admin() {
         const coincideNombre = busquedaSugerencias === ''
             || (sugerencia.nombre && normalizarTexto(sugerencia.nombre).includes(normalizarTexto(busquedaSugerencias)))
         const coincideTipo = filtroTipoSugerencia === 'TODOS' || sugerencia.tipo === filtroTipoSugerencia
-        return coincideNombre && coincideTipo
+        const coincideArchivado = mostrarArchivadas || sugerencia.estado !== 'ARCHIVADA'
+        return coincideNombre && coincideTipo && coincideArchivado
     })
     const totalPaginasSugerencias = Math.max(1, Math.ceil(sugerenciasFiltradas.length / TAMANO_PAGINA))
     const paginaSugerenciasEfectiva = Math.min(paginaSugerencias, totalPaginasSugerencias)
@@ -417,6 +441,15 @@ function Admin() {
                                         <option key={value} value={value}>{label}</option>
                                     ))}
                                 </select>
+                                <label className="flex items-center gap-2 text-sm text-gray-600 whitespace-nowrap px-1">
+                                    <input
+                                        type="checkbox"
+                                        checked={mostrarArchivadas}
+                                        onChange={(e) => { setMostrarArchivadas(e.target.checked); setPaginaSugerencias(1) }}
+                                        className="rounded border-gray-300 text-volare-azul focus:ring-volare-azul"
+                                    />
+                                    Ver archivadas
+                                </label>
                             </div>
 
                             <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-x-auto">
@@ -447,9 +480,9 @@ function Admin() {
                                                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{sugerencia.tipo}</td>
                                                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{new Date(sugerencia.creadoEn).toLocaleDateString()}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
-                                                    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${sugerencia.estado === 'SIN_LEER' ? 'text-volare-naranja' : 'text-volare-verde'}`}>
-                                                        <span className={`w-2 h-2 rounded-full ${sugerencia.estado === 'SIN_LEER' ? 'bg-volare-naranja' : 'bg-volare-verde'}`} />
-                                                        {sugerencia.estado === 'SIN_LEER' ? 'No leído' : 'Leído'}
+                                                    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${ESTILOS_ESTADO_SUGERENCIA[sugerencia.estado].color}`}>
+                                                        <span className={`w-2 h-2 rounded-full ${ESTILOS_ESTADO_SUGERENCIA[sugerencia.estado].punto}`} />
+                                                        {ESTILOS_ESTADO_SUGERENCIA[sugerencia.estado].label}
                                                     </span>
                                                 </td>
                                             </tr>
@@ -487,16 +520,28 @@ function Admin() {
                         {sugerenciaSeleccionada.tipo}
                     </span>
                     <p className="text-gray-600">{sugerenciaSeleccionada.mensaje}</p>
-                    <p className="text-xs text-gray-400">{sugerenciaSeleccionada.estado}</p>
+                    <p className={`text-xs font-semibold ${ESTILOS_ESTADO_SUGERENCIA[sugerenciaSeleccionada.estado].color}`}>
+                        {ESTILOS_ESTADO_SUGERENCIA[sugerenciaSeleccionada.estado].label}
+                    </p>
                     <p className="text-xs text-gray-400">{new Date(sugerenciaSeleccionada.creadoEn).toLocaleDateString()}</p>
-                    {sugerenciaSeleccionada.estado === 'SIN_LEER' && (
-                        <button
-                            onClick={() => marcarLeida(sugerenciaSeleccionada.id)}
-                            className="bg-volare-verde text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition self-start"
-                        >
-                            Marcar como leída
-                        </button>
-                    )}
+                    <div className="flex gap-3 self-start">
+                        {sugerenciaSeleccionada.estado === 'SIN_LEER' && (
+                            <button
+                                onClick={() => marcarLeida(sugerenciaSeleccionada.id)}
+                                className="bg-volare-verde text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                            >
+                                Marcar como leída
+                            </button>
+                        )}
+                        {sugerenciaSeleccionada.estado !== 'ARCHIVADA' && (
+                            <button
+                                onClick={() => archivarSugerencia(sugerenciaSeleccionada.id)}
+                                className="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                            >
+                                Archivar
+                            </button>
+                        )}
+                    </div>
                 </Modal>
             )}
         </div>
