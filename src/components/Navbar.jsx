@@ -1,8 +1,8 @@
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { Link } from 'react-router-dom'
-import { HiOutlineHome, HiOutlineArrowRightOnRectangle, HiOutlineCog6Tooth } from 'react-icons/hi2'
+import { HiOutlineHome, HiOutlineArrowRightOnRectangle, HiOutlineCog6Tooth, HiOutlineWrenchScrewdriver, HiChevronDown } from 'react-icons/hi2'
 import AvatarUsuario from './AvatarUsuario'
 import ModalAuth from './ModalAuth'
 import Tooltip from './Tooltip'
@@ -11,11 +11,23 @@ function Navbar() {
     const { usuario, logout } = useContext(AuthContext)
     const { mostrarToast } = useToast()
     const [modalAuthAbierto, setModalAuthAbierto] = useState(false)
+    const [serviciosAbierto, setServiciosAbierto] = useState(false)
+    const serviciosRef = useRef(null)
 
     function manejarLogout() {
         logout()
         mostrarToast('Sesión cerrada', 'exito')
     }
+
+    useEffect(() => {
+        function manejarClickFuera(e) {
+            if (serviciosRef.current && !serviciosRef.current.contains(e.target)) {
+                setServiciosAbierto(false)
+            }
+        }
+        document.addEventListener('mousedown', manejarClickFuera)
+        return () => document.removeEventListener('mousedown', manejarClickFuera)
+    }, [])
 
     return (
         <nav className="sticky top-0 z-50 bg-white text-volare-azul shadow-lg">
@@ -38,6 +50,31 @@ function Navbar() {
                                 <span className="hidden sm:inline">Panel Admin</span>
                             </Link>
                         </Tooltip>
+                    )}
+                    {usuario && usuario.rol === 'RESIDENTE' && (
+                        <div className="relative" ref={serviciosRef}>
+                            <button
+                                onClick={() => setServiciosAbierto(!serviciosAbierto)}
+                                className="flex items-center gap-1.5 text-gray-600 hover:text-volare-azul transition"
+                                aria-haspopup="true"
+                                aria-expanded={serviciosAbierto}
+                            >
+                                <HiOutlineWrenchScrewdriver size={20} />
+                                <span className="hidden sm:inline">Servicios</span>
+                                <HiChevronDown size={14} className={`transition-transform ${serviciosAbierto ? 'rotate-180' : ''}`} />
+                            </button>
+                            {serviciosAbierto && (
+                                <div className="absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
+                                    <Link
+                                        to="/reservas"
+                                        onClick={() => setServiciosAbierto(false)}
+                                        className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-volare-azul transition"
+                                    >
+                                        Reservas
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
                     )}
                     {usuario && (
                         <Tooltip texto="Mi perfil" posicion="abajo">

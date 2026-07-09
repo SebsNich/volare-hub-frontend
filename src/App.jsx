@@ -9,6 +9,9 @@ import PerfilPublico from './pages/PerfilPublico'
 import Admin from './pages/Admin'
 import RutaProtegida from './components/RutaProtegida'
 import BotonSugerencia from './components/BotonSugerencia'
+import Reservas from './pages/Reservas'
+import ReservaCabanas from './pages/ReservaCabanas'
+import ReservaCasaClub from './pages/ReservaCasaClub'
 
 function App() {
   return (
@@ -25,6 +28,21 @@ function App() {
                 <Route path="/admin" element={
                   <RutaProtegida rolRequerido="ADMIN">
                       <Admin />
+                  </RutaProtegida>
+              } />
+              <Route path="/reservas" element={
+                  <RutaProtegida rolRequerido="RESIDENTE">
+                      <Reservas />
+                  </RutaProtegida>
+              } />
+              <Route path="/reservas/cabanas" element={
+                  <RutaProtegida rolRequerido="RESIDENTE">
+                      <ReservaCabanas />
+                  </RutaProtegida>
+              } />
+              <Route path="/reservas/casa-club" element={
+                  <RutaProtegida rolRequerido="RESIDENTE">
+                      <ReservaCasaClub />
                   </RutaProtegida>
               } />
             </Routes>
