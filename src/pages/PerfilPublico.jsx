@@ -182,8 +182,8 @@ function PerfilPublico() {
     const postsFiltrados = filtroTipo === 'TODOS' ? posts : posts.filter(post => post.tipo === filtroTipo)
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-8">
-            <div className={`flex flex-col md:grid ${esAdmin ? 'md:grid-cols-[280px_1fr_240px]' : 'md:grid-cols-[280px_1fr]'} gap-6 items-start`}>
+        <div className="max-w-6xl mx-auto px-4 py-8">
+            <div className="flex flex-col md:grid md:grid-cols-[280px_1fr_240px] gap-6 items-start">
                 {usuario && (
                     <div className="w-full md:sticky md:top-24 flex flex-col gap-6">
                         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4">

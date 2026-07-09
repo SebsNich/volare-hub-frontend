@@ -13,6 +13,8 @@ import { tipoColores } from "../utilities/constantes"
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
 
+const LIMITE_DESCRIPCION = 200
+
 function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
     const { mostrarToast } = useToast()
     const puedeEditar = usuario && (usuario.id === post.autorId || usuario.rol === 'ADMIN')
@@ -20,6 +22,8 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
         ? usuario && usuario.id === post.autorId
         : usuario && usuario.rol === 'ADMIN'
     const ancladoActivo = contexto === 'perfil' ? post.ancladoPerfil : post.anclado
+    const descripcionLarga = post.descripcion.length > LIMITE_DESCRIPCION
+    const [descripcionExpandida, setDescripcionExpandida] = useState(false)
     const [imagenIndex, setImagenIndex] = useState(0)
     const [lightboxAbierto, setLightboxAbierto] = useState(false)
     const [modalAbierto, setModalAbierto] = useState(false)
@@ -127,7 +131,18 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
             <div className="border-t border-gray-100" />
 
             <h2 className="text-xl font-bold text-volare-azul">{post.titulo}</h2>
-            <p className="text-gray-600 leading-relaxed">{post.descripcion}</p>
+            <p className={`text-gray-600 leading-relaxed ${descripcionLarga && !descripcionExpandida ? 'line-clamp-3' : ''}`}>
+                {post.descripcion}
+            </p>
+            {descripcionLarga && (
+                <button
+                    type="button"
+                    onClick={() => setDescripcionExpandida(!descripcionExpandida)}
+                    className="text-volare-azul font-semibold cursor-pointer text-sm self-start -mt-2"
+                >
+                    {descripcionExpandida ? 'Leer menos' : 'Leer más...'}
+                </button>
+            )}
             <p className="text-xs text-gray-400">{new Date(post.creadoEn).toLocaleDateString()}</p>
 
             {post.imagenUrl.length === 1 && (
