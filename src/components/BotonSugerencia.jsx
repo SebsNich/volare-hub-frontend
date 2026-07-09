@@ -11,6 +11,8 @@ function BotonSugerencia() {
     const { mostrarToast } = useToast()
     const [modalAbierto, setModalAbierto] = useState(false)
     const [nombre, setNombre] = useState('')
+    const [manzana, setManzana] = useState('')
+    const [villa, setVilla] = useState('')
     const [tipo, setTipo] = useState('')
     const [mensaje, setMensaje] = useState('')
 
@@ -20,16 +22,24 @@ function BotonSugerencia() {
 
     async function enviarSugerencia(e){
         e.preventDefault()
+
+        if (!nombre.trim()) {
+            mostrarToast('El nombre es obligatorio para enviar tu sugerencia', 'error')
+            return
+        }
+
         const respuesta = await fetch(`${API_URL}/api/buzon`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ nombre, tipo, mensaje })
+            body: JSON.stringify({ nombre, manzana, villa, tipo, mensaje })
         })
 
         if (respuesta.ok) {
             setNombre('')
+            setManzana('')
+            setVilla('')
             setTipo('')
             setMensaje('')
             setModalAbierto(false)
@@ -55,11 +65,30 @@ function BotonSugerencia() {
                 <Modal onClose={() => setModalAbierto(false)}>
                     <h3 className="text-lg font-bold text-volare-azul">Enviar Sugerencia</h3>
                     <form onSubmit={enviarSugerencia} className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm font-medium text-gray-700">
+                                Nombre <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={nombre}
+                                onChange={(e) => setNombre(e.target.value)}
+                                placeholder="Nombre de usuario"
+                                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                            />
+                        </div>
                         <input
                             type="text"
-                            value={nombre}
-                            onChange={(e) => setNombre(e.target.value)}
-                            placeholder="Nombre de usuario"
+                            value={manzana}
+                            onChange={(e) => setManzana(e.target.value)}
+                            placeholder="Manzana"
+                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                        />
+                        <input
+                            type="text"
+                            value={villa}
+                            onChange={(e) => setVilla(e.target.value)}
+                            placeholder="Villa"
                             className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
                         />
                         <select

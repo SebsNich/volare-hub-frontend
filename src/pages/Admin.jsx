@@ -436,7 +436,14 @@ function Admin() {
                                                 onClick={() => setSugerenciaSeleccionada(sugerencia)}
                                                 className="border-b border-gray-50 last:border-0 hover:bg-gray-50 cursor-pointer"
                                             >
-                                                <td className="px-4 py-3 font-medium text-volare-azul whitespace-nowrap">{sugerencia.nombre || 'Anónimo'}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    <div className="font-medium text-volare-azul">{sugerencia.nombre || 'Anónimo'}</div>
+                                                    {(sugerencia.manzana || sugerencia.villa) && (
+                                                        <div className="text-xs text-gray-400">
+                                                            {[sugerencia.manzana && `Mz. ${sugerencia.manzana}`, sugerencia.villa && `Villa ${sugerencia.villa}`].filter(Boolean).join(' ')}
+                                                        </div>
+                                                    )}
+                                                </td>
                                                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{sugerencia.tipo}</td>
                                                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{new Date(sugerencia.creadoEn).toLocaleDateString()}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
@@ -471,6 +478,11 @@ function Admin() {
             {sugerenciaSeleccionada && (
                 <Modal onClose={() => setSugerenciaSeleccionada(null)}>
                     <h3 className="text-lg font-bold text-volare-azul">{sugerenciaSeleccionada.nombre || 'Anónimo'}</h3>
+                    {(sugerenciaSeleccionada.manzana || sugerenciaSeleccionada.villa) && (
+                        <p className="text-sm text-gray-400 -mt-3">
+                            {[sugerenciaSeleccionada.manzana && `Mz. ${sugerenciaSeleccionada.manzana}`, sugerenciaSeleccionada.villa && `Villa ${sugerenciaSeleccionada.villa}`].filter(Boolean).join(' ')}
+                        </p>
+                    )}
                     <span className="self-start px-2 py-0.5 rounded-full text-xs font-semibold text-white bg-volare-azul">
                         {sugerenciaSeleccionada.tipo}
                     </span>
