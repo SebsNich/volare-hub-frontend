@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { startOfMonth, endOfMonth, eachDayOfInterval, format, getDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 import CalendarioDisponibilidad from '../components/CalendarioDisponibilidad'
@@ -21,6 +22,7 @@ function formatearFecha(fecha) {
 
 function ReservaCasaClub() {
     const { mostrarToast } = useToast()
+    const navigate = useNavigate()
     const [mesActual, setMesActual] = useState(startOfMonth(new Date()))
     const [disponibilidad, setDisponibilidad] = useState({})
     const [fechaSeleccionada, setFechaSeleccionada] = useState(null)
@@ -71,11 +73,13 @@ function ReservaCasaClub() {
         setHorarioSeleccionado(null)
     }
 
-    function continuar() {
-        mostrarToast('Continuando al formulario...', 'exito')
-    }
-
     const claveFechaSeleccionada = fechaSeleccionada ? format(fechaSeleccionada, 'yyyy-MM-dd') : null
+
+    function continuar() {
+        navigate('/reservas/casa-club/formulario', {
+            state: { espacio: 'CASA_CLUB', fecha: claveFechaSeleccionada, horario: horarioSeleccionado }
+        })
+    }
     const horariosDisponiblesDia = fechaSeleccionada ? horariosParaDia(fechaSeleccionada) : []
     const horarioElegido = HORARIOS.find(h => h.id === horarioSeleccionado)
     const columnasHorarios = horariosDisponiblesDia.length === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-3'

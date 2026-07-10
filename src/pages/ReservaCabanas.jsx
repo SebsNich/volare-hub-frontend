@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { startOfMonth, endOfMonth, eachDayOfInterval, format, getDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 import CalendarioDisponibilidad from '../components/CalendarioDisponibilidad'
@@ -21,6 +22,7 @@ function formatearFecha(fecha) {
 
 function ReservaCabanas() {
     const { mostrarToast } = useToast()
+    const navigate = useNavigate()
     const [mesActual, setMesActual] = useState(startOfMonth(new Date()))
     const [disponibilidad, setDisponibilidad] = useState({ CABANA_ARBOL: [], CABANA_MEDIO: [], CABANA_RIO: [] })
     const [fechaSeleccionada, setFechaSeleccionada] = useState(null)
@@ -68,11 +70,13 @@ function ReservaCabanas() {
         setCabanaSeleccionada(null)
     }
 
-    function continuar() {
-        mostrarToast('Continuando al formulario...', 'exito')
-    }
-
     const claveFechaSeleccionada = fechaSeleccionada ? format(fechaSeleccionada, 'yyyy-MM-dd') : null
+
+    function continuar() {
+        navigate('/reservas/cabanas/formulario', {
+            state: { espacio: cabanaSeleccionada, fecha: claveFechaSeleccionada, horario: 'CABANA_COMPLETO' }
+        })
+    }
 
     return (
         <div className="max-w-2xl mx-auto px-4 py-8 flex flex-col gap-6">

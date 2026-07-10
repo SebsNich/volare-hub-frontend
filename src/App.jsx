@@ -12,6 +12,8 @@ import BotonSugerencia from './components/BotonSugerencia'
 import Reservas from './pages/Reservas'
 import ReservaCabanas from './pages/ReservaCabanas'
 import ReservaCasaClub from './pages/ReservaCasaClub'
+import ReservaFormulario from './pages/ReservaFormulario'
+import MisReservas from './pages/MisReservas'
 
 function App() {
   return (
@@ -43,6 +45,21 @@ function App() {
               <Route path="/reservas/casa-club" element={
                   <RutaProtegida rolRequerido="RESIDENTE">
                       <ReservaCasaClub />
+                  </RutaProtegida>
+              } />
+              <Route path="/reservas/cabanas/formulario" element={
+                  <RutaProtegida rolRequerido="RESIDENTE">
+                      <ReservaFormulario />
+                  </RutaProtegida>
+              } />
+              <Route path="/reservas/casa-club/formulario" element={
+                  <RutaProtegida rolRequerido="RESIDENTE">
+                      <ReservaFormulario />
+                  </RutaProtegida>
+              } />
+              <Route path="/reservas/mis-reservas" element={
+                  <RutaProtegida rolRequerido="RESIDENTE">
+                      <MisReservas />
                   </RutaProtegida>
               } />
             </Routes>
