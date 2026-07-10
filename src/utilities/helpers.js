@@ -17,5 +17,9 @@ function normalizarTexto(texto) {
         .toLowerCase()
 }
 
+function formatearFechaReserva(fecha) {
+    return new Date(fecha).toLocaleDateString('es-EC', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+}
+
 export default obtenerNombreArchivo
-export { formatearMesAnio, normalizarTexto }
+export { formatearMesAnio, normalizarTexto, formatearFechaReserva }

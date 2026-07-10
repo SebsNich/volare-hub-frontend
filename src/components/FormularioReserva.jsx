@@ -6,6 +6,7 @@ import { HiOutlineCheck, HiOutlineCloudArrowUp, HiOutlineDocumentText, HiXMark }
 import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
+import { NOMBRES_ESPACIO_RESERVA as NOMBRES_ESPACIO, NOMBRES_HORARIO_RESERVA as NOMBRES_HORARIO } from '../utilities/constantes'
 
 const PASOS = [
     { numero: 1, titulo: 'Datos personales' },
@@ -15,20 +16,6 @@ const PASOS = [
 ]
 
 const MIMETYPES_VALIDOS = ['image/jpeg', 'image/png', 'application/pdf']
-
-const NOMBRES_ESPACIO = {
-    CABANA_ARBOL: 'Cabaña Árbol',
-    CABANA_MEDIO: 'Cabaña Medio',
-    CABANA_RIO: 'Cabaña Río',
-    CASA_CLUB: 'Casa Club'
-}
-
-const NOMBRES_HORARIO = {
-    CABANA_COMPLETO: 'Día completo (10:00 a 18:00)',
-    CASA_CLUB_MATUTINO: 'Matutino (09:00 a 13:00)',
-    CASA_CLUB_VESPERTINO: 'Vespertino (14:00 a 18:00)',
-    CASA_CLUB_NOCTURNO: 'Nocturno (19:00 a 02:00)'
-}
 
 function esCabana(espacio) {
     return espacio?.startsWith('CABANA')
