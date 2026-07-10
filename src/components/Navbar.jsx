@@ -72,6 +72,13 @@ function Navbar() {
                                     >
                                         Reservas
                                     </Link>
+                                    <Link
+                                        to="/reservas/mis-reservas"
+                                        onClick={() => setServiciosAbierto(false)}
+                                        className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-volare-azul transition"
+                                    >
+                                        Mis Reservas
+                                    </Link>
                                 </div>
                             )}
                         </div>

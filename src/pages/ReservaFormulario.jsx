@@ -1,14 +1,16 @@
 import { useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import FormularioReserva from '../components/FormularioReserva'
 import { useToast } from '../context/ToastContext'
 
 function ReservaFormulario() {
     const { state } = useLocation()
+    const { id } = useParams()
     const navigate = useNavigate()
     const { mostrarToast } = useToast()
 
-    const datosCompletos = state?.espacio && state?.fecha && state?.horario
+    const modoEdicion = !!id
+    const datosCompletos = modoEdicion || (state?.espacio && state?.fecha && state?.horario)
 
     useEffect(() => {
         if (!datosCompletos) {
@@ -22,7 +24,12 @@ function ReservaFormulario() {
 
     return (
         <div className="max-w-2xl mx-auto px-4 py-8">
-            <FormularioReserva espacio={state.espacio} fecha={state.fecha} horario={state.horario} />
+            <FormularioReserva
+                reservaId={id}
+                espacio={state?.espacio}
+                fecha={state?.fecha}
+                horario={state?.horario}
+            />
         </div>
     )
 }

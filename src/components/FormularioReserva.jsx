@@ -1,8 +1,8 @@
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { HiOutlineCheck, HiOutlineCloudArrowUp, HiOutlineDocumentText, HiXMark } from 'react-icons/hi2'
+import { HiOutlineArrowLeft, HiOutlineCheck, HiOutlineCloudArrowUp, HiOutlineDocumentText, HiXMark } from 'react-icons/hi2'
 import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
@@ -16,6 +16,12 @@ const PASOS = [
 ]
 
 const MIMETYPES_VALIDOS = ['image/jpeg', 'image/png', 'application/pdf']
+
+const SLOTS_ARCHIVOS = [
+    { slot: 'comprobantePago', label: 'Comprobante de pago', campoUrl: 'comprobantePagoUrl' },
+    { slot: 'listaInvitados', label: 'Lista de invitados', campoUrl: 'listaInvitadosUrl' },
+    { slot: 'contratoFirmado', label: 'Contrato firmado', campoUrl: 'contratoFirmadoUrl' }
+]
 
 function esCabana(espacio) {
     return espacio?.startsWith('CABANA')
@@ -45,6 +51,10 @@ function contratoUrl(espacio) {
     return esCabana(espacio) ? '/contratos/contrato-cabana.pdf' : '/contratos/contrato-casa-club.pdf'
 }
 
+function rutaCalendario(espacio) {
+    return esCabana(espacio) ? '/reservas/cabanas' : '/reservas/casa-club'
+}
+
 function truncarCuenta(numero) {
     const limpio = (numero ?? '').trim()
     if (limpio.length <= 4) return limpio
@@ -65,7 +75,7 @@ function Campo({ label, value, onChange, type = 'text' }) {
     )
 }
 
-function ZonaArchivo({ label, archivo, onSeleccionar, onQuitar }) {
+function ZonaArchivo({ label, archivo, urlExistente, onSeleccionar, onQuitar }) {
     const [arrastrando, setArrastrando] = useState(false)
     const inputId = `archivo-${label.replace(/\s+/g, '-').toLowerCase()}`
 
@@ -100,6 +110,31 @@ function ZonaArchivo({ label, archivo, onSeleccionar, onQuitar }) {
                         <HiXMark size={18} />
                     </button>
                 </div>
+            ) : urlExistente ? (
+                <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                    <HiOutlineDocumentText size={24} className="text-volare-azul shrink-0" />
+                    <a
+                        href={urlExistente}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-volare-azul underline truncate flex-1"
+                    >
+                        Ver archivo actual
+                    </a>
+                    <label
+                        htmlFor={inputId}
+                        className="cursor-pointer text-xs font-semibold text-volare-azul hover:underline shrink-0"
+                    >
+                        Reemplazar
+                        <input
+                            id={inputId}
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                            onChange={(e) => manejarLista(e.target.files)}
+                            className="hidden"
+                        />
+                    </label>
+                </div>
             ) : (
                 <label
                     htmlFor={inputId}
@@ -126,10 +161,17 @@ function ZonaArchivo({ label, archivo, onSeleccionar, onQuitar }) {
     )
 }
 
-function FormularioReserva({ espacio, fecha, horario }) {
+function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, horario: horarioProp }) {
     const { usuario } = useContext(AuthContext)
     const { mostrarToast } = useToast()
     const navigate = useNavigate()
+
+    const modoEdicion = !!reservaId
+
+    const [cargandoDatos, setCargandoDatos] = useState(modoEdicion)
+    const [espacio, setEspacio] = useState(espacioProp ?? null)
+    const [fecha, setFecha] = useState(fechaProp ?? null)
+    const [horario, setHorario] = useState(horarioProp ?? null)
 
     const [paso, setPaso] = useState(1)
     const [enviando, setEnviando] = useState(false)
@@ -142,6 +184,11 @@ function FormularioReserva({ espacio, fecha, horario }) {
     const [motivoEvento, setMotivoEvento] = useState('')
     const [esParaTercero, setEsParaTercero] = useState(false)
 
+    const [terceroNombre, setTerceroNombre] = useState('')
+    const [terceroCedula, setTerceroCedula] = useState('')
+    const [terceroCorreo, setTerceroCorreo] = useState('')
+    const [terceroCelular, setTerceroCelular] = useState('')
+
     const [bancoNombre, setBancoNombre] = useState('')
     const [numeroCuenta, setNumeroCuenta] = useState('')
     const [tipoCuenta, setTipoCuenta] = useState('')
@@ -150,8 +197,60 @@ function FormularioReserva({ espacio, fecha, horario }) {
     const [comprobantePago, setComprobantePago] = useState(null)
     const [listaInvitados, setListaInvitados] = useState(null)
     const [contratoFirmado, setContratoFirmado] = useState(null)
+    const [archivosExistentes, setArchivosExistentes] = useState({})
 
     const [aceptaReglamento, setAceptaReglamento] = useState(false)
+
+    useEffect(() => {
+        if (!modoEdicion) return
+
+        async function cargarReserva() {
+            try {
+                const respuesta = await fetch(`${API_URL}/api/reservas/${reservaId}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                })
+                if (!respuesta.ok) throw new Error('No se pudo cargar la reserva')
+                const datos = await respuesta.json()
+
+                if (datos.estado !== 'PENDIENTE') {
+                    mostrarToast('Solo puedes editar reservas pendientes', 'error')
+                    navigate('/reservas/mis-reservas', { replace: true })
+                    return
+                }
+
+                setEspacio(datos.espacio)
+                setFecha(datos.fecha.slice(0, 10))
+                setHorario(datos.horario)
+                setNombres(datos.nombres)
+                setApellidos(datos.apellidos)
+                setCorreo(datos.correo)
+                setCelular(datos.celular)
+                setCedula(datos.cedula)
+                setMotivoEvento(datos.motivoEvento)
+                setEsParaTercero(datos.esParaTercero)
+                setTerceroNombre(datos.terceroNombre ?? '')
+                setTerceroCedula(datos.terceroCedula ?? '')
+                setTerceroCorreo(datos.terceroCorreo ?? '')
+                setTerceroCelular(datos.terceroCelular ?? '')
+                setBancoNombre(datos.bancoNombre)
+                setNumeroCuenta(datos.numeroCuenta)
+                setTipoCuenta(datos.tipoCuenta)
+                setCedulaRucBancario(datos.cedulaRucBancario)
+                setArchivosExistentes({
+                    comprobantePagoUrl: datos.comprobantePagoUrl,
+                    listaInvitadosUrl: datos.listaInvitadosUrl,
+                    contratoFirmadoUrl: datos.contratoFirmadoUrl
+                })
+            } catch {
+                mostrarToast('No se pudo cargar la reserva', 'error')
+                navigate('/reservas/mis-reservas', { replace: true })
+            } finally {
+                setCargandoDatos(false)
+            }
+        }
+        cargarReserva()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [reservaId])
 
     const mostrarToggleTercero = espacio === 'CASA_CLUB'
     const aplicaTercero = mostrarToggleTercero && esParaTercero
@@ -161,6 +260,8 @@ function FormularioReserva({ espacio, fecha, horario }) {
         [espacio, horario, aplicaTercero]
     )
     const montoTotal = montoAlquiler + montoGarantia
+
+    const archivosPorSlot = { comprobantePago: [comprobantePago, setComprobantePago], listaInvitados: [listaInvitados, setListaInvitados], contratoFirmado: [contratoFirmado, setContratoFirmado] }
 
     function crearManejadorArchivo(setter, archivoActual) {
         return (file) => {
@@ -187,6 +288,12 @@ function FormularioReserva({ espacio, fecha, horario }) {
         if (!celular.trim()) return 'Ingresa tu número de celular'
         if (!/^\d{10}$/.test(cedula)) return 'La cédula debe tener 10 dígitos'
         if (!motivoEvento.trim()) return 'Describe el motivo del evento'
+        if (aplicaTercero) {
+            if (!terceroNombre.trim()) return 'Ingresa el nombre completo del tercero'
+            if (!terceroCedula.trim()) return 'Ingresa la cédula del tercero'
+            if (!/^\S+@\S+\.\S+$/.test(terceroCorreo)) return 'Ingresa un correo válido para el tercero'
+            if (!terceroCelular.trim()) return 'Ingresa el celular del tercero'
+        }
         return null
     }
 
@@ -199,9 +306,9 @@ function FormularioReserva({ espacio, fecha, horario }) {
     }
 
     function validarPaso3() {
-        if (!comprobantePago) return 'Sube el comprobante de pago'
-        if (!listaInvitados) return 'Sube la lista de invitados'
-        if (!contratoFirmado) return 'Sube el contrato firmado'
+        if (!comprobantePago && !archivosExistentes.comprobantePagoUrl) return 'Sube el comprobante de pago'
+        if (!listaInvitados && !archivosExistentes.listaInvitadosUrl) return 'Sube la lista de invitados'
+        if (!contratoFirmado && !archivosExistentes.contratoFirmadoUrl) return 'Sube el contrato firmado'
         return null
     }
 
@@ -228,9 +335,11 @@ function FormularioReserva({ espacio, fecha, horario }) {
         setEnviando(true)
         try {
             const formData = new FormData()
-            formData.append('espacio', espacio)
-            formData.append('fecha', fecha)
-            formData.append('horario', horario)
+            if (!modoEdicion) {
+                formData.append('espacio', espacio)
+                formData.append('fecha', fecha)
+                formData.append('horario', horario)
+            }
             formData.append('motivoEvento', motivoEvento)
             formData.append('nombres', nombres)
             formData.append('apellidos', apellidos)
@@ -238,26 +347,33 @@ function FormularioReserva({ espacio, fecha, horario }) {
             formData.append('celular', celular)
             formData.append('cedula', cedula)
             formData.append('esParaTercero', String(aplicaTercero))
+            formData.append('terceroNombre', terceroNombre)
+            formData.append('terceroCedula', terceroCedula)
+            formData.append('terceroCorreo', terceroCorreo)
+            formData.append('terceroCelular', terceroCelular)
             formData.append('bancoNombre', bancoNombre)
             formData.append('numeroCuenta', numeroCuenta)
             formData.append('tipoCuenta', tipoCuenta)
             formData.append('cedulaRucBancario', cedulaRucBancario)
-            formData.append('comprobantePago', comprobantePago.file)
-            formData.append('listaInvitados', listaInvitados.file)
-            formData.append('contratoFirmado', contratoFirmado.file)
+            if (comprobantePago) formData.append('comprobantePago', comprobantePago.file)
+            if (listaInvitados) formData.append('listaInvitados', listaInvitados.file)
+            if (contratoFirmado) formData.append('contratoFirmado', contratoFirmado.file)
 
-            const respuesta = await fetch(`${API_URL}/api/reservas`, {
-                method: 'POST',
+            const respuesta = await fetch(`${API_URL}/api/reservas${modoEdicion ? `/${reservaId}` : ''}`, {
+                method: modoEdicion ? 'PUT' : 'POST',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                 body: formData
             })
 
             if (respuesta.ok) {
-                mostrarToast('Tu solicitud de reserva fue enviada, espera la aprobación del administrador', 'exito')
+                mostrarToast(
+                    modoEdicion ? 'Reserva actualizada correctamente' : 'Tu solicitud de reserva fue enviada, espera la aprobación del administrador',
+                    'exito'
+                )
                 navigate('/reservas/mis-reservas')
             } else {
                 const datos = await respuesta.json()
-                mostrarToast(datos.error || 'No se pudo crear la reserva', 'error')
+                mostrarToast(datos.error || 'No se pudo guardar la reserva', 'error')
             }
         } catch {
             mostrarToast('Error de conexión, intenta nuevamente', 'error')
@@ -266,8 +382,25 @@ function FormularioReserva({ espacio, fecha, horario }) {
         }
     }
 
+    if (cargandoDatos) {
+        return (
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 text-center text-gray-500">
+                Cargando reserva...
+            </div>
+        )
+    }
+
     return (
         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-6">
+            <button
+                type="button"
+                onClick={() => navigate(rutaCalendario(espacio))}
+                className="self-start flex items-center gap-1 text-sm text-volare-azul hover:underline"
+            >
+                <HiOutlineArrowLeft size={16} />
+                Volver
+            </button>
+
             <div className="bg-volare-azul/5 border border-volare-azul/20 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sticky top-2 z-10">
                 <div className="text-sm text-gray-700">
                     <span className="font-semibold text-volare-azul">{NOMBRES_ESPACIO[espacio]}</span>
@@ -278,6 +411,12 @@ function FormularioReserva({ espacio, fecha, horario }) {
                     <p className="text-xs text-gray-500">${montoAlquiler} alquiler + ${montoGarantia} garantía</p>
                 </div>
             </div>
+
+            {modoEdicion && (
+                <p className="text-xs text-gray-500 -mt-4">
+                    Para cambiar la fecha o el espacio, debes crear una nueva reserva.
+                </p>
+            )}
 
             <div className="flex items-start justify-center gap-1 sm:gap-4">
                 {PASOS.map((p, i) => (
@@ -321,17 +460,34 @@ function FormularioReserva({ espacio, fecha, horario }) {
                         />
                     </div>
                     {mostrarToggleTercero && (
-                        <label className="flex items-start gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={esParaTercero}
-                                onChange={(e) => setEsParaTercero(e.target.checked)}
-                                className="mt-1 w-4 h-4 accent-volare-azul"
-                            />
-                            <span className="text-sm text-gray-700">
-                                ¿Es para un tercero (beneficiario particular, no residente ni familiar de primer grado)?
-                            </span>
-                        </label>
+                        <>
+                            <label className="flex items-start gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={esParaTercero}
+                                    onChange={(e) => setEsParaTercero(e.target.checked)}
+                                    className="mt-1 w-4 h-4 accent-volare-azul"
+                                />
+                                <span className="text-sm text-gray-700">
+                                    ¿Es para un tercero (beneficiario particular, no residente ni familiar de primer grado)?
+                                </span>
+                            </label>
+                            {esParaTercero && (
+                                <div className="flex flex-col gap-4 pt-4 border-t border-gray-200">
+                                    <h3 className="text-sm font-semibold text-volare-azul">Datos del tercero/beneficiario</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <Campo label="Nombre completo del tercero" value={terceroNombre} onChange={setTerceroNombre} />
+                                        <Campo
+                                            label="Cédula del tercero"
+                                            value={terceroCedula}
+                                            onChange={(v) => setTerceroCedula(v.replace(/\D/g, '').slice(0, 10))}
+                                        />
+                                        <Campo label="Correo del tercero" type="email" value={terceroCorreo} onChange={setTerceroCorreo} />
+                                        <Campo label="Celular del tercero" value={terceroCelular} onChange={setTerceroCelular} />
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             )}
@@ -379,24 +535,19 @@ function FormularioReserva({ espacio, fecha, horario }) {
                         Descarga el contrato, complétalo a mano, fírmalo, escanéalo o tómale una foto legible, y súbelo aquí.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <ZonaArchivo
-                            label="Comprobante de pago"
-                            archivo={comprobantePago}
-                            onSeleccionar={crearManejadorArchivo(setComprobantePago, comprobantePago)}
-                            onQuitar={crearQuitarArchivo(setComprobantePago, comprobantePago)}
-                        />
-                        <ZonaArchivo
-                            label="Lista de invitados"
-                            archivo={listaInvitados}
-                            onSeleccionar={crearManejadorArchivo(setListaInvitados, listaInvitados)}
-                            onQuitar={crearQuitarArchivo(setListaInvitados, listaInvitados)}
-                        />
-                        <ZonaArchivo
-                            label="Contrato firmado"
-                            archivo={contratoFirmado}
-                            onSeleccionar={crearManejadorArchivo(setContratoFirmado, contratoFirmado)}
-                            onQuitar={crearQuitarArchivo(setContratoFirmado, contratoFirmado)}
-                        />
+                        {SLOTS_ARCHIVOS.map(({ slot, label, campoUrl }) => {
+                            const [archivo, setArchivo] = archivosPorSlot[slot]
+                            return (
+                                <ZonaArchivo
+                                    key={slot}
+                                    label={label}
+                                    archivo={archivo}
+                                    urlExistente={archivosExistentes[campoUrl]}
+                                    onSeleccionar={crearManejadorArchivo(setArchivo, archivo)}
+                                    onQuitar={crearQuitarArchivo(setArchivo, archivo)}
+                                />
+                            )
+                        })}
                     </div>
                 </div>
             )}
@@ -411,6 +562,12 @@ function FormularioReserva({ espacio, fecha, horario }) {
                         {mostrarToggleTercero && (
                             <p><span className="font-semibold">Para un tercero:</span> {esParaTercero ? 'Sí' : 'No'}</p>
                         )}
+                        {aplicaTercero && (
+                            <>
+                                <p><span className="font-semibold">Tercero:</span> {terceroNombre} — {terceroCedula}</p>
+                                <p><span className="font-semibold">Contacto del tercero:</span> {terceroCorreo} — {terceroCelular}</p>
+                            </>
+                        )}
                         <hr className="border-gray-200" />
                         <p><span className="font-semibold">Nombres:</span> {nombres} {apellidos}</p>
                         <p><span className="font-semibold">Correo:</span> {correo}</p>
@@ -424,9 +581,9 @@ function FormularioReserva({ espacio, fecha, horario }) {
                             {' '}({tipoCuenta === 'AHORROS' ? 'Ahorros' : 'Corriente'})
                         </p>
                         <hr className="border-gray-200" />
-                        <p><span className="font-semibold">Comprobante de pago:</span> {comprobantePago?.file.name}</p>
-                        <p><span className="font-semibold">Lista de invitados:</span> {listaInvitados?.file.name}</p>
-                        <p><span className="font-semibold">Contrato firmado:</span> {contratoFirmado?.file.name}</p>
+                        <p><span className="font-semibold">Comprobante de pago:</span> {comprobantePago?.file.name ?? 'Sin cambios'}</p>
+                        <p><span className="font-semibold">Lista de invitados:</span> {listaInvitados?.file.name ?? 'Sin cambios'}</p>
+                        <p><span className="font-semibold">Contrato firmado:</span> {contratoFirmado?.file.name ?? 'Sin cambios'}</p>
                     </div>
                     <div className="bg-volare-verde/10 border border-volare-verde/30 rounded-lg p-4 text-center">
                         <p className="text-2xl font-bold text-volare-verde">Total: ${montoTotal}</p>
@@ -474,7 +631,7 @@ function FormularioReserva({ espacio, fecha, horario }) {
                                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}
                     >
-                        {enviando ? 'Enviando...' : 'Enviar Solicitud de Reserva'}
+                        {enviando ? 'Guardando...' : modoEdicion ? 'Guardar Cambios' : 'Enviar Solicitud de Reserva'}
                     </button>
                 )}
             </div>

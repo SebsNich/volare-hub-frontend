@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { HiOutlineArrowLeft } from 'react-icons/hi2'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
 import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA } from '../utilities/constantes'
@@ -7,6 +8,7 @@ import { formatearFechaReserva } from '../utilities/helpers'
 
 function MisReservas() {
     const { mostrarToast } = useToast()
+    const navigate = useNavigate()
     const [reservas, setReservas] = useState([])
     const [cargando, setCargando] = useState(true)
 
@@ -33,6 +35,11 @@ function MisReservas() {
 
     return (
         <div className="max-w-2xl mx-auto px-4 py-8 flex flex-col gap-6">
+            <Link to="/reservas" className="self-start flex items-center gap-1 text-sm text-volare-azul hover:underline">
+                <HiOutlineArrowLeft size={16} />
+                Volver
+            </Link>
+
             <h1 className="text-2xl font-bold text-volare-azul">Mis Reservas</h1>
 
             {!cargando && reservasOrdenadas.length === 0 && (
@@ -68,7 +75,18 @@ function MisReservas() {
                             {reserva.estado === 'RECHAZADA' && reserva.motivoRechazo && (
                                 <p className="text-xs text-gray-500">Motivo: {reserva.motivoRechazo}</p>
                             )}
-                            <p className="text-sm font-semibold text-gray-700">Total: ${total}</p>
+                            <div className="flex items-center justify-between gap-3">
+                                <p className="text-sm font-semibold text-gray-700">Total: ${total}</p>
+                                {reserva.estado === 'PENDIENTE' && (
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate(`/reservas/editar/${reserva.id}`)}
+                                        className="bg-volare-azul text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:opacity-90 transition"
+                                    >
+                                        Editar
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     )
                 })}

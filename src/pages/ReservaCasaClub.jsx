@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { startOfMonth, endOfMonth, eachDayOfInterval, format, getDay } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { HiOutlineArrowLeft } from 'react-icons/hi2'
 import CalendarioDisponibilidad from '../components/CalendarioDisponibilidad'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
@@ -86,6 +87,11 @@ function ReservaCasaClub() {
 
     return (
         <div className="max-w-2xl mx-auto px-4 py-8 flex flex-col gap-6">
+            <Link to="/reservas" className="self-start flex items-center gap-1 text-sm text-volare-azul hover:underline">
+                <HiOutlineArrowLeft size={16} />
+                Volver
+            </Link>
+
             <h1 className="text-2xl font-bold text-volare-azul">Reservar Casa Club</h1>
 
             <CalendarioDisponibilidad

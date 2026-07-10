@@ -11,7 +11,8 @@ import {
     HiOutlineUserGroup,
     HiOutlineBuildingOffice2,
     HiOutlineEnvelope,
-    HiOutlineCalendarDays
+    HiOutlineCalendarDays,
+    HiOutlineExclamationTriangle
 } from 'react-icons/hi2'
 import { normalizarTexto, formatearFechaReserva } from '../utilities/helpers'
 import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA } from '../utilities/constantes'
@@ -649,10 +650,17 @@ function Admin() {
                                                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{NOMBRES_HORARIO_RESERVA[reserva.horario]}</td>
                                                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">${Number(reserva.montoAlquiler) + Number(reserva.montoGarantia)}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap">
-                                                        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${estilo.color}`}>
-                                                            <span className={`w-2 h-2 rounded-full ${estilo.punto}`} />
-                                                            {estilo.label}
-                                                        </span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${estilo.color}`}>
+                                                                <span className={`w-2 h-2 rounded-full ${estilo.punto}`} />
+                                                                {estilo.label}
+                                                            </span>
+                                                            {reserva.esParaTercero && (
+                                                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-yellow-100 text-yellow-700 border border-yellow-300">
+                                                                    Tercero
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             )
@@ -726,6 +734,21 @@ function Admin() {
                         <span className={`w-2 h-2 rounded-full ${ESTILOS_ESTADO_RESERVA[reservaSeleccionada.estado].punto}`} />
                         {ESTILOS_ESTADO_RESERVA[reservaSeleccionada.estado].label}
                     </span>
+
+                    {reservaSeleccionada.esParaTercero && (
+                        <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 flex flex-col gap-3">
+                            <p className="text-sm font-semibold text-yellow-800 flex items-start gap-2">
+                                <HiOutlineExclamationTriangle size={20} className="shrink-0 mt-0.5" />
+                                Evento declarado para un tercero (beneficiario particular) — verifica que la lista de invitados y el comprobante correspondan a la tarifa de tercero antes de aprobar.
+                            </p>
+                            <div className="text-sm text-yellow-900 flex flex-col gap-0.5">
+                                <p><span className="font-semibold">Nombre:</span> {reservaSeleccionada.terceroNombre}</p>
+                                <p><span className="font-semibold">Cédula:</span> {reservaSeleccionada.terceroCedula}</p>
+                                <p><span className="font-semibold">Correo:</span> {reservaSeleccionada.terceroCorreo}</p>
+                                <p><span className="font-semibold">Celular:</span> {reservaSeleccionada.terceroCelular}</p>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="flex flex-col gap-1 text-sm text-gray-600">
                         <p><span className="font-semibold text-gray-700">Residente (cuenta):</span> {reservaSeleccionada.usuario?.nombre}</p>

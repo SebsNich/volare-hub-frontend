@@ -57,6 +57,11 @@ function App() {
                       <ReservaFormulario />
                   </RutaProtegida>
               } />
+              <Route path="/reservas/editar/:id" element={
+                  <RutaProtegida rolRequerido="RESIDENTE">
+                      <ReservaFormulario />
+                  </RutaProtegida>
+              } />
               <Route path="/reservas/mis-reservas" element={
                   <RutaProtegida rolRequerido="RESIDENTE">
                       <MisReservas />

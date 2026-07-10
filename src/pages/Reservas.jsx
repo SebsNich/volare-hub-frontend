@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom'
-import { HiOutlineHomeModern, HiOutlineBuildingOffice2 } from 'react-icons/hi2'
+import { useNavigate, Link } from 'react-router-dom'
+import { HiOutlineHomeModern, HiOutlineBuildingOffice2, HiOutlineClipboardDocumentList } from 'react-icons/hi2'
 
 const ESPACIOS = [
     {
@@ -25,7 +25,16 @@ function Reservas() {
 
     return (
         <div className="max-w-4xl mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold text-volare-azul mb-6">Reserva un espacio común</h1>
+            <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold text-volare-azul">Reserva un espacio común</h1>
+                <Link
+                    to="/reservas/mis-reservas"
+                    className="flex items-center gap-1.5 text-sm font-semibold text-volare-azul hover:underline"
+                >
+                    <HiOutlineClipboardDocumentList size={18} />
+                    Ver mis reservas
+                </Link>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {ESPACIOS.map(espacio => {
                     const Icono = espacio.icono
