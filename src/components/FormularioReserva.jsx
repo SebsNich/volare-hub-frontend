@@ -2,11 +2,12 @@ import { useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { HiOutlineArrowLeft, HiOutlineCheck, HiOutlineCloudArrowUp, HiOutlineDocumentText, HiXMark } from 'react-icons/hi2'
+import { HiOutlineArrowLeft, HiOutlineCheck, HiOutlineCloudArrowUp, HiOutlineDocumentText, HiOutlineExclamationTriangle, HiXMark } from 'react-icons/hi2'
 import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
-import { NOMBRES_ESPACIO_RESERVA as NOMBRES_ESPACIO, NOMBRES_HORARIO_RESERVA as NOMBRES_HORARIO } from '../utilities/constantes'
+import { NOMBRES_ESPACIO_RESERVA as NOMBRES_ESPACIO, NOMBRES_HORARIO_RESERVA as NOMBRES_HORARIO, BANCOS_ECUADOR } from '../utilities/constantes'
+import SelectorBuscable from './SelectorBuscable'
 
 const PASOS = [
     { numero: 1, titulo: 'Datos personales' },
@@ -18,9 +19,9 @@ const PASOS = [
 const MIMETYPES_VALIDOS = ['image/jpeg', 'image/png', 'application/pdf']
 
 const SLOTS_ARCHIVOS = [
-    { slot: 'comprobantePago', label: 'Comprobante de pago', campoUrl: 'comprobantePagoUrl' },
-    { slot: 'listaInvitados', label: 'Lista de invitados', campoUrl: 'listaInvitadosUrl' },
-    { slot: 'contratoFirmado', label: 'Contrato firmado', campoUrl: 'contratoFirmadoUrl' }
+    { slot: 'comprobantePago', label: 'Comprobante de pago' },
+    { slot: 'listaInvitados', label: 'Lista de invitados' },
+    { slot: 'contratoFirmado', label: 'Contrato firmado' }
 ]
 
 function esCabana(espacio) {
@@ -75,13 +76,14 @@ function Campo({ label, value, onChange, type = 'text' }) {
     )
 }
 
-function ZonaArchivo({ label, archivo, urlExistente, onSeleccionar, onQuitar }) {
+function ZonaArchivosMultiple({ label, archivosNuevos, archivosExistentes, onAgregar, onQuitarNuevo, onQuitarExistente }) {
     const [arrastrando, setArrastrando] = useState(false)
     const inputId = `archivo-${label.replace(/\s+/g, '-').toLowerCase()}`
+    const hayArchivos = archivosExistentes.length > 0 || archivosNuevos.length > 0
 
     function manejarLista(lista) {
-        const seleccionado = lista?.[0]
-        if (seleccionado) onSeleccionar(seleccionado)
+        const seleccionados = Array.from(lista ?? [])
+        if (seleccionados.length) onAgregar(seleccionados)
     }
 
     function manejarDrop(e) {
@@ -93,70 +95,72 @@ function ZonaArchivo({ label, archivo, urlExistente, onSeleccionar, onQuitar }) 
     return (
         <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">{label}</label>
-            {archivo ? (
-                <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-                    {archivo.tipo === 'imagen' ? (
-                        <img src={archivo.previewUrl} className="w-10 h-10 object-cover rounded shrink-0" />
-                    ) : (
-                        <HiOutlineDocumentText size={24} className="text-volare-azul shrink-0" />
-                    )}
-                    <span className="text-sm text-gray-700 truncate flex-1">{archivo.file.name}</span>
-                    <button
-                        type="button"
-                        onClick={onQuitar}
-                        className="text-gray-400 hover:text-red-500 shrink-0"
-                        aria-label="Quitar"
-                    >
-                        <HiXMark size={18} />
-                    </button>
+
+            {hayArchivos && (
+                <div className="flex flex-col gap-2">
+                    {archivosExistentes.map((url) => (
+                        <div key={url} className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                            <HiOutlineDocumentText size={20} className="text-volare-azul shrink-0" />
+                            <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-volare-azul underline truncate flex-1"
+                            >
+                                Ver archivo
+                            </a>
+                            <button
+                                type="button"
+                                onClick={() => onQuitarExistente(url)}
+                                className="text-gray-400 hover:text-red-500 shrink-0"
+                                aria-label="Quitar"
+                            >
+                                <HiXMark size={18} />
+                            </button>
+                        </div>
+                    ))}
+                    {archivosNuevos.map((archivo, index) => (
+                        <div key={`${archivo.file.name}-${index}`} className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                            {archivo.tipo === 'imagen' ? (
+                                <img src={archivo.previewUrl} className="w-10 h-10 object-cover rounded shrink-0" />
+                            ) : (
+                                <HiOutlineDocumentText size={24} className="text-volare-azul shrink-0" />
+                            )}
+                            <span className="text-sm text-gray-700 truncate flex-1">{archivo.file.name}</span>
+                            <button
+                                type="button"
+                                onClick={() => onQuitarNuevo(index)}
+                                className="text-gray-400 hover:text-red-500 shrink-0"
+                                aria-label="Quitar"
+                            >
+                                <HiXMark size={18} />
+                            </button>
+                        </div>
+                    ))}
                 </div>
-            ) : urlExistente ? (
-                <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-                    <HiOutlineDocumentText size={24} className="text-volare-azul shrink-0" />
-                    <a
-                        href={urlExistente}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-volare-azul underline truncate flex-1"
-                    >
-                        Ver archivo actual
-                    </a>
-                    <label
-                        htmlFor={inputId}
-                        className="cursor-pointer text-xs font-semibold text-volare-azul hover:underline shrink-0"
-                    >
-                        Reemplazar
-                        <input
-                            id={inputId}
-                            type="file"
-                            accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                            onChange={(e) => manejarLista(e.target.files)}
-                            className="hidden"
-                        />
-                    </label>
-                </div>
-            ) : (
-                <label
-                    htmlFor={inputId}
-                    onDragOver={(e) => { e.preventDefault(); setArrastrando(true) }}
-                    onDragLeave={() => setArrastrando(false)}
-                    onDrop={manejarDrop}
-                    className={`cursor-pointer flex flex-col items-center justify-center gap-1 border-2 border-dashed rounded-lg px-3 py-6 text-center transition ${
-                        arrastrando ? 'border-volare-azul bg-volare-azul/5' : 'border-gray-300 hover:border-volare-azul'
-                    }`}
-                >
-                    <HiOutlineCloudArrowUp size={24} className="text-gray-400" />
-                    <span className="text-xs text-gray-500">Arrastra un archivo aquí o haz clic</span>
-                    <span className="text-[11px] text-gray-400">JPG, PNG o PDF</span>
-                    <input
-                        id={inputId}
-                        type="file"
-                        accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                        onChange={(e) => manejarLista(e.target.files)}
-                        className="hidden"
-                    />
-                </label>
             )}
+
+            <label
+                htmlFor={inputId}
+                onDragOver={(e) => { e.preventDefault(); setArrastrando(true) }}
+                onDragLeave={() => setArrastrando(false)}
+                onDrop={manejarDrop}
+                className={`cursor-pointer flex flex-col items-center justify-center gap-1 border-2 border-dashed rounded-lg px-3 py-6 text-center transition ${
+                    arrastrando ? 'border-volare-azul bg-volare-azul/5' : 'border-gray-300 hover:border-volare-azul'
+                }`}
+            >
+                <HiOutlineCloudArrowUp size={24} className="text-gray-400" />
+                <span className="text-xs text-gray-500">{hayArchivos ? 'Agregar otro archivo' : 'Arrastra un archivo aquí o haz clic'}</span>
+                <span className="text-[11px] text-gray-400">JPG, PNG o PDF</span>
+                <input
+                    id={inputId}
+                    type="file"
+                    multiple
+                    accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                    onChange={(e) => { manejarLista(e.target.files); e.target.value = '' }}
+                    className="hidden"
+                />
+            </label>
         </div>
     )
 }
@@ -181,6 +185,8 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
     const [correo, setCorreo] = useState(usuario?.email ?? '')
     const [celular, setCelular] = useState('')
     const [cedula, setCedula] = useState('')
+    const [manzana, setManzana] = useState(usuario?.manzana ?? '')
+    const [villa, setVilla] = useState(usuario?.villa ?? '')
     const [motivoEvento, setMotivoEvento] = useState('')
     const [esParaTercero, setEsParaTercero] = useState(false)
 
@@ -194,12 +200,13 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
     const [tipoCuenta, setTipoCuenta] = useState('')
     const [cedulaRucBancario, setCedulaRucBancario] = useState('')
 
-    const [comprobantePago, setComprobantePago] = useState(null)
-    const [listaInvitados, setListaInvitados] = useState(null)
-    const [contratoFirmado, setContratoFirmado] = useState(null)
-    const [archivosExistentes, setArchivosExistentes] = useState({})
+    const [comprobantePago, setComprobantePago] = useState([])
+    const [listaInvitados, setListaInvitados] = useState([])
+    const [contratoFirmado, setContratoFirmado] = useState([])
+    const [archivosExistentes, setArchivosExistentes] = useState({ comprobantePago: [], listaInvitados: [], contratoFirmado: [] })
 
     const [aceptaReglamento, setAceptaReglamento] = useState(false)
+    const [observacionAdmin, setObservacionAdmin] = useState(null)
 
     useEffect(() => {
         if (!modoEdicion) return
@@ -221,6 +228,8 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
                 setEspacio(datos.espacio)
                 setFecha(datos.fecha.slice(0, 10))
                 setHorario(datos.horario)
+                setManzana(datos.manzana)
+                setVilla(datos.villa)
                 setNombres(datos.nombres)
                 setApellidos(datos.apellidos)
                 setCorreo(datos.correo)
@@ -236,10 +245,11 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
                 setNumeroCuenta(datos.numeroCuenta)
                 setTipoCuenta(datos.tipoCuenta)
                 setCedulaRucBancario(datos.cedulaRucBancario)
+                setObservacionAdmin(datos.observacionAdmin ?? null)
                 setArchivosExistentes({
-                    comprobantePagoUrl: datos.comprobantePagoUrl,
-                    listaInvitadosUrl: datos.listaInvitadosUrl,
-                    contratoFirmadoUrl: datos.contratoFirmadoUrl
+                    comprobantePago: datos.comprobantePagoUrls ?? [],
+                    listaInvitados: datos.listaInvitadosUrls ?? [],
+                    contratoFirmado: datos.contratoFirmadoUrls ?? []
                 })
             } catch {
                 mostrarToast('No se pudo cargar la reserva', 'error')
@@ -263,26 +273,37 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
 
     const archivosPorSlot = { comprobantePago: [comprobantePago, setComprobantePago], listaInvitados: [listaInvitados, setListaInvitados], contratoFirmado: [contratoFirmado, setContratoFirmado] }
 
-    function crearManejadorArchivo(setter, archivoActual) {
-        return (file) => {
-            if (!MIMETYPES_VALIDOS.includes(file.type)) {
-                mostrarToast('Solo se aceptan imágenes JPG/PNG o archivos PDF', 'error')
-                return
+    function crearAgregarArchivos(setter, archivosActuales) {
+        return (files) => {
+            const nuevos = []
+            for (const file of files) {
+                if (!MIMETYPES_VALIDOS.includes(file.type)) {
+                    mostrarToast('Solo se aceptan imágenes JPG/PNG o archivos PDF', 'error')
+                    continue
+                }
+                const tipo = file.type === 'application/pdf' ? 'pdf' : 'imagen'
+                nuevos.push({ file, tipo, previewUrl: tipo === 'imagen' ? URL.createObjectURL(file) : null })
             }
-            if (archivoActual?.previewUrl) URL.revokeObjectURL(archivoActual.previewUrl)
-            const tipo = file.type === 'application/pdf' ? 'pdf' : 'imagen'
-            setter({ file, tipo, previewUrl: tipo === 'imagen' ? URL.createObjectURL(file) : null })
+            if (nuevos.length) setter([...archivosActuales, ...nuevos])
         }
     }
 
-    function crearQuitarArchivo(setter, archivoActual) {
-        return () => {
-            if (archivoActual?.previewUrl) URL.revokeObjectURL(archivoActual.previewUrl)
-            setter(null)
+    function crearQuitarArchivoNuevo(setter, archivosActuales) {
+        return (index) => {
+            const archivo = archivosActuales[index]
+            if (archivo?.previewUrl) URL.revokeObjectURL(archivo.previewUrl)
+            setter(archivosActuales.filter((_, i) => i !== index))
+        }
+    }
+
+    function crearQuitarArchivoExistente(slot) {
+        return (url) => {
+            setArchivosExistentes(prev => ({ ...prev, [slot]: prev[slot].filter(u => u !== url) }))
         }
     }
 
     function validarPaso1() {
+        if (!manzana.trim() || !villa.trim()) return 'Ingresa la manzana y la villa'
         if (!nombres.trim() || !apellidos.trim()) return 'Ingresa tus nombres y apellidos'
         if (!/^\S+@\S+\.\S+$/.test(correo)) return 'Ingresa un correo válido'
         if (!celular.trim()) return 'Ingresa tu número de celular'
@@ -290,7 +311,7 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
         if (!motivoEvento.trim()) return 'Describe el motivo del evento'
         if (aplicaTercero) {
             if (!terceroNombre.trim()) return 'Ingresa el nombre completo del tercero'
-            if (!terceroCedula.trim()) return 'Ingresa la cédula del tercero'
+            if (!/^\d{10}$/.test(terceroCedula)) return 'La cédula del tercero debe tener 10 dígitos'
             if (!/^\S+@\S+\.\S+$/.test(terceroCorreo)) return 'Ingresa un correo válido para el tercero'
             if (!terceroCelular.trim()) return 'Ingresa el celular del tercero'
         }
@@ -301,14 +322,14 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
         if (!bancoNombre.trim()) return 'Ingresa el nombre del banco'
         if (!numeroCuenta.trim()) return 'Ingresa el número de cuenta'
         if (!tipoCuenta) return 'Selecciona el tipo de cuenta'
-        if (!cedulaRucBancario.trim()) return 'Ingresa la cédula o RUC'
+        if (cedulaRucBancario.length !== 10 && cedulaRucBancario.length !== 13) return 'La cédula debe tener 10 dígitos o el RUC 13 dígitos'
         return null
     }
 
     function validarPaso3() {
-        if (!comprobantePago && !archivosExistentes.comprobantePagoUrl) return 'Sube el comprobante de pago'
-        if (!listaInvitados && !archivosExistentes.listaInvitadosUrl) return 'Sube la lista de invitados'
-        if (!contratoFirmado && !archivosExistentes.contratoFirmadoUrl) return 'Sube el contrato firmado'
+        if (comprobantePago.length + archivosExistentes.comprobantePago.length === 0) return 'Sube al menos un comprobante de pago'
+        if (listaInvitados.length + archivosExistentes.listaInvitados.length === 0) return 'Sube al menos un archivo de lista de invitados'
+        if (contratoFirmado.length + archivosExistentes.contratoFirmado.length === 0) return 'Sube al menos un contrato firmado'
         return null
     }
 
@@ -341,6 +362,8 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
                 formData.append('horario', horario)
             }
             formData.append('motivoEvento', motivoEvento)
+            formData.append('manzana', manzana)
+            formData.append('villa', villa)
             formData.append('nombres', nombres)
             formData.append('apellidos', apellidos)
             formData.append('correo', correo)
@@ -355,9 +378,14 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
             formData.append('numeroCuenta', numeroCuenta)
             formData.append('tipoCuenta', tipoCuenta)
             formData.append('cedulaRucBancario', cedulaRucBancario)
-            if (comprobantePago) formData.append('comprobantePago', comprobantePago.file)
-            if (listaInvitados) formData.append('listaInvitados', listaInvitados.file)
-            if (contratoFirmado) formData.append('contratoFirmado', contratoFirmado.file)
+            if (modoEdicion) {
+                formData.append('comprobantePagoExistente', JSON.stringify(archivosExistentes.comprobantePago))
+                formData.append('listaInvitadosExistente', JSON.stringify(archivosExistentes.listaInvitados))
+                formData.append('contratoFirmadoExistente', JSON.stringify(archivosExistentes.contratoFirmado))
+            }
+            comprobantePago.forEach(archivo => formData.append('comprobantePago', archivo.file))
+            listaInvitados.forEach(archivo => formData.append('listaInvitados', archivo.file))
+            contratoFirmado.forEach(archivo => formData.append('contratoFirmado', archivo.file))
 
             const respuesta = await fetch(`${API_URL}/api/reservas${modoEdicion ? `/${reservaId}` : ''}`, {
                 method: modoEdicion ? 'PUT' : 'POST',
@@ -367,7 +395,7 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
 
             if (respuesta.ok) {
                 mostrarToast(
-                    modoEdicion ? 'Reserva actualizada correctamente' : 'Tu solicitud de reserva fue enviada, espera la aprobación del administrador',
+                    modoEdicion ? 'Reserva actualizada' : 'Tu solicitud de reserva fue enviada correctamente',
                     'exito'
                 )
                 navigate('/reservas/mis-reservas')
@@ -392,6 +420,15 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
 
     return (
         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-6">
+            {observacionAdmin && (
+                <div className="bg-orange-50 border border-volare-naranja/40 rounded-xl p-4 flex items-start gap-3">
+                    <HiOutlineExclamationTriangle size={22} className="text-volare-naranja shrink-0 mt-0.5" />
+                    <p className="text-sm text-gray-700">
+                        El administrador dejó una observación en tu reserva: '{observacionAdmin}'. Por favor corrige lo indicado antes de reenviar.
+                    </p>
+                </div>
+            )}
+
             <button
                 type="button"
                 onClick={() => navigate(rutaCalendario(espacio))}
@@ -444,6 +481,8 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
                 <div key="paso-1" className="flex flex-col gap-4 animate-volare-barrido-derecha">
                     <h2 className="text-lg font-semibold text-volare-azul">Datos personales</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Campo label="Manzana" value={manzana} onChange={setManzana} />
+                        <Campo label="Villa" value={villa} onChange={setVilla} />
                         <Campo label="Nombres" value={nombres} onChange={setNombres} />
                         <Campo label="Apellidos" value={apellidos} onChange={setApellidos} />
                         <Campo label="Correo" type="email" value={correo} onChange={setCorreo} />
@@ -499,7 +538,15 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
                         Estos datos se usan únicamente para devolver tu garantía después del evento, si se cumplen las condiciones del reglamento.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Campo label="Nombre del banco" value={bancoNombre} onChange={setBancoNombre} />
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm font-medium text-gray-700">Nombre del banco</label>
+                            <SelectorBuscable
+                                opciones={BANCOS_ECUADOR}
+                                valor={bancoNombre}
+                                onSeleccionar={setBancoNombre}
+                                placeholder="Busca tu banco..."
+                            />
+                        </div>
                         <Campo label="Número de cuenta" value={numeroCuenta} onChange={setNumeroCuenta} />
                         <div className="flex flex-col gap-1">
                             <label className="text-sm font-medium text-gray-700">Tipo de cuenta</label>
@@ -513,7 +560,7 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
                                 <option value="CORRIENTE">Corriente</option>
                             </select>
                         </div>
-                        <Campo label="Cédula o RUC" value={cedulaRucBancario} onChange={setCedulaRucBancario} />
+                        <Campo label="Cédula o RUC" value={cedulaRucBancario} onChange={(v) => setCedulaRucBancario(v.replace(/\D/g, ''))} />
                     </div>
                 </div>
             )}
@@ -535,16 +582,17 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
                         Descarga el contrato, complétalo a mano, fírmalo, escanéalo o tómale una foto legible, y súbelo aquí.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {SLOTS_ARCHIVOS.map(({ slot, label, campoUrl }) => {
-                            const [archivo, setArchivo] = archivosPorSlot[slot]
+                        {SLOTS_ARCHIVOS.map(({ slot, label }) => {
+                            const [archivosNuevos, setArchivosNuevos] = archivosPorSlot[slot]
                             return (
-                                <ZonaArchivo
+                                <ZonaArchivosMultiple
                                     key={slot}
                                     label={label}
-                                    archivo={archivo}
-                                    urlExistente={archivosExistentes[campoUrl]}
-                                    onSeleccionar={crearManejadorArchivo(setArchivo, archivo)}
-                                    onQuitar={crearQuitarArchivo(setArchivo, archivo)}
+                                    archivosNuevos={archivosNuevos}
+                                    archivosExistentes={archivosExistentes[slot]}
+                                    onAgregar={crearAgregarArchivos(setArchivosNuevos, archivosNuevos)}
+                                    onQuitarNuevo={crearQuitarArchivoNuevo(setArchivosNuevos, archivosNuevos)}
+                                    onQuitarExistente={crearQuitarArchivoExistente(slot)}
                                 />
                             )
                         })}
@@ -569,6 +617,7 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
                             </>
                         )}
                         <hr className="border-gray-200" />
+                        <p><span className="font-semibold">Manzana/Villa:</span> Mz. {manzana} Villa {villa}</p>
                         <p><span className="font-semibold">Nombres:</span> {nombres} {apellidos}</p>
                         <p><span className="font-semibold">Correo:</span> {correo}</p>
                         <p><span className="font-semibold">Celular:</span> {celular}</p>
@@ -581,9 +630,9 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
                             {' '}({tipoCuenta === 'AHORROS' ? 'Ahorros' : 'Corriente'})
                         </p>
                         <hr className="border-gray-200" />
-                        <p><span className="font-semibold">Comprobante de pago:</span> {comprobantePago?.file.name ?? 'Sin cambios'}</p>
-                        <p><span className="font-semibold">Lista de invitados:</span> {listaInvitados?.file.name ?? 'Sin cambios'}</p>
-                        <p><span className="font-semibold">Contrato firmado:</span> {contratoFirmado?.file.name ?? 'Sin cambios'}</p>
+                        <p><span className="font-semibold">Comprobante de pago:</span> {archivosExistentes.comprobantePago.length + comprobantePago.length} archivo(s)</p>
+                        <p><span className="font-semibold">Lista de invitados:</span> {archivosExistentes.listaInvitados.length + listaInvitados.length} archivo(s)</p>
+                        <p><span className="font-semibold">Contrato firmado:</span> {archivosExistentes.contratoFirmado.length + contratoFirmado.length} archivo(s)</p>
                     </div>
                     <div className="bg-volare-verde/10 border border-volare-verde/30 rounded-lg p-4 text-center">
                         <p className="text-2xl font-bold text-volare-verde">Total: ${montoTotal}</p>

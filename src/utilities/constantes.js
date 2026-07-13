@@ -25,4 +25,14 @@ const ESTILOS_ESTADO_RESERVA = {
     RECHAZADA: { color: 'text-red-500', punto: 'bg-red-500', label: 'Rechazada' },
 }
 
-export { tipoColores, NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA }
+const BANCOS_ECUADOR = [
+    'Banco Pichincha', 'Banco del Pacífico', 'Banco de Guayaquil',
+    'Produbanco', 'Banco Internacional', 'Banco Bolivariano',
+    'Banco del Austro', 'Banco Solidario', 'Banco Promerica',
+    'Banco Amazonas', 'Banco ProCredit', 'Banco de Loja',
+    'Banco de Machala', 'Banco del Litoral', 'Banco General Rumiñahui',
+    'Banco Comercial de Manabí', 'Banco D-Miro', 'Banisi / Delbank',
+    'Banco Capital', 'Citibank (Sucursal Internacional)'
+]
+
+export { tipoColores, NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA, BANCOS_ECUADOR }

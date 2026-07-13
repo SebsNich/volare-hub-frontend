@@ -11,8 +11,11 @@ function RutaProtegida({ children, rolRequerido }) {
         return <Navigate to="/" />
     }
 
-    if (rolRequerido && usuario.rol !== rolRequerido) {
-        return <Navigate to="/" />
+    if (rolRequerido) {
+        const rolesPermitidos = Array.isArray(rolRequerido) ? rolRequerido : [rolRequerido]
+        if (!rolesPermitidos.includes(usuario.rol)) {
+            return <Navigate to="/" />
+        }
     }
 
     return children

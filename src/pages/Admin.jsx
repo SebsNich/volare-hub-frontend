@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Modal from '../components/Modal'
 import ArchivoAdjunto from '../components/ArchivoAdjunto'
+import ControlesPaginacion from '../components/ControlesPaginacion'
 import {
     HiOutlineUsers,
     HiOutlineInbox,
@@ -12,7 +13,8 @@ import {
     HiOutlineBuildingOffice2,
     HiOutlineEnvelope,
     HiOutlineCalendarDays,
-    HiOutlineExclamationTriangle
+    HiOutlineExclamationTriangle,
+    HiOutlineChatBubbleLeftEllipsis
 } from 'react-icons/hi2'
 import { normalizarTexto, formatearFechaReserva } from '../utilities/helpers'
 import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA } from '../utilities/constantes'
@@ -49,28 +51,11 @@ const ESTILOS_ESTADO_SUGERENCIA = {
 
 const TAMANO_PAGINA = 10
 
-function ControlesPaginacion({ paginaActual, totalPaginas, onAnterior, onSiguiente }) {
-    return (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-            <button
-                type="button"
-                onClick={onAnterior}
-                disabled={paginaActual === 1}
-                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${paginaActual === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-volare-azul text-white hover:opacity-90'}`}
-            >
-                Anterior
-            </button>
-            <span className="text-sm text-gray-500">Página {paginaActual} de {totalPaginas}</span>
-            <button
-                type="button"
-                onClick={onSiguiente}
-                disabled={paginaActual === totalPaginas}
-                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${paginaActual === totalPaginas ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-volare-azul text-white hover:opacity-90'}`}
-            >
-                Siguiente
-            </button>
-        </div>
-    )
+function listaArchivos(urls, etiqueta) {
+    if (!urls?.length) return null
+    return urls.map((url, index) => (
+        <ArchivoAdjunto key={url} nombre={urls.length > 1 ? `${etiqueta} ${index + 1}` : etiqueta} href={url} />
+    ))
 }
 
 function Admin() {
@@ -98,11 +83,13 @@ function Admin() {
 
     const [reservas, setReservas] = useState([])
     const [reservaSeleccionada, setReservaSeleccionada] = useState(null)
-    const [mostrandoRechazo, setMostrandoRechazo] = useState(false)
+    const [confirmacionAccion, setConfirmacionAccion] = useState(null)
     const [motivoRechazoTexto, setMotivoRechazoTexto] = useState('')
+    const [observacionTexto, setObservacionTexto] = useState('')
     const [busquedaReservas, setBusquedaReservas] = useState('')
     const [filtroEspacioReserva, setFiltroEspacioReserva] = useState('TODOS')
     const [filtroEstadoReserva, setFiltroEstadoReserva] = useState('TODOS')
+    const [filtroFechaReserva, setFiltroFechaReserva] = useState('')
     const [paginaReservas, setPaginaReservas] = useState(1)
 
     async function cargarResumen() {
@@ -179,14 +166,16 @@ function Admin() {
 
     function abrirModalReserva(reserva) {
         setReservaSeleccionada(reserva)
-        setMostrandoRechazo(false)
+        setConfirmacionAccion(null)
         setMotivoRechazoTexto('')
+        setObservacionTexto('')
     }
 
     function cerrarModalReserva() {
         setReservaSeleccionada(null)
-        setMostrandoRechazo(false)
+        setConfirmacionAccion(null)
         setMotivoRechazoTexto('')
+        setObservacionTexto('')
     }
 
     async function aprobarReservaAccion(id) {
@@ -202,11 +191,17 @@ function Admin() {
             cargarResumen()
             cerrarModalReserva()
         } else {
-            mostrarToast('No se pudo aprobar la reserva', 'error')
+            const datos = await respuesta.json().catch(() => ({}))
+            mostrarToast(datos.error || 'No se pudo aprobar la reserva', 'error')
         }
     }
 
     async function rechazarReservaAccion(id, motivo) {
+        if (!motivo.trim()) {
+            mostrarToast('Debes indicar el motivo del rechazo', 'error')
+            return
+        }
+
         const respuesta = await fetch(`${API_URL}/api/reservas/${id}/rechazar`, {
             method: 'PUT',
             headers: {
@@ -221,7 +216,32 @@ function Admin() {
             cargarResumen()
             cerrarModalReserva()
         } else {
-            mostrarToast('No se pudo rechazar la reserva', 'error')
+            const datos = await respuesta.json().catch(() => ({}))
+            mostrarToast(datos.error || 'No se pudo rechazar la reserva', 'error')
+        }
+    }
+
+    async function enviarObservacionAccion(id, observacion) {
+        if (!observacion.trim()) {
+            mostrarToast('Debes escribir la observación', 'error')
+            return
+        }
+
+        const respuesta = await fetch(`${API_URL}/api/reservas/${id}/observacion`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ observacion })
+        })
+        if (respuesta.ok) {
+            mostrarToast('Observación enviada al residente', 'exito')
+            cargarReservas()
+            cerrarModalReserva()
+        } else {
+            const datos = await respuesta.json().catch(() => ({}))
+            mostrarToast(datos.error || 'No se pudo enviar la observación', 'error')
         }
     }
 
@@ -314,7 +334,8 @@ function Admin() {
             || normalizarTexto(reserva.usuario?.nombre || '').includes(normalizarTexto(busquedaReservas))
         const coincideEspacio = filtroEspacioReserva === 'TODOS' || reserva.espacio === filtroEspacioReserva
         const coincideEstado = filtroEstadoReserva === 'TODOS' || reserva.estado === filtroEstadoReserva
-        return coincideNombre && coincideEspacio && coincideEstado
+        const coincideFecha = filtroFechaReserva === '' || reserva.fecha.slice(0, 10) === filtroFechaReserva
+        return coincideNombre && coincideEspacio && coincideEstado && coincideFecha
     })
     const totalPaginasReservas = Math.max(1, Math.ceil(reservasFiltradas.length / TAMANO_PAGINA))
     const paginaReservasEfectiva = Math.min(paginaReservas, totalPaginasReservas)
@@ -621,6 +642,21 @@ function Admin() {
                                     <option value="APROBADA">Aprobada</option>
                                     <option value="RECHAZADA">Rechazada</option>
                                 </select>
+                                <input
+                                    type="date"
+                                    value={filtroFechaReserva}
+                                    onChange={(e) => { setFiltroFechaReserva(e.target.value); setPaginaReservas(1) }}
+                                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-volare-azul sm:w-44"
+                                />
+                                {filtroFechaReserva && (
+                                    <button
+                                        type="button"
+                                        onClick={() => { setFiltroFechaReserva(''); setPaginaReservas(1) }}
+                                        className="text-sm text-gray-500 hover:text-volare-azul whitespace-nowrap px-1"
+                                    >
+                                        Limpiar filtro
+                                    </button>
+                                )}
                             </div>
 
                             <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-x-auto">
@@ -628,6 +664,7 @@ function Admin() {
                                     <thead>
                                         <tr className="border-b border-gray-100 text-gray-500 text-xs uppercase">
                                             <th className="px-4 py-3 whitespace-nowrap">Residente</th>
+                                            <th className="px-4 py-3 whitespace-nowrap">Manzana/Villa</th>
                                             <th className="px-4 py-3 whitespace-nowrap">Espacio</th>
                                             <th className="px-4 py-3 whitespace-nowrap">Fecha</th>
                                             <th className="px-4 py-3 whitespace-nowrap">Horario</th>
@@ -645,6 +682,7 @@ function Admin() {
                                                     className="border-b border-gray-50 last:border-0 hover:bg-gray-50 cursor-pointer"
                                                 >
                                                     <td className="px-4 py-3 font-semibold text-volare-azul whitespace-nowrap">{reserva.usuario?.nombre}</td>
+                                                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">Mz. {reserva.manzana} Villa {reserva.villa}</td>
                                                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{NOMBRES_ESPACIO_RESERVA[reserva.espacio]}</td>
                                                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatearFechaReserva(reserva.fecha)}</td>
                                                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{NOMBRES_HORARIO_RESERVA[reserva.horario]}</td>
@@ -659,6 +697,13 @@ function Admin() {
                                                                 <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-yellow-100 text-yellow-700 border border-yellow-300">
                                                                     Tercero
                                                                 </span>
+                                                            )}
+                                                            {reserva.observacionAdmin && (
+                                                                <HiOutlineChatBubbleLeftEllipsis
+                                                                    size={16}
+                                                                    className="text-volare-naranja shrink-0"
+                                                                    aria-label="Tiene observación"
+                                                                />
                                                             )}
                                                         </div>
                                                     </td>
@@ -735,6 +780,15 @@ function Admin() {
                         {ESTILOS_ESTADO_RESERVA[reservaSeleccionada.estado].label}
                     </span>
 
+                    {reservaSeleccionada.observacionAdmin && (
+                        <div className="bg-orange-50 border border-volare-naranja/40 rounded-lg p-3 flex items-start gap-2">
+                            <HiOutlineChatBubbleLeftEllipsis size={20} className="text-volare-naranja shrink-0 mt-0.5" />
+                            <p className="text-sm text-gray-700">
+                                <span className="font-semibold text-volare-naranja">Observación enviada:</span> {reservaSeleccionada.observacionAdmin}
+                            </p>
+                        </div>
+                    )}
+
                     {reservaSeleccionada.esParaTercero && (
                         <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 flex flex-col gap-3">
                             <p className="text-sm font-semibold text-yellow-800 flex items-start gap-2">
@@ -752,6 +806,7 @@ function Admin() {
 
                     <div className="flex flex-col gap-1 text-sm text-gray-600">
                         <p><span className="font-semibold text-gray-700">Residente (cuenta):</span> {reservaSeleccionada.usuario?.nombre}</p>
+                        <p><span className="font-semibold text-gray-700">Manzana/Villa:</span> Mz. {reservaSeleccionada.manzana} Villa {reservaSeleccionada.villa}</p>
                         <p><span className="font-semibold text-gray-700">Nombres:</span> {reservaSeleccionada.nombres} {reservaSeleccionada.apellidos}</p>
                         <p><span className="font-semibold text-gray-700">Correo:</span> {reservaSeleccionada.correo}</p>
                         <p><span className="font-semibold text-gray-700">Celular:</span> {reservaSeleccionada.celular}</p>
@@ -773,9 +828,9 @@ function Admin() {
 
                     <div className="flex flex-col gap-2">
                         <p className="font-semibold text-gray-700 text-sm">Documentos</p>
-                        <ArchivoAdjunto nombre="Comprobante de pago" href={reservaSeleccionada.comprobantePagoUrl} />
-                        <ArchivoAdjunto nombre="Lista de invitados" href={reservaSeleccionada.listaInvitadosUrl} />
-                        <ArchivoAdjunto nombre="Contrato firmado" href={reservaSeleccionada.contratoFirmadoUrl} />
+                        {listaArchivos(reservaSeleccionada.comprobantePagoUrls, 'Comprobante de pago')}
+                        {listaArchivos(reservaSeleccionada.listaInvitadosUrls, 'Lista de invitados')}
+                        {listaArchivos(reservaSeleccionada.contratoFirmadoUrls, 'Contrato firmado')}
                     </div>
 
                     <hr className="border-gray-200" />
@@ -792,47 +847,116 @@ function Admin() {
                         <p className="text-xs text-gray-500">Motivo de rechazo: {reservaSeleccionada.motivoRechazo}</p>
                     )}
 
-                    {reservaSeleccionada.estado === 'PENDIENTE' && !mostrandoRechazo && (
-                        <div className="flex gap-3 self-start">
+                    {reservaSeleccionada.estado === 'PENDIENTE' && (
+                        <div className="flex flex-wrap gap-3 self-start">
                             <button
-                                onClick={() => aprobarReservaAccion(reservaSeleccionada.id)}
+                                onClick={() => setConfirmacionAccion('aprobar')}
                                 className="bg-volare-verde text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
                             >
                                 Aprobar
                             </button>
                             <button
-                                onClick={() => setMostrandoRechazo(true)}
+                                onClick={() => setConfirmacionAccion('rechazar')}
                                 className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
                             >
                                 Rechazar
                             </button>
+                            <button
+                                onClick={() => setConfirmacionAccion('observacion')}
+                                className="bg-volare-naranja text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                            >
+                                Enviar Observación
+                            </button>
                         </div>
                     )}
+                </Modal>
+            )}
 
-                    {reservaSeleccionada.estado === 'PENDIENTE' && mostrandoRechazo && (
-                        <div className="flex flex-col gap-3">
+            {confirmacionAccion && (
+                <Modal onClose={() => setConfirmacionAccion(null)}>
+                    {confirmacionAccion === 'aprobar' && (
+                        <>
+                            <h3 className="text-lg font-bold text-volare-azul">Confirmar aprobación</h3>
+                            <p className="text-sm text-gray-600">¿Confirmas que deseas aprobar esta reserva?</p>
+                            <div className="flex gap-3 self-start">
+                                <button
+                                    onClick={() => aprobarReservaAccion(reservaSeleccionada.id)}
+                                    className="bg-volare-verde text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                                >
+                                    Sí, aprobar
+                                </button>
+                                <button
+                                    onClick={() => setConfirmacionAccion(null)}
+                                    className="bg-gray-200 text-gray-600 px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {confirmacionAccion === 'rechazar' && (
+                        <>
+                            <h3 className="text-lg font-bold text-volare-azul">Confirmar rechazo</h3>
                             <textarea
                                 value={motivoRechazoTexto}
                                 onChange={(e) => setMotivoRechazoTexto(e.target.value)}
-                                placeholder="Motivo del rechazo (opcional)"
+                                placeholder="Motivo del rechazo (obligatorio)"
                                 rows={3}
                                 className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-volare-azul resize-none"
                             />
                             <div className="flex gap-3 self-start">
                                 <button
                                     onClick={() => rechazarReservaAccion(reservaSeleccionada.id, motivoRechazoTexto)}
-                                    className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                                    disabled={!motivoRechazoTexto.trim()}
+                                    className={`px-4 py-2 rounded-lg font-semibold transition ${
+                                        motivoRechazoTexto.trim()
+                                            ? 'bg-red-500 text-white hover:opacity-90 cursor-pointer'
+                                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    }`}
                                 >
-                                    Confirmar rechazo
+                                    Sí, rechazar
                                 </button>
                                 <button
-                                    onClick={() => setMostrandoRechazo(false)}
+                                    onClick={() => setConfirmacionAccion(null)}
                                     className="bg-gray-200 text-gray-600 px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
                                 >
                                     Cancelar
                                 </button>
                             </div>
-                        </div>
+                        </>
+                    )}
+
+                    {confirmacionAccion === 'observacion' && (
+                        <>
+                            <h3 className="text-lg font-bold text-volare-azul">Enviar observación</h3>
+                            <textarea
+                                value={observacionTexto}
+                                onChange={(e) => setObservacionTexto(e.target.value)}
+                                placeholder="Escribe la observación para el residente (obligatorio)"
+                                rows={3}
+                                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-volare-azul resize-none"
+                            />
+                            <div className="flex gap-3 self-start">
+                                <button
+                                    onClick={() => enviarObservacionAccion(reservaSeleccionada.id, observacionTexto)}
+                                    disabled={!observacionTexto.trim()}
+                                    className={`px-4 py-2 rounded-lg font-semibold transition ${
+                                        observacionTexto.trim()
+                                            ? 'bg-volare-naranja text-white hover:opacity-90 cursor-pointer'
+                                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    }`}
+                                >
+                                    Enviar
+                                </button>
+                                <button
+                                    onClick={() => setConfirmacionAccion(null)}
+                                    className="bg-gray-200 text-gray-600 px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </>
                     )}
                 </Modal>
             )}

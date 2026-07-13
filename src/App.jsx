@@ -33,37 +33,37 @@ function App() {
                   </RutaProtegida>
               } />
               <Route path="/reservas" element={
-                  <RutaProtegida rolRequerido="RESIDENTE">
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']}>
                       <Reservas />
                   </RutaProtegida>
               } />
               <Route path="/reservas/cabanas" element={
-                  <RutaProtegida rolRequerido="RESIDENTE">
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']}>
                       <ReservaCabanas />
                   </RutaProtegida>
               } />
               <Route path="/reservas/casa-club" element={
-                  <RutaProtegida rolRequerido="RESIDENTE">
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']}>
                       <ReservaCasaClub />
                   </RutaProtegida>
               } />
               <Route path="/reservas/cabanas/formulario" element={
-                  <RutaProtegida rolRequerido="RESIDENTE">
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']}>
                       <ReservaFormulario />
                   </RutaProtegida>
               } />
               <Route path="/reservas/casa-club/formulario" element={
-                  <RutaProtegida rolRequerido="RESIDENTE">
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']}>
                       <ReservaFormulario />
                   </RutaProtegida>
               } />
               <Route path="/reservas/editar/:id" element={
-                  <RutaProtegida rolRequerido="RESIDENTE">
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']}>
                       <ReservaFormulario />
                   </RutaProtegida>
               } />
               <Route path="/reservas/mis-reservas" element={
-                  <RutaProtegida rolRequerido="RESIDENTE">
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']}>
                       <MisReservas />
                   </RutaProtegida>
               } />

@@ -6,13 +6,19 @@ import { HiOutlineHome, HiOutlineArrowRightOnRectangle, HiOutlineCog6Tooth, HiOu
 import AvatarUsuario from './AvatarUsuario'
 import ModalAuth from './ModalAuth'
 import Tooltip from './Tooltip'
+import { API_URL } from '../config/api'
+
+const INTERVALO_NOTIFICACIONES_MS = 60000
 
 function Navbar() {
     const { usuario, logout } = useContext(AuthContext)
     const { mostrarToast } = useToast()
     const [modalAuthAbierto, setModalAuthAbierto] = useState(false)
     const [serviciosAbierto, setServiciosAbierto] = useState(false)
+    const [notificacionesPendientes, setNotificacionesPendientes] = useState(0)
     const serviciosRef = useRef(null)
+
+    const mostrarServicios = usuario && (usuario.rol === 'RESIDENTE' || usuario.rol === 'ADMIN')
 
     function manejarLogout() {
         logout()
@@ -29,13 +35,34 @@ function Navbar() {
         return () => document.removeEventListener('mousedown', manejarClickFuera)
     }, [])
 
+    useEffect(() => {
+        if (!mostrarServicios) return
+
+        async function cargarNotificaciones() {
+            try {
+                const respuesta = await fetch(`${API_URL}/api/reservas/mias/no-leidas`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                })
+                if (!respuesta.ok) return
+                const datos = await respuesta.json()
+                setNotificacionesPendientes(datos.cantidad)
+            } catch {
+                // silencioso: no interrumpir la navegación por un fallo de notificaciones
+            }
+        }
+
+        cargarNotificaciones()
+        const intervalo = setInterval(cargarNotificaciones, INTERVALO_NOTIFICACIONES_MS)
+        return () => clearInterval(intervalo)
+    }, [mostrarServicios])
+
     return (
         <nav className="sticky top-0 z-50 bg-white text-volare-azul shadow-lg">
             <div className="px-4 sm:px-6 py-4 flex items-center justify-between">
                 <Link to="/" className="flex items-center gap-3 min-w-0">
                     <img src="/logo-volare.png" alt="Logo Urbanización Volare" className="h-10 sm:h-12 w-auto shrink-0" />
                     <div className="hidden sm:block w-px h-8 bg-gray-300" />
-                    <span className="hidden sm:inline text-xl font-bold tracking-wide text-volare-azul truncate">Volare Hub</span>
+                    <span className="hidden sm:inline text-xl font-bold tracking-wide text-volare-azul truncate">Urbanización Volare</span>
                 </Link>
                 <div className="flex items-center gap-3 sm:gap-5">
                     <Tooltip texto="Inicio" posicion="abajo">
@@ -51,7 +78,7 @@ function Navbar() {
                             </Link>
                         </Tooltip>
                     )}
-                    {usuario && usuario.rol === 'RESIDENTE' && (
+                    {mostrarServicios && (
                         <div className="relative" ref={serviciosRef}>
                             <button
                                 onClick={() => setServiciosAbierto(!serviciosAbierto)}
@@ -61,6 +88,11 @@ function Navbar() {
                             >
                                 <HiOutlineWrenchScrewdriver size={20} />
                                 <span className="hidden sm:inline">Servicios</span>
+                                {notificacionesPendientes > 0 && (
+                                    <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">
+                                        {notificacionesPendientes}
+                                    </span>
+                                )}
                                 <HiChevronDown size={14} className={`transition-transform ${serviciosAbierto ? 'rotate-180' : ''}`} />
                             </button>
                             {serviciosAbierto && (
