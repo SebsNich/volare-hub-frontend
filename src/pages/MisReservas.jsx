@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { HiOutlineArrowLeft, HiOutlineChatBubbleLeftEllipsis } from 'react-icons/hi2'
+import { HiOutlineArrowLeft } from 'react-icons/hi2'
 import Modal from '../components/Modal'
 import ArchivoAdjunto from '../components/ArchivoAdjunto'
 import ControlesPaginacion from '../components/ControlesPaginacion'
-import Tooltip from '../components/Tooltip'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
 import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA } from '../utilities/constantes'
@@ -25,6 +24,7 @@ function MisReservas() {
     const [reservas, setReservas] = useState([])
     const [cargando, setCargando] = useState(true)
     const [reservaSeleccionada, setReservaSeleccionada] = useState(null)
+    const [modalTexto, setModalTexto] = useState(null)
     const [filtroFecha, setFiltroFecha] = useState('')
     const [filtroEspacio, setFiltroEspacio] = useState('TODOS')
     const [filtroEstado, setFiltroEstado] = useState('TODOS')
@@ -163,14 +163,29 @@ function MisReservas() {
                                                         <span className={`w-2 h-2 rounded-full ${estilo.punto}`} />
                                                         {estilo.label}
                                                     </span>
-                                                    {reserva.observacionAdmin && (
-                                                        <Tooltip texto="Tiene una observación del administrador">
-                                                            <HiOutlineChatBubbleLeftEllipsis
-                                                                size={16}
-                                                                className="text-volare-naranja shrink-0"
-                                                                aria-label="Tiene una observación del administrador"
-                                                            />
-                                                        </Tooltip>
+                                                    {reserva.estado === 'PENDIENTE' && reserva.observacionAdmin && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                setModalTexto({ tipo: 'observacion', texto: reserva.observacionAdmin, reservaId: reserva.id })
+                                                            }}
+                                                            className="bg-volare-naranja text-white text-xs px-2 py-1 rounded-lg font-semibold hover:opacity-90 transition shrink-0"
+                                                        >
+                                                            Ver observación
+                                                        </button>
+                                                    )}
+                                                    {reserva.estado === 'RECHAZADA' && reserva.motivoRechazo && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                setModalTexto({ tipo: 'rechazo', texto: reserva.motivoRechazo })
+                                                            }}
+                                                            className="bg-red-500 text-white text-xs px-2 py-1 rounded-lg font-semibold hover:opacity-90 transition shrink-0"
+                                                        >
+                                                            Ver motivo de rechazo
+                                                        </button>
                                                     )}
                                                 </div>
                                             </td>
@@ -252,6 +267,26 @@ function MisReservas() {
                             Total: ${Number(reservaSeleccionada.montoAlquiler) + Number(reservaSeleccionada.montoGarantia)}
                         </p>
                     </div>
+                </Modal>
+            )}
+
+            {modalTexto && (
+                <Modal onClose={() => setModalTexto(null)}>
+                    <h3 className="text-lg font-bold text-volare-azul">
+                        {modalTexto.tipo === 'observacion' ? 'Observación del administrador' : 'Motivo de rechazo'}
+                    </h3>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap max-h-64 overflow-y-auto">
+                        {modalTexto.texto}
+                    </p>
+                    {modalTexto.tipo === 'observacion' && (
+                        <button
+                            type="button"
+                            onClick={() => navigate(`/reservas/editar/${modalTexto.reservaId}`)}
+                            className="self-start bg-volare-azul text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                        >
+                            Ir a corregir mi reserva
+                        </button>
+                    )}
                 </Modal>
             )}
         </div>

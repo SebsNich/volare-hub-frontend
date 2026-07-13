@@ -107,9 +107,14 @@ function Navbar() {
                                     <Link
                                         to="/reservas/mis-reservas"
                                         onClick={() => setServiciosAbierto(false)}
-                                        className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-volare-azul transition"
+                                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-volare-azul transition"
                                     >
                                         Mis Reservas
+                                        {notificacionesPendientes > 0 && (
+                                            <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">
+                                                {notificacionesPendientes}
+                                            </span>
+                                        )}
                                     </Link>
                                 </div>
                             )}

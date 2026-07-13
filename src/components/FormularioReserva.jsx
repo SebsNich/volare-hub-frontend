@@ -421,7 +421,7 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
     return (
         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-6">
             {observacionAdmin && (
-                <div className="bg-orange-50 border border-volare-naranja/40 rounded-xl p-4 flex items-start gap-3">
+                <div className="bg-orange-50 border border-volare-naranja/40 rounded-xl p-4 flex items-start gap-3 max-h-32 overflow-y-auto">
                     <HiOutlineExclamationTriangle size={22} className="text-volare-naranja shrink-0 mt-0.5" />
                     <p className="text-sm text-gray-700">
                         El administrador dejó una observación en tu reserva: '{observacionAdmin}'. Por favor corrige lo indicado antes de reenviar.

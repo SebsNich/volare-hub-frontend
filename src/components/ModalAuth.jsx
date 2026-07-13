@@ -20,9 +20,18 @@ function ModalAuth({ onClose }) {
     const [manzana, setManzana] = useState('')
     const [villa, setVilla] = useState('')
 
+    const [correoRecuperar, setCorreoRecuperar] = useState('')
+    const [manzanaRecuperar, setManzanaRecuperar] = useState('')
+    const [villaRecuperar, setVillaRecuperar] = useState('')
+    const [nuevaContrasena, setNuevaContrasena] = useState('')
+    const [confirmarContrasena, setConfirmarContrasena] = useState('')
+    const [enviandoRecuperacion, setEnviandoRecuperacion] = useState(false)
+
     const [error, setError] = useState('')
 
     const esLogin = modo === 'login'
+    const esRegistro = modo === 'registro'
+    const esRecuperar = modo === 'recuperar'
 
     async function iniciarSesionConToken(token, mensajeExito) {
         localStorage.setItem('token', token)
@@ -82,13 +91,51 @@ function ModalAuth({ onClose }) {
         await iniciarSesionConToken(datos.token, 'Cuenta creada correctamente')
     }
 
+    async function handleRecuperar(e) {
+        e.preventDefault()
+        setEnviandoRecuperacion(true)
+
+        try {
+            const respuesta = await fetch(`${API_URL}/api/auth/recuperar-contrasena`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    correo: correoRecuperar,
+                    manzana: manzanaRecuperar,
+                    villa: villaRecuperar,
+                    nuevaContrasena,
+                    confirmarContrasena
+                })
+            })
+            const datos = await respuesta.json()
+
+            if (!respuesta.ok) {
+                mostrarToast(datos.mensaje || 'No se pudo restablecer la contraseña', 'error')
+                return
+            }
+
+            mostrarToast('Contraseña actualizada, ya puedes iniciar sesión', 'exito')
+            setEmail(correoRecuperar)
+            setPassword('')
+            setManzanaRecuperar('')
+            setVillaRecuperar('')
+            setNuevaContrasena('')
+            setConfirmarContrasena('')
+            setModo('login')
+        } catch {
+            mostrarToast('Error de conexión, intenta nuevamente', 'error')
+        } finally {
+            setEnviandoRecuperacion(false)
+        }
+    }
+
     return (
         <Modal onClose={onClose}>
             <div
                 key={modo}
                 className={esLogin ? 'flex flex-col gap-4 animate-volare-barrido-izquierda' : 'flex flex-col gap-4 animate-volare-barrido-derecha'}
             >
-            {esLogin ? (
+            {esLogin && (
                 <>
                     <h2 className="text-2xl font-bold text-volare-azul text-center mb-2">Inicio de Sesión</h2>
                     <form onSubmit={handleLogin} className="flex flex-col gap-4">
@@ -114,6 +161,15 @@ function ModalAuth({ onClose }) {
                             Iniciar sesión
                         </button>
                     </form>
+                    <p className="text-sm text-center">
+                        <button
+                            type="button"
+                            onClick={() => { setModo('recuperar'); setError('') }}
+                            className="text-volare-azul text-sm hover:underline"
+                        >
+                            ¿Olvidaste tu contraseña?
+                        </button>
+                    </p>
                     <p className="text-sm text-gray-600 text-center">
                         ¿No tienes cuenta?{' '}
                         <button
@@ -125,7 +181,8 @@ function ModalAuth({ onClose }) {
                         </button>
                     </p>
                 </>
-            ) : (
+            )}
+            {esRegistro && (
                 <>
                     <h2 className="text-2xl font-bold text-volare-verde text-center mb-2">Registro de Residentes</h2>
                     <form onSubmit={handleRegistro} className="flex flex-col gap-4">
@@ -180,6 +237,68 @@ function ModalAuth({ onClose }) {
                             className="text-volare-azul font-semibold hover:underline"
                         >
                             Inicia sesión aquí
+                        </button>
+                    </p>
+                </>
+            )}
+            {esRecuperar && (
+                <>
+                    <h2 className="text-2xl font-bold text-volare-azul text-center mb-2">Recuperar Contraseña</h2>
+                    <form onSubmit={handleRecuperar} className="flex flex-col gap-4">
+                        <input
+                            type="email"
+                            value={correoRecuperar}
+                            placeholder="Correo"
+                            onChange={(e) => setCorreoRecuperar(e.target.value)}
+                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                        />
+                        <input
+                            type="text"
+                            value={manzanaRecuperar}
+                            placeholder="Manzana"
+                            onChange={(e) => setManzanaRecuperar(e.target.value)}
+                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                        />
+                        <input
+                            type="text"
+                            value={villaRecuperar}
+                            placeholder="Villa"
+                            onChange={(e) => setVillaRecuperar(e.target.value)}
+                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                        />
+                        <input
+                            type="password"
+                            value={nuevaContrasena}
+                            placeholder="Nueva contraseña"
+                            onChange={(e) => setNuevaContrasena(e.target.value)}
+                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                        />
+                        <input
+                            type="password"
+                            value={confirmarContrasena}
+                            placeholder="Confirmar nueva contraseña"
+                            onChange={(e) => setConfirmarContrasena(e.target.value)}
+                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                        />
+                        <button
+                            type="submit"
+                            disabled={enviandoRecuperacion}
+                            className={`px-4 py-2 rounded-lg font-semibold transition ${
+                                enviandoRecuperacion
+                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    : 'bg-volare-azul text-white hover:opacity-90 cursor-pointer'
+                            }`}
+                        >
+                            {enviandoRecuperacion ? 'Restableciendo...' : 'Restablecer Contraseña'}
+                        </button>
+                    </form>
+                    <p className="text-sm text-gray-600 text-center">
+                        <button
+                            type="button"
+                            onClick={() => { setModo('login'); setError('') }}
+                            className="text-volare-azul font-semibold hover:underline"
+                        >
+                            ‹ Volver a Iniciar Sesión
                         </button>
                     </p>
                 </>
