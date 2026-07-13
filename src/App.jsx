@@ -1,7 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Feed from './pages/Feed'
-import Login from './pages/Login'
-import Registro from './pages/registro'
 import { AuthProvider } from './context/AuthContext'
 import { ToastProvider } from './context/ToastContext'
 import Navbar from './components/Navbar'
@@ -24,8 +22,6 @@ function App() {
             <Navbar />
             <Routes>
                 <Route path="/" element={<Feed />} />
-                <Route path="/login" element={<Login />} />
-                <Route path='/registro' element={<Registro />}/>
                 <Route path="/perfil/:id" element={<PerfilPublico />} />
                 <Route path="/admin" element={
                   <RutaProtegida rolRequerido="ADMIN">
