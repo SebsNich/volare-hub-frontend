@@ -8,7 +8,7 @@ import Modal from './Modal'
 import ArchivoAdjunto from './ArchivoAdjunto'
 import Tooltip from './Tooltip'
 import AvatarUsuario from './AvatarUsuario'
-import obtenerNombreArchivo from "../utilities/helpers"
+import obtenerNombreArchivo, { nombreCompleto } from "../utilities/helpers"
 import { tipoColores } from "../utilities/constantes"
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
@@ -113,7 +113,7 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
             <div className="flex items-center justify-between">
                 <Link to={`/perfil/${post.autorId}`} className="flex items-center gap-2 text-sm font-semibold text-volare-azul hover:underline">
                     <AvatarUsuario foto={post.autor.foto} size={28} />
-                    {post.autor.nombre}
+                    {nombreCompleto(post.autor)}
                 </Link>
                 <div className="flex items-center gap-2">
                     {ancladoActivo && (

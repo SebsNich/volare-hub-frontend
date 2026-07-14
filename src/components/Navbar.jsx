@@ -7,6 +7,7 @@ import AvatarUsuario from './AvatarUsuario'
 import ModalAuth from './ModalAuth'
 import Tooltip from './Tooltip'
 import { API_URL } from '../config/api'
+import { nombreCompleto } from '../utilities/helpers'
 
 const INTERVALO_NOTIFICACIONES_MS = 60000
 
@@ -124,7 +125,7 @@ function Navbar() {
                         <Tooltip texto="Mi perfil" posicion="abajo">
                             <Link to={`/perfil/${usuario.id}`} className="flex items-center gap-2 hover:text-volare-azul transition">
                                 <AvatarUsuario foto={usuario.foto} size={36} />
-                                <span className="hidden sm:inline font-medium">{usuario.nombre}</span>
+                                <span className="hidden sm:inline font-medium">{nombreCompleto(usuario)}</span>
                             </Link>
                         </Tooltip>
                     )}

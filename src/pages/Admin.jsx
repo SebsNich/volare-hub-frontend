@@ -16,7 +16,7 @@ import {
     HiOutlineExclamationTriangle,
     HiOutlineChatBubbleLeftEllipsis
 } from 'react-icons/hi2'
-import { normalizarTexto, formatearFechaReserva } from '../utilities/helpers'
+import { normalizarTexto, formatearFechaReserva, nombreCompleto } from '../utilities/helpers'
 import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA } from '../utilities/constantes'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
@@ -61,7 +61,8 @@ function listaArchivos(urls, etiqueta) {
 function Admin() {
     const { mostrarToast } = useToast()
     const [usuarios, setUsuarios] = useState([])
-    const [nombreAdmin, setNombreAdmin] = useState('')
+    const [nombresAdmin, setNombresAdmin] = useState('')
+    const [apellidosAdmin, setApellidosAdmin] = useState('')
     const [emailAdmin, setEmailAdmin] = useState('')
     const [passwordAdmin, setPasswordAdmin] = useState('')
     const [modalCrearAdminAbierto, setModalCrearAdminAbierto] = useState(false)
@@ -281,14 +282,16 @@ function Admin() {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             },
             body: JSON.stringify({
-                nombre: nombreAdmin,
+                nombres: nombresAdmin,
+                apellidos: apellidosAdmin,
                 email: emailAdmin,
                 password: passwordAdmin
             })
         })
 
         if (respuesta.ok) {
-            setNombreAdmin('')
+            setNombresAdmin('')
+            setApellidosAdmin('')
             setEmailAdmin('')
             setPasswordAdmin('')
             setModalCrearAdminAbierto(false)
@@ -306,7 +309,7 @@ function Admin() {
     }
 
     const usuariosFiltrados = usuarios.filter(usuario => {
-        const coincideNombre = normalizarTexto(usuario.nombre).includes(normalizarTexto(busquedaUsuarios))
+        const coincideNombre = normalizarTexto(nombreCompleto(usuario)).includes(normalizarTexto(busquedaUsuarios))
         const textoManzanaVilla = normalizarTexto(`${usuario.manzana || ''} ${usuario.villa || ''}`)
         const coincideManzanaVilla = textoManzanaVilla.includes(normalizarTexto(filtroManzanaVilla))
         const coincideEstado = filtroEstadoUsuario === 'TODOS'
@@ -331,7 +334,7 @@ function Admin() {
 
     const reservasFiltradas = reservas.filter(reserva => {
         const coincideNombre = busquedaReservas === ''
-            || normalizarTexto(reserva.usuario?.nombre || '').includes(normalizarTexto(busquedaReservas))
+            || normalizarTexto(nombreCompleto(reserva.usuario)).includes(normalizarTexto(busquedaReservas))
         const coincideEspacio = filtroEspacioReserva === 'TODOS' || reserva.espacio === filtroEspacioReserva
         const coincideEstado = filtroEstadoReserva === 'TODOS' || reserva.estado === filtroEstadoReserva
         const coincideFecha = filtroFechaReserva === '' || reserva.fecha.slice(0, 10) === filtroFechaReserva
@@ -379,9 +382,16 @@ function Admin() {
                     <form onSubmit={crearAdmin} className="flex flex-col gap-4">
                         <input
                             type="text"
-                            value={nombreAdmin}
-                            onChange={(e) => setNombreAdmin(e.target.value)}
-                            placeholder="Nombre"
+                            value={nombresAdmin}
+                            onChange={(e) => setNombresAdmin(e.target.value)}
+                            placeholder="Nombres"
+                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                        />
+                        <input
+                            type="text"
+                            value={apellidosAdmin}
+                            onChange={(e) => setApellidosAdmin(e.target.value)}
+                            placeholder="Apellidos"
                             className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
                         />
                         <input
@@ -480,6 +490,8 @@ function Admin() {
                                         <tr className="border-b border-gray-100 text-gray-500 text-xs uppercase">
                                             <th className="px-4 py-3 whitespace-nowrap">Nombre</th>
                                             <th className="px-4 py-3 whitespace-nowrap">Correo</th>
+                                            <th className="px-4 py-3 whitespace-nowrap">Cédula</th>
+                                            <th className="px-4 py-3 whitespace-nowrap">Celular</th>
                                             <th className="px-4 py-3 whitespace-nowrap">Rol</th>
                                             <th className="px-4 py-3 whitespace-nowrap">Manzana/Villa</th>
                                             <th className="px-4 py-3 whitespace-nowrap">Estado</th>
@@ -489,8 +501,10 @@ function Admin() {
                                     <tbody>
                                         {usuariosPagina.map(usuario => (
                                             <tr key={usuario.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
-                                                <td className="px-4 py-3 font-semibold text-volare-azul whitespace-nowrap">{usuario.nombre}</td>
+                                                <td className="px-4 py-3 font-semibold text-volare-azul whitespace-nowrap">{nombreCompleto(usuario)}</td>
                                                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.email}</td>
+                                                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.cedula || '—'}</td>
+                                                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.celular || '—'}</td>
                                                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.rol}</td>
                                                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">Mz. {usuario.manzana} Villa {usuario.villa}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
@@ -510,7 +524,7 @@ function Admin() {
                                         ))}
                                         {usuariosPagina.length === 0 && (
                                             <tr>
-                                                <td colSpan={6} className="px-4 py-6 text-center text-gray-400">
+                                                <td colSpan={8} className="px-4 py-6 text-center text-gray-400">
                                                     No se encontraron usuarios con esos filtros
                                                 </td>
                                             </tr>
@@ -681,7 +695,7 @@ function Admin() {
                                                     onClick={() => abrirModalReserva(reserva)}
                                                     className="border-b border-gray-50 last:border-0 hover:bg-gray-50 cursor-pointer"
                                                 >
-                                                    <td className="px-4 py-3 font-semibold text-volare-azul whitespace-nowrap">{reserva.usuario?.nombre}</td>
+                                                    <td className="px-4 py-3 font-semibold text-volare-azul whitespace-nowrap">{nombreCompleto(reserva.usuario)}</td>
                                                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">Mz. {reserva.manzana} Villa {reserva.villa}</td>
                                                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{NOMBRES_ESPACIO_RESERVA[reserva.espacio]}</td>
                                                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatearFechaReserva(reserva.fecha)}</td>
@@ -805,7 +819,7 @@ function Admin() {
                     )}
 
                     <div className="flex flex-col gap-1 text-sm text-gray-600">
-                        <p><span className="font-semibold text-gray-700">Residente (cuenta):</span> {reservaSeleccionada.usuario?.nombre}</p>
+                        <p><span className="font-semibold text-gray-700">Residente (cuenta):</span> {nombreCompleto(reservaSeleccionada.usuario)}</p>
                         <p><span className="font-semibold text-gray-700">Manzana/Villa:</span> Mz. {reservaSeleccionada.manzana} Villa {reservaSeleccionada.villa}</p>
                         <p><span className="font-semibold text-gray-700">Nombres:</span> {reservaSeleccionada.nombres} {reservaSeleccionada.apellidos}</p>
                         <p><span className="font-semibold text-gray-700">Correo:</span> {reservaSeleccionada.correo}</p>

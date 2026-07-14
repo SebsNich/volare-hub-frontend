@@ -7,6 +7,7 @@ import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
 import { NOMBRES_ESPACIO_RESERVA as NOMBRES_ESPACIO, NOMBRES_HORARIO_RESERVA as NOMBRES_HORARIO, BANCOS_ECUADOR } from '../utilities/constantes'
+import { esCedulaValida } from '../utilities/helpers'
 import SelectorBuscable from './SelectorBuscable'
 
 const PASOS = [
@@ -180,11 +181,11 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
     const [paso, setPaso] = useState(1)
     const [enviando, setEnviando] = useState(false)
 
-    const [nombres, setNombres] = useState(usuario?.nombre ?? '')
-    const [apellidos, setApellidos] = useState('')
+    const [nombres, setNombres] = useState(usuario?.nombres ?? '')
+    const [apellidos, setApellidos] = useState(usuario?.apellidos ?? '')
     const [correo, setCorreo] = useState(usuario?.email ?? '')
-    const [celular, setCelular] = useState('')
-    const [cedula, setCedula] = useState('')
+    const [celular, setCelular] = useState(usuario?.celular ?? '')
+    const [cedula, setCedula] = useState(usuario?.cedula ?? '')
     const [manzana, setManzana] = useState(usuario?.manzana ?? '')
     const [villa, setVilla] = useState(usuario?.villa ?? '')
     const [motivoEvento, setMotivoEvento] = useState('')
@@ -307,11 +308,11 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
         if (!nombres.trim() || !apellidos.trim()) return 'Ingresa tus nombres y apellidos'
         if (!/^\S+@\S+\.\S+$/.test(correo)) return 'Ingresa un correo válido'
         if (!celular.trim()) return 'Ingresa tu número de celular'
-        if (!/^\d{10}$/.test(cedula)) return 'La cédula debe tener 10 dígitos'
+        if (!esCedulaValida(cedula)) return 'La cédula debe tener 10 dígitos'
         if (!motivoEvento.trim()) return 'Describe el motivo del evento'
         if (aplicaTercero) {
             if (!terceroNombre.trim()) return 'Ingresa el nombre completo del tercero'
-            if (!/^\d{10}$/.test(terceroCedula)) return 'La cédula del tercero debe tener 10 dígitos'
+            if (!esCedulaValida(terceroCedula)) return 'La cédula del tercero debe tener 10 dígitos'
             if (!/^\S+@\S+\.\S+$/.test(terceroCorreo)) return 'Ingresa un correo válido para el tercero'
             if (!terceroCelular.trim()) return 'Ingresa el celular del tercero'
         }

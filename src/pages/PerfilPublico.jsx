@@ -12,12 +12,14 @@ import Tooltip from '../components/Tooltip'
 import FiltroTipoPublicacion, { obtenerMensajeVacio } from '../components/FiltroTipoPublicacion'
 import { HiXMark, HiOutlineEye } from 'react-icons/hi2'
 import { API_URL } from '../config/api'
+import { nombreCompleto } from '../utilities/helpers'
 
 function PerfilPublico() {
     const { id } = useParams()
     const [usuario, setUsuario] = useState(null)
     const [posts, setPosts] = useState([])
-    const [nombre, setNombre] = useState('')
+    const [nombres, setNombres] = useState('')
+    const [apellidos, setApellidos] = useState('')
     const [bio, setBio] = useState('')
     const [foto, setFoto] = useState(null)
     const [fotoPreview, setFotoPreview] = useState(null)
@@ -40,7 +42,8 @@ function PerfilPublico() {
         const respuesta = await fetch(`${API_URL}/api/usuarios/${id}`)
         const datos = await respuesta.json()
         setUsuario(datos.user)
-        setNombre(datos.user.nombre)
+        setNombres(datos.user.nombres || '')
+        setApellidos(datos.user.apellidos || '')
         setBio(datos.user.bio || '')
         setPosts(datos.posts)
     }, [id])
@@ -101,7 +104,8 @@ function PerfilPublico() {
         } else if (eliminarFoto) {
             formData.append('eliminarFoto', 'true')
         }
-        formData.append('nombre', nombre)
+        formData.append('nombres', nombres)
+        formData.append('apellidos', apellidos)
         formData.append('bio', bio)
 
         const respuesta = await fetch(`${API_URL}/api/auth/editar-perfil`, {
@@ -190,7 +194,7 @@ function PerfilPublico() {
                             <AvatarUsuario foto={usuario.foto} size={96} className="mx-auto border border-gray-200 shadow-sm" />
                             <div className="border-b border-gray-200" />
                             <div className="text-center">
-                                <h2 className="text-xl font-bold text-volare-azul">{usuario.nombre}</h2>
+                                <h2 className="text-xl font-bold text-volare-azul">{nombreCompleto(usuario)}</h2>
                                 <p className="text-gray-600 text-sm mt-1">{usuario.bio}</p>
                                 <p className="flex items-center justify-center gap-1 text-xs text-gray-400 mt-2">
                                     <HiOutlineEye size={14} />
@@ -298,7 +302,8 @@ function PerfilPublico() {
                                     onChange={(e) => manejarFoto(e.target.files[0])}
                                     className="text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-volare-azul file:text-white file:font-semibold hover:file:opacity-90"
                                 />
-                                <input type="text" value={nombre} placeholder="Nombre" onChange={(e) => setNombre(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul" />
+                                <input type="text" value={nombres} placeholder="Nombres" onChange={(e) => setNombres(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul" />
+                                <input type="text" value={apellidos} placeholder="Apellidos" onChange={(e) => setApellidos(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul" />
                                 <textarea
                                     value={bio}
                                     placeholder="Cuéntanos algo sobre ti"

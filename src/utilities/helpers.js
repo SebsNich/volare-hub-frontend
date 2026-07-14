@@ -21,5 +21,16 @@ function formatearFechaReserva(fecha) {
     return new Date(fecha).toLocaleDateString('es-EC', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
 }
 
+const REGEX_CEDULA = /^\d{10}$/
+
+function esCedulaValida(cedula) {
+    return REGEX_CEDULA.test(cedula)
+}
+
+function nombreCompleto(usuario) {
+    if (!usuario) return ''
+    return `${usuario.nombres || ''} ${usuario.apellidos || ''}`.trim()
+}
+
 export default obtenerNombreArchivo
-export { formatearMesAnio, normalizarTexto, formatearFechaReserva }
+export { formatearMesAnio, normalizarTexto, formatearFechaReserva, esCedulaValida, nombreCompleto }

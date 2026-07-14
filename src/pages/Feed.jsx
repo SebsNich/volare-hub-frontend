@@ -9,7 +9,7 @@ import AvatarUsuario from '../components/AvatarUsuario'
 import FiltroTipoPublicacion, { obtenerMensajeVacio } from '../components/FiltroTipoPublicacion'
 import { HiOutlinePhone, HiOutlineMapPin, HiOutlineEye } from 'react-icons/hi2'
 import { FaFacebook, FaInstagram } from 'react-icons/fa6'
-import { formatearMesAnio } from '../utilities/helpers'
+import { formatearMesAnio, nombreCompleto } from '../utilities/helpers'
 import { API_URL } from '../config/api'
 
 function Feed() {
@@ -56,7 +56,7 @@ function Feed() {
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
             {usuario && (
-                <h1 className="text-2xl font-bold text-volare-azul mb-6">Hola, {usuario.nombre}</h1>
+                <h1 className="text-2xl font-bold text-volare-azul mb-6">Hola, {nombreCompleto(usuario)}</h1>
             )}
             <div className="flex flex-col md:grid md:grid-cols-[280px_1fr_240px] gap-6 items-start">
                 <aside className="w-full md:sticky md:top-24 bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4">
