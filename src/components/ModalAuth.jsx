@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import Modal from './Modal'
 import { API_URL } from '../config/api'
+import { esCedulaValida } from '../utilities/helpers'
 
 function ModalAuth({ onClose }) {
     const [modo, setModo] = useState('login')
@@ -14,9 +15,13 @@ function ModalAuth({ onClose }) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
-    const [nombre, setNombre] = useState('')
+    const [nombres, setNombres] = useState('')
+    const [apellidos, setApellidos] = useState('')
+    const [cedula, setCedula] = useState('')
+    const [celular, setCelular] = useState('')
     const [emailRegistro, setEmailRegistro] = useState('')
     const [passwordRegistro, setPasswordRegistro] = useState('')
+    const [confirmarPasswordRegistro, setConfirmarPasswordRegistro] = useState('')
     const [manzana, setManzana] = useState('')
     const [villa, setVilla] = useState('')
 
@@ -75,10 +80,22 @@ function ModalAuth({ onClose }) {
         e.preventDefault()
         setError('')
 
+        if (passwordRegistro !== confirmarPasswordRegistro) {
+            setError('Las contraseñas no coinciden')
+            mostrarToast('Las contraseñas no coinciden', 'error')
+            return
+        }
+
+        if (!esCedulaValida(cedula)) {
+            setError('La cédula debe tener 10 dígitos')
+            mostrarToast('La cédula debe tener 10 dígitos', 'error')
+            return
+        }
+
         const respuesta = await fetch(`${API_URL}/api/auth/registrar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre, email: emailRegistro, password: passwordRegistro, manzana, villa })
+            body: JSON.stringify({ nombres, apellidos, cedula, celular, email: emailRegistro, password: passwordRegistro, manzana, villa })
         })
         const datos = await respuesta.json()
 
@@ -186,17 +203,67 @@ function ModalAuth({ onClose }) {
                 <>
                     <h2 className="text-2xl font-bold text-volare-verde text-center mb-2">Registro de Residentes</h2>
                     <form onSubmit={handleRegistro} className="flex flex-col gap-4">
-                        <input
-                            type="text"
-                            value={nombre}
-                            placeholder="Nombre"
-                            onChange={(e) => setNombre(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
-                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <input
+                                type="text"
+                                value={nombres}
+                                placeholder="Nombres"
+                                required
+                                onChange={(e) => setNombres(e.target.value)}
+                                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
+                            />
+                            <input
+                                type="text"
+                                value={apellidos}
+                                placeholder="Apellidos"
+                                required
+                                onChange={(e) => setApellidos(e.target.value)}
+                                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
+                            />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <input
+                                type="text"
+                                value={cedula}
+                                placeholder="Cédula"
+                                inputMode="numeric"
+                                maxLength={10}
+                                required
+                                onChange={(e) => setCedula(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
+                            />
+                            <input
+                                type="text"
+                                value={celular}
+                                placeholder="Celular"
+                                required
+                                onChange={(e) => setCelular(e.target.value)}
+                                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
+                            />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <input
+                                type="text"
+                                value={manzana}
+                                placeholder="Manzana"
+                                required
+                                onChange={(e) => setManzana(e.target.value)}
+                                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
+                            />
+                            <input
+                                type="text"
+                                value={villa}
+                                placeholder="Villa"
+                                required
+                                onChange={(e) => setVilla(e.target.value)}
+                                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
+                            />
+                        </div>
                         <input
                             type="email"
                             value={emailRegistro}
                             placeholder="Email"
+                            required
                             onChange={(e) => setEmailRegistro(e.target.value)}
                             className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
                         />
@@ -204,21 +271,16 @@ function ModalAuth({ onClose }) {
                             type="password"
                             value={passwordRegistro}
                             placeholder="Contraseña"
+                            required
                             onChange={(e) => setPasswordRegistro(e.target.value)}
                             className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
                         />
                         <input
-                            type="text"
-                            value={manzana}
-                            placeholder="Manzana"
-                            onChange={(e) => setManzana(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
-                        />
-                        <input
-                            type="text"
-                            value={villa}
-                            placeholder="Villa"
-                            onChange={(e) => setVilla(e.target.value)}
+                            type="password"
+                            value={confirmarPasswordRegistro}
+                            placeholder="Confirmar Contraseña"
+                            required
+                            onChange={(e) => setConfirmarPasswordRegistro(e.target.value)}
                             className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
                         />
                         {error && <p className="text-sm text-red-500 text-center">{error}</p>}
