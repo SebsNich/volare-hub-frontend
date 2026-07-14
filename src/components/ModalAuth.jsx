@@ -26,10 +26,6 @@ function ModalAuth({ onClose }) {
     const [villa, setVilla] = useState('')
 
     const [correoRecuperar, setCorreoRecuperar] = useState('')
-    const [manzanaRecuperar, setManzanaRecuperar] = useState('')
-    const [villaRecuperar, setVillaRecuperar] = useState('')
-    const [nuevaContrasena, setNuevaContrasena] = useState('')
-    const [confirmarContrasena, setConfirmarContrasena] = useState('')
     const [enviandoRecuperacion, setEnviandoRecuperacion] = useState(false)
 
     const [error, setError] = useState('')
@@ -108,41 +104,23 @@ function ModalAuth({ onClose }) {
         await iniciarSesionConToken(datos.token, 'Cuenta creada correctamente')
     }
 
-    async function handleRecuperar(e) {
+    async function handleSolicitarRecuperacion(e) {
         e.preventDefault()
         setEnviandoRecuperacion(true)
 
         try {
-            const respuesta = await fetch(`${API_URL}/api/auth/recuperar-contrasena`, {
+            await fetch(`${API_URL}/api/auth/solicitar-recuperacion`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    correo: correoRecuperar,
-                    manzana: manzanaRecuperar,
-                    villa: villaRecuperar,
-                    nuevaContrasena,
-                    confirmarContrasena
-                })
+                body: JSON.stringify({ correo: correoRecuperar })
             })
-            const datos = await respuesta.json()
-
-            if (!respuesta.ok) {
-                mostrarToast(datos.mensaje || 'No se pudo restablecer la contraseña', 'error')
-                return
-            }
-
-            mostrarToast('Contraseña actualizada, ya puedes iniciar sesión', 'exito')
-            setEmail(correoRecuperar)
-            setPassword('')
-            setManzanaRecuperar('')
-            setVillaRecuperar('')
-            setNuevaContrasena('')
-            setConfirmarContrasena('')
-            setModo('login')
         } catch {
-            mostrarToast('Error de conexión, intenta nuevamente', 'error')
+            // ignorado: el mensaje mostrado al usuario es siempre el mismo
         } finally {
+            mostrarToast('Si el correo existe, te enviamos instrucciones para restablecer tu contraseña', 'exito')
+            setCorreoRecuperar('')
             setEnviandoRecuperacion(false)
+            setTimeout(() => setModo('login'), 2500)
         }
     }
 
@@ -306,40 +284,13 @@ function ModalAuth({ onClose }) {
             {esRecuperar && (
                 <>
                     <h2 className="text-2xl font-bold text-volare-azul text-center mb-2">Recuperar Contraseña</h2>
-                    <form onSubmit={handleRecuperar} className="flex flex-col gap-4">
+                    <form onSubmit={handleSolicitarRecuperacion} className="flex flex-col gap-4">
                         <input
                             type="email"
                             value={correoRecuperar}
                             placeholder="Correo"
+                            required
                             onChange={(e) => setCorreoRecuperar(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
-                        />
-                        <input
-                            type="text"
-                            value={manzanaRecuperar}
-                            placeholder="Manzana"
-                            onChange={(e) => setManzanaRecuperar(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
-                        />
-                        <input
-                            type="text"
-                            value={villaRecuperar}
-                            placeholder="Villa"
-                            onChange={(e) => setVillaRecuperar(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
-                        />
-                        <input
-                            type="password"
-                            value={nuevaContrasena}
-                            placeholder="Nueva contraseña"
-                            onChange={(e) => setNuevaContrasena(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
-                        />
-                        <input
-                            type="password"
-                            value={confirmarContrasena}
-                            placeholder="Confirmar nueva contraseña"
-                            onChange={(e) => setConfirmarContrasena(e.target.value)}
                             className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
                         />
                         <button
@@ -351,7 +302,7 @@ function ModalAuth({ onClose }) {
                                     : 'bg-volare-azul text-white hover:opacity-90 cursor-pointer'
                             }`}
                         >
-                            {enviandoRecuperacion ? 'Restableciendo...' : 'Restablecer Contraseña'}
+                            {enviandoRecuperacion ? 'Enviando...' : 'Enviar enlace de recuperación'}
                         </button>
                     </form>
                     <p className="text-sm text-gray-600 text-center">

@@ -12,6 +12,7 @@ import ReservaCabanas from './pages/ReservaCabanas'
 import ReservaCasaClub from './pages/ReservaCasaClub'
 import ReservaFormulario from './pages/ReservaFormulario'
 import MisReservas from './pages/MisReservas'
+import RestablecerContrasena from './pages/RestablecerContrasena'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Navbar />
             <Routes>
                 <Route path="/" element={<Feed />} />
+                <Route path="/restablecer-contrasena" element={<RestablecerContrasena />} />
                 <Route path="/perfil/:id" element={<PerfilPublico />} />
                 <Route path="/admin" element={
                   <RutaProtegida rolRequerido="ADMIN">
