@@ -1,15 +1,20 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { HiOutlineArrowLeft } from 'react-icons/hi2'
+import { HiOutlineArrowLeft, HiOutlineExclamationTriangle } from 'react-icons/hi2'
 import Modal from '../components/Modal'
 import ArchivoAdjunto from '../components/ArchivoAdjunto'
 import ControlesPaginacion from '../components/ControlesPaginacion'
+import Tooltip from '../components/Tooltip'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
 import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA } from '../utilities/constantes'
 import { formatearFechaReserva } from '../utilities/helpers'
 
 const TAMANO_PAGINA = 10
+
+function faltanDocumentos(reserva) {
+    return !reserva.comprobantePagoUrls?.length || !reserva.listaInvitadosUrls?.length || !reserva.contratoFirmadoUrls?.length
+}
 
 function listaArchivos(urls, etiqueta) {
     if (!urls?.length) return null
@@ -163,6 +168,11 @@ function MisReservas() {
                                                         <span className={`w-2 h-2 rounded-full ${estilo.punto}`} />
                                                         {estilo.label}
                                                     </span>
+                                                    {reserva.estado === 'PENDIENTE' && faltanDocumentos(reserva) && (
+                                                        <Tooltip texto="Faltan documentos por subir">
+                                                            <HiOutlineExclamationTriangle size={16} className="text-yellow-500 shrink-0" aria-label="Faltan documentos por subir" />
+                                                        </Tooltip>
+                                                    )}
                                                     {reserva.estado === 'PENDIENTE' && reserva.observacionAdmin && (
                                                         <button
                                                             type="button"

@@ -327,15 +327,8 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
         return null
     }
 
-    function validarPaso3() {
-        if (comprobantePago.length + archivosExistentes.comprobantePago.length === 0) return 'Sube al menos un comprobante de pago'
-        if (listaInvitados.length + archivosExistentes.listaInvitados.length === 0) return 'Sube al menos un archivo de lista de invitados'
-        if (contratoFirmado.length + archivosExistentes.contratoFirmado.length === 0) return 'Sube al menos un contrato firmado'
-        return null
-    }
-
     function siguiente() {
-        const validadores = { 1: validarPaso1, 2: validarPaso2, 3: validarPaso3 }
+        const validadores = { 1: validarPaso1, 2: validarPaso2 }
         const error = validadores[paso]?.()
         if (error) {
             mostrarToast(error, 'error')
@@ -582,6 +575,12 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
                     <p className="text-sm text-gray-500">
                         Descarga el contrato, complétalo a mano, fírmalo, escanéalo o tómale una foto legible, y súbelo aquí.
                     </p>
+                    <div className="bg-blue-50 border border-volare-azul/20 rounded-lg p-3 flex items-start gap-2">
+                        <HiOutlineExclamationTriangle size={20} className="text-volare-azul shrink-0 mt-0.5" />
+                        <p className="text-sm text-gray-700">
+                            Puedes subir tus documentos ahora o más tarde desde 'Mis Reservas' → Editar. Recuerda que tu reserva no podrá aprobarse hasta que el administrador reciba todos los documentos necesarios.
+                        </p>
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {SLOTS_ARCHIVOS.map(({ slot, label }) => {
                             const [archivosNuevos, setArchivosNuevos] = archivosPorSlot[slot]
