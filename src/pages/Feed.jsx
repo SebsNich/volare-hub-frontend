@@ -6,10 +6,10 @@ import { useToast } from '../context/ToastContext'
 import Modal from '../components/Modal'
 import FormularioPost from '../components/FormularioPost'
 import AvatarUsuario from '../components/AvatarUsuario'
+import InfoContactoWidget from '../components/InfoContactoWidget'
 import FiltroTipoPublicacion, { obtenerMensajeVacio } from '../components/FiltroTipoPublicacion'
-import { HiOutlinePhone, HiOutlineMapPin, HiOutlineEye, HiOutlineEnvelope, HiOutlineGlobeAlt } from 'react-icons/hi2'
+import { HiOutlineMapPin, HiOutlineEye } from 'react-icons/hi2'
 import { formatearMesAnio, nombreCompleto } from '../utilities/helpers'
-import { ICONO_PLATAFORMA } from '../utilities/constantes'
 import { API_URL } from '../config/api'
 
 function Feed() {
@@ -18,30 +18,13 @@ function Feed() {
     const { mostrarToast } = useToast()
     const [postAEliminar, setPostAEliminar] = useState(null)
     const [filtroTipo, setFiltroTipo] = useState('TODOS')
-    const [contactoInfo, setContactoInfo] = useState([])
-    const [cargandoContacto, setCargandoContacto] = useState(true)
 
     const postsFiltrados = filtroTipo === 'TODOS' ? posts : posts.filter(post => post.tipo === filtroTipo)
-    const telefonosContacto = contactoInfo.filter(c => c.tipo === 'TELEFONO')
-    const correosContacto = contactoInfo.filter(c => c.tipo === 'CORREO')
-    const redesContacto = contactoInfo.filter(c => c.tipo === 'RED_SOCIAL')
 
     async function cargarPosts(){
         const respuesta = await fetch(`${API_URL}/api/posts`)
         const datos = await respuesta.json()
         setPosts(datos)
-    }
-
-    async function cargarContacto() {
-        try {
-            const respuesta = await fetch(`${API_URL}/api/contacto`)
-            const datos = await respuesta.json()
-            setContactoInfo(datos)
-        } catch {
-            setContactoInfo([])
-        } finally {
-            setCargandoContacto(false)
-        }
     }
 
     async function eliminarPost(id) {
@@ -68,7 +51,6 @@ function Feed() {
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         cargarPosts()
-        cargarContacto()
 }, [])
 
     return (
@@ -77,28 +59,31 @@ function Feed() {
                 <h1 className="text-2xl font-bold text-volare-azul mb-6">Hola, {nombreCompleto(usuario)}</h1>
             )}
             <div className="flex flex-col md:grid md:grid-cols-[280px_1fr_240px] gap-6 items-start">
-                <aside className="w-full md:sticky md:top-24 bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4">
+                <aside className="w-full md:sticky md:top-24 flex flex-col gap-6">
                     {usuario ? (
                         <>
-                            <AvatarUsuario foto={usuario.foto} size={96} className="mx-auto" />
-                            <div className="border-b border-gray-200" />
-                            <p className="text-sm text-gray-600 text-center">{usuario.bio}</p>
-                            <div className="flex flex-col items-center gap-1 text-xs text-gray-400">
-                                <span className="flex items-center gap-1">
-                                    <HiOutlineEye size={14} />
-                                    {usuario.visitasPerfil ?? 0} visitas
-                                </span>
-                                <span>Miembro desde {formatearMesAnio(usuario.creadoEn)}</span>
+                            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4">
+                                <AvatarUsuario foto={usuario.foto} size={96} className="mx-auto" />
+                                <div className="border-b border-gray-200" />
+                                <p className="text-sm text-gray-600 text-center">{usuario.bio}</p>
+                                <div className="flex flex-col items-center gap-1 text-xs text-gray-400">
+                                    <span className="flex items-center gap-1">
+                                        <HiOutlineEye size={14} />
+                                        {usuario.visitasPerfil ?? 0} visitas
+                                    </span>
+                                    <span>Miembro desde {formatearMesAnio(usuario.creadoEn)}</span>
+                                </div>
+                                <Link
+                                    to={`/perfil/${usuario.id}`}
+                                    className="bg-volare-azul text-white px-4 py-2 rounded-lg text-sm font-semibold text-center hover:opacity-90 transition"
+                                >
+                                    Ver perfil
+                                </Link>
                             </div>
-                            <Link
-                                to={`/perfil/${usuario.id}`}
-                                className="bg-volare-azul text-white px-4 py-2 rounded-lg text-sm font-semibold text-center hover:opacity-90 transition"
-                            >
-                                Ver perfil
-                            </Link>
+                            <InfoContactoWidget envolver />
                         </>
                     ) : (
-                        <>
+                        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4">
                             <p className="text-sm text-gray-600 text-center font-medium">
                                 Urbanización Volare - Tu comunidad, tu hogar
                             </p>
@@ -108,60 +93,7 @@ function Feed() {
                                 className="rounded-xl w-full object-cover"
                             />
 
-                            {cargandoContacto ? (
-                                <div className="flex flex-col gap-2 border-t border-gray-100 pt-3 mt-3 animate-pulse">
-                                    <div className="h-3 bg-gray-100 rounded w-3/4 mx-auto" />
-                                    <div className="h-3 bg-gray-100 rounded w-1/2 mx-auto" />
-                                </div>
-                            ) : (
-                                <>
-                                    {telefonosContacto.length > 0 && (
-                                        <div className="flex flex-col gap-1 text-sm text-gray-600 text-center border-t border-gray-100 pt-3 mt-3">
-                                            {telefonosContacto.map(c => (
-                                                <div key={c.id} className="flex items-center justify-center gap-2">
-                                                    <HiOutlinePhone size={16} className="text-volare-azul shrink-0" />
-                                                    {c.etiqueta ? `${c.etiqueta}: ${c.valor}` : c.valor}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {correosContacto.length > 0 && (
-                                        <div className="flex flex-col gap-1 text-sm text-gray-600 text-center border-t border-gray-100 pt-3 mt-3">
-                                            {correosContacto.map(c => (
-                                                <a
-                                                    key={c.id}
-                                                    href={`mailto:${c.valor}`}
-                                                    className="flex items-center justify-center gap-2 hover:text-volare-azul transition"
-                                                >
-                                                    <HiOutlineEnvelope size={16} className="text-volare-azul shrink-0" />
-                                                    {c.etiqueta ? `${c.etiqueta}: ${c.valor}` : c.valor}
-                                                </a>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {redesContacto.length > 0 && (
-                                        <div className="flex items-center justify-center gap-4 border-t border-gray-100 pt-3 mt-3">
-                                            {redesContacto.map(c => {
-                                                const Icono = ICONO_PLATAFORMA[c.plataforma] || HiOutlineGlobeAlt
-                                                return (
-                                                    <a
-                                                        key={c.id}
-                                                        href={c.valor}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        aria-label={c.plataforma}
-                                                        className="text-volare-azul hover:opacity-70 transition-opacity"
-                                                    >
-                                                        <Icono size={22} />
-                                                    </a>
-                                                )
-                                            })}
-                                        </div>
-                                    )}
-                                </>
-                            )}
+                            <InfoContactoWidget />
 
                             <div className="flex flex-col gap-2 border-t border-gray-100 pt-3 mt-3">
                                 <div className="flex items-center gap-2 text-sm font-semibold text-volare-azul">
@@ -184,7 +116,7 @@ function Feed() {
                                     Ver en Google Maps
                                 </a>
                             </div>
-                        </>
+                        </div>
                     )}
                 </aside>
 
