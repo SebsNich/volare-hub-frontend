@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Modal from '../components/Modal'
 import ArchivoAdjunto from '../components/ArchivoAdjunto'
 import ControlesPaginacion from '../components/ControlesPaginacion'
+import Tooltip from '../components/Tooltip'
 import {
     HiOutlineUsers,
     HiOutlineInbox,
@@ -61,6 +62,13 @@ function listaArchivos(urls, etiqueta) {
     return urls.map((url, index) => (
         <ArchivoAdjunto key={url} nombre={urls.length > 1 ? `${etiqueta} ${index + 1}` : etiqueta} href={url} />
     ))
+}
+
+function obtenerIniciales(usuario) {
+    const partes = nombreCompleto(usuario).split(/\s+/).filter(Boolean)
+    if (partes.length === 0) return '??'
+    if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase()
+    return (partes[0][0] + partes[1][0]).toUpperCase()
 }
 
 function Admin() {
@@ -857,7 +865,18 @@ function Admin() {
                                                     onClick={() => abrirModalReserva(reserva)}
                                                     className="border-b border-gray-50 last:border-0 hover:bg-gray-50 cursor-pointer"
                                                 >
-                                                    <td className="px-4 py-3 font-semibold text-volare-azul whitespace-nowrap">{nombreCompleto(reserva.usuario)}</td>
+                                                    <td className="px-4 py-3 font-semibold text-volare-azul whitespace-nowrap">
+                                                        <div className="flex items-center gap-2">
+                                                            {reserva.nombres} {reserva.apellidos}
+                                                            {reserva.usuario.rol === 'ADMIN' && (
+                                                                <Tooltip texto={`Registrado por administrador: ${nombreCompleto(reserva.usuario)} de la cuenta admin`}>
+                                                                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-200 text-gray-600 text-[10px] font-bold shrink-0">
+                                                                        {obtenerIniciales(reserva.usuario)}
+                                                                    </span>
+                                                                </Tooltip>
+                                                            )}
+                                                        </div>
+                                                    </td>
                                                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">Mz. {reserva.manzana} Villa {reserva.villa}</td>
                                                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{NOMBRES_ESPACIO_RESERVA[reserva.espacio]}</td>
                                                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatearFechaReserva(reserva.fecha)}</td>
@@ -1033,6 +1052,12 @@ function Admin() {
                                 <p><span className="font-semibold">Celular:</span> {reservaSeleccionada.terceroCelular}</p>
                             </div>
                         </div>
+                    )}
+
+                    {reservaSeleccionada.usuario.rol === 'ADMIN' && (
+                        <p className="text-sm text-gray-500 italic">
+                            Registrado presencialmente por: {nombreCompleto(reservaSeleccionada.usuario)}
+                        </p>
                     )}
 
                     <div className="flex flex-col gap-1 text-sm text-gray-600">
