@@ -3,7 +3,9 @@ import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import ArchivoAdjunto from './ArchivoAdjunto'
 import Tooltip from './Tooltip'
-import { HiOutlineMapPin, HiMapPin, HiOutlinePhoto, HiOutlineDocumentText, HiPlusSmall, HiXMark } from 'react-icons/hi2'
+import NormasComunidad from './NormasComunidad'
+import useNormasComunidad from '../hooks/useNormasComunidad'
+import { HiOutlineMapPin, HiMapPin, HiOutlinePhoto, HiOutlineDocumentText, HiPlusSmall, HiXMark, HiOutlineShieldCheck } from 'react-icons/hi2'
 import { API_URL } from '../config/api'
 
 function FormularioPost({ origen = 'feed', onPublicado, enModal = false }) {
@@ -17,6 +19,8 @@ function FormularioPost({ origen = 'feed', onPublicado, enModal = false }) {
     const [archivos, setArchivos] = useState([])
     const [anclado, setAnclado] = useState(false)
     const [ancladoPerfil, setAncladoPerfil] = useState(false)
+    const [modalNormasAbierto, setModalNormasAbierto] = useState(false)
+    const { hayIndicador } = useNormasComunidad()
 
     const mostrarAnclarFeed = usuario.rol === 'ADMIN'
     const mostrarAnclarPerfil = origen === 'perfil'
@@ -78,10 +82,23 @@ function FormularioPost({ origen = 'feed', onPublicado, enModal = false }) {
     }
 
     return (
+        <>
         <form
             onSubmit={handleSubmit}
             className={enModal ? 'flex flex-col gap-4' : 'bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4'}
         >
+            <button
+                type="button"
+                onClick={() => setModalNormasAbierto(true)}
+                className="relative flex items-center gap-2 bg-blue-50 hover:bg-blue-100 transition rounded-lg px-3 py-2 mb-3 text-sm font-medium text-volare-azul text-left"
+            >
+                <HiOutlineShieldCheck size={18} className="shrink-0" />
+                <span>📋 Antes de publicar, revisa nuestras Normas de la Comunidad</span>
+                {hayIndicador && (
+                    <span className="absolute top-1.5 right-2 w-2 h-2 bg-red-500 rounded-full" />
+                )}
+            </button>
+
             <h2 className="text-xl font-semibold text-volare-azul mb-4">¿Qué deseas publicar hoy?</h2>
             <input
                 type="text"
@@ -212,6 +229,9 @@ function FormularioPost({ origen = 'feed', onPublicado, enModal = false }) {
                 Publicar
             </button>
         </form>
+
+        {modalNormasAbierto && <NormasComunidad onClose={() => setModalNormasAbierto(false)} />}
+        </>
     )
 }
 

@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import InfoContactoWidget from './InfoContactoWidget'
-import { HiOutlineMapPin, HiChevronDown } from 'react-icons/hi2'
+import NormasComunidad from './NormasComunidad'
+import useNormasComunidad from '../hooks/useNormasComunidad'
+import { HiOutlineMapPin, HiChevronDown, HiOutlineShieldCheck } from 'react-icons/hi2'
 
 function MiniLandingCompleta() {
     const [mapaAbierto, setMapaAbierto] = useState(false)
+    const [modalNormasAbierto, setModalNormasAbierto] = useState(false)
+    const { hayIndicador } = useNormasComunidad()
 
     return (
         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-4 sm:p-6 flex flex-col gap-3 sm:gap-4">
@@ -51,6 +55,20 @@ function MiniLandingCompleta() {
                     </div>
                 )}
             </div>
+
+            <button
+                type="button"
+                onClick={() => setModalNormasAbierto(true)}
+                className="relative self-center flex items-center gap-1.5 text-sm text-volare-azul hover:underline"
+            >
+                <HiOutlineShieldCheck size={16} />
+                Normas de la Comunidad
+                {hayIndicador && (
+                    <span className="absolute -top-1 -right-2 w-2 h-2 bg-red-500 rounded-full" />
+                )}
+            </button>
+
+            {modalNormasAbierto && <NormasComunidad onClose={() => setModalNormasAbierto(false)} />}
         </div>
     )
 }
