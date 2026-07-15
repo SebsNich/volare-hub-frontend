@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import Modal from './Modal'
+import CampoContrasena from './CampoContrasena'
 import { API_URL } from '../config/api'
 import { esCedulaValida } from '../utilities/helpers'
 
@@ -141,12 +142,11 @@ function ModalAuth({ onClose }) {
                             onChange={(e) => setEmail(e.target.value)}
                             className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
                         />
-                        <input
-                            type="password"
+                        <CampoContrasena
                             value={password}
                             placeholder="Contraseña"
                             onChange={(e) => setPassword(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                            inputClassName="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
                         />
                         {error && <p className="text-sm text-red-500 text-center">{error}</p>}
                         <button
@@ -245,21 +245,19 @@ function ModalAuth({ onClose }) {
                             onChange={(e) => setEmailRegistro(e.target.value)}
                             className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
                         />
-                        <input
-                            type="password"
+                        <CampoContrasena
                             value={passwordRegistro}
                             placeholder="Contraseña"
                             required
                             onChange={(e) => setPasswordRegistro(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
+                            inputClassName="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
                         />
-                        <input
-                            type="password"
+                        <CampoContrasena
                             value={confirmarPasswordRegistro}
                             placeholder="Confirmar Contraseña"
                             required
                             onChange={(e) => setConfirmarPasswordRegistro(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
+                            inputClassName="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
                         />
                         {error && <p className="text-sm text-red-500 text-center">{error}</p>}
                         <button

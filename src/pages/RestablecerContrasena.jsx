@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useToast } from '../context/ToastContext'
+import CampoContrasena from '../components/CampoContrasena'
 import { API_URL } from '../config/api'
 
 function RestablecerContrasena() {
@@ -50,21 +51,19 @@ function RestablecerContrasena() {
                     </p>
                 ) : (
                     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                        <input
-                            type="password"
+                        <CampoContrasena
                             value={nuevaContrasena}
                             placeholder="Nueva contraseña"
                             required
                             onChange={(e) => setNuevaContrasena(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                            inputClassName="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
                         />
-                        <input
-                            type="password"
+                        <CampoContrasena
                             value={confirmarContrasena}
                             placeholder="Confirmar contraseña"
                             required
                             onChange={(e) => setConfirmarContrasena(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                            inputClassName="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
                         />
                         <button
                             type="submit"
