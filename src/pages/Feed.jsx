@@ -8,9 +8,38 @@ import FormularioPost from '../components/FormularioPost'
 import AvatarUsuario from '../components/AvatarUsuario'
 import MiniLandingCompleta from '../components/MiniLandingCompleta'
 import FiltroTipoPublicacion, { obtenerMensajeVacio } from '../components/FiltroTipoPublicacion'
-import { HiOutlineEye } from 'react-icons/hi2'
+import DrawerMovil from '../components/DrawerMovil'
+import { HiOutlineEye, HiOutlineUserCircle, HiXMark } from 'react-icons/hi2'
 import { formatearMesAnio, nombreCompleto } from '../utilities/helpers'
 import { API_URL } from '../config/api'
+
+function ContenidoPerfil({ usuario }) {
+    return (
+        <>
+            {usuario && (
+                <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4">
+                    <AvatarUsuario foto={usuario.foto} size={96} className="mx-auto" />
+                    <div className="border-b border-gray-200" />
+                    <p className="text-sm text-gray-600 text-center">{usuario.bio}</p>
+                    <div className="flex flex-col items-center gap-1 text-xs text-gray-400">
+                        <span className="flex items-center gap-1">
+                            <HiOutlineEye size={14} />
+                            {usuario.visitasPerfil ?? 0} visitas
+                        </span>
+                        <span>Miembro desde {formatearMesAnio(usuario.creadoEn)}</span>
+                    </div>
+                    <Link
+                        to={`/perfil/${usuario.id}`}
+                        className="bg-volare-azul text-white px-4 py-2 rounded-lg text-sm font-semibold text-center hover:opacity-90 transition"
+                    >
+                        Ver perfil
+                    </Link>
+                </div>
+            )}
+            <MiniLandingCompleta />
+        </>
+    )
+}
 
 function Feed() {
     const [posts, setPosts] = useState([])
@@ -21,6 +50,7 @@ function Feed() {
     const { mostrarToast } = useToast()
     const [postAEliminar, setPostAEliminar] = useState(null)
     const [filtroTipo, setFiltroTipo] = useState('TODOS')
+    const [perfilDrawerAbierto, setPerfilDrawerAbierto] = useState(false)
 
     const postsFiltrados = filtroTipo === 'TODOS' ? posts : posts.filter(post => post.tipo === filtroTipo)
 
@@ -70,35 +100,11 @@ function Feed() {
                 <h1 className="text-2xl font-bold text-volare-azul mb-6">Hola, {nombreCompleto(usuario)}</h1>
             )}
             <div className="flex flex-col md:grid md:grid-cols-[280px_1fr_240px] gap-6 items-start">
-                <aside className="w-full md:sticky md:top-24 flex flex-col gap-6">
-                    {usuario ? (
-                        <>
-                            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4">
-                                <AvatarUsuario foto={usuario.foto} size={96} className="mx-auto" />
-                                <div className="border-b border-gray-200" />
-                                <p className="text-sm text-gray-600 text-center">{usuario.bio}</p>
-                                <div className="flex flex-col items-center gap-1 text-xs text-gray-400">
-                                    <span className="flex items-center gap-1">
-                                        <HiOutlineEye size={14} />
-                                        {usuario.visitasPerfil ?? 0} visitas
-                                    </span>
-                                    <span>Miembro desde {formatearMesAnio(usuario.creadoEn)}</span>
-                                </div>
-                                <Link
-                                    to={`/perfil/${usuario.id}`}
-                                    className="bg-volare-azul text-white px-4 py-2 rounded-lg text-sm font-semibold text-center hover:opacity-90 transition"
-                                >
-                                    Ver perfil
-                                </Link>
-                            </div>
-                            <MiniLandingCompleta />
-                        </>
-                    ) : (
-                        <MiniLandingCompleta />
-                    )}
+                <aside className="hidden md:order-1 w-full md:sticky md:top-24 md:flex flex-col gap-6">
+                    <ContenidoPerfil usuario={usuario} />
                 </aside>
 
-                <div className="flex flex-col gap-6 w-full">
+                <div className="md:order-2 flex flex-col gap-6 w-full">
                     {usuario && (
                         <FormularioPost origen="feed" onPublicado={() => cargarPosts(1)} />
                     )}
@@ -145,6 +151,31 @@ function Feed() {
 
                 <FiltroTipoPublicacion filtroTipo={filtroTipo} setFiltroTipo={setFiltroTipo} />
             </div>
+
+            <button
+                type="button"
+                onClick={() => setPerfilDrawerAbierto(true)}
+                className="md:hidden fixed bottom-24 left-6 z-40 w-14 h-14 rounded-full bg-volare-azul text-white shadow-lg hover:opacity-90 hover:shadow-xl transition flex items-center justify-center"
+                aria-label="Ver perfil y contacto"
+            >
+                <HiOutlineUserCircle size={26} />
+            </button>
+
+            <DrawerMovil abierto={perfilDrawerAbierto} onClose={() => setPerfilDrawerAbierto(false)}>
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-volare-azul">Mi perfil</h2>
+                    <button
+                        onClick={() => setPerfilDrawerAbierto(false)}
+                        className="text-gray-400 hover:text-gray-600 transition"
+                        aria-label="Cerrar"
+                    >
+                        <HiXMark size={22} />
+                    </button>
+                </div>
+                <div className="flex flex-col gap-6">
+                    <ContenidoPerfil usuario={usuario} />
+                </div>
+            </DrawerMovil>
         </div>
     )
 }
