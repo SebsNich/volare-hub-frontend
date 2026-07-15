@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { HiOutlineFunnel, HiXMark } from 'react-icons/hi2'
 import { tipoColores } from '../utilities/constantes'
 import DrawerMovil from './DrawerMovil'
+import BuscadorUsuarios from './BuscadorUsuarios'
 
 const TIPOS_FILTRO = [
     { value: 'TODOS', label: 'Todos', singular: null },
@@ -52,6 +53,9 @@ function FiltroTipoPublicacion({ filtroTipo, setFiltroTipo }) {
     return (
         <>
             <aside className="hidden md:flex md:order-3 w-full md:sticky md:top-24 bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex-col gap-3">
+                <div className="border-b border-gray-100 pb-4 mb-1">
+                    <BuscadorUsuarios />
+                </div>
                 <h2 className="text-lg font-semibold text-volare-azul">Filtrar por tipo</h2>
                 <ListaOpciones filtroTipo={filtroTipo} onSeleccionar={setFiltroTipo} />
             </aside>
@@ -69,6 +73,9 @@ function FiltroTipoPublicacion({ filtroTipo, setFiltroTipo }) {
             </button>
 
             <DrawerMovil abierto={drawerAbierto} onClose={() => setDrawerAbierto(false)}>
+                <div className="border-b border-gray-100 pb-4 mb-1">
+                    <BuscadorUsuarios onNavegar={() => setDrawerAbierto(false)} />
+                </div>
                 <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-volare-azul">Filtrar por tipo</h2>
                     <button

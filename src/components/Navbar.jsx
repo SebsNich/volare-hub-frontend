@@ -2,9 +2,10 @@ import { useContext, useEffect, useRef, useState } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { Link } from 'react-router-dom'
-import { HiOutlineHome, HiOutlineArrowRightOnRectangle, HiOutlineCog6Tooth, HiOutlineWrenchScrewdriver, HiChevronDown, HiBars3, HiXMark } from 'react-icons/hi2'
+import { HiOutlineHome, HiOutlineArrowRightOnRectangle, HiOutlineCog6Tooth, HiOutlineWrenchScrewdriver, HiChevronDown, HiBars3, HiXMark, HiOutlineMagnifyingGlass } from 'react-icons/hi2'
 import AvatarUsuario from './AvatarUsuario'
 import ModalAuth from './ModalAuth'
+import BuscadorUsuarios from './BuscadorUsuarios'
 import Tooltip from './Tooltip'
 import { API_URL } from '../config/api'
 import { nombreCompleto } from '../utilities/helpers'
@@ -18,6 +19,7 @@ function Navbar() {
     const [serviciosAbierto, setServiciosAbierto] = useState(false)
     const [menuMovilAbierto, setMenuMovilAbierto] = useState(false)
     const [serviciosMovilAbierto, setServiciosMovilAbierto] = useState(false)
+    const [busquedaMovilAbierta, setBusquedaMovilAbierta] = useState(false)
     const [notificacionesPendientes, setNotificacionesPendientes] = useState(0)
     const serviciosRef = useRef(null)
     const navRef = useRef(null)
@@ -32,6 +34,13 @@ function Navbar() {
     function cerrarMenuMovil() {
         setMenuMovilAbierto(false)
         setServiciosMovilAbierto(false)
+        setBusquedaMovilAbierta(false)
+    }
+
+    function alternarBusquedaMovil() {
+        setMenuMovilAbierto(false)
+        setServiciosMovilAbierto(false)
+        setBusquedaMovilAbierta(b => !b)
     }
 
     useEffect(() => {
@@ -162,7 +171,16 @@ function Navbar() {
                         </Tooltip>
                     )}
                     <button
-                        onClick={() => setMenuMovilAbierto(!menuMovilAbierto)}
+                        type="button"
+                        onClick={alternarBusquedaMovil}
+                        className="md:hidden text-gray-600 hover:text-volare-azul transition"
+                        aria-label={busquedaMovilAbierta ? 'Cerrar búsqueda' : 'Buscar residentes'}
+                        aria-expanded={busquedaMovilAbierta}
+                    >
+                        {busquedaMovilAbierta ? <HiXMark size={22} /> : <HiOutlineMagnifyingGlass size={22} />}
+                    </button>
+                    <button
+                        onClick={() => { setBusquedaMovilAbierta(false); setMenuMovilAbierto(!menuMovilAbierto) }}
                         className="md:hidden relative text-gray-600 hover:text-volare-azul transition"
                         aria-label={menuMovilAbierto ? 'Cerrar menú' : 'Abrir menú'}
                         aria-expanded={menuMovilAbierto}
@@ -174,6 +192,12 @@ function Navbar() {
                     </button>
                 </div>
             </div>
+
+            {busquedaMovilAbierta && (
+                <div className="md:hidden border-t border-gray-100 px-4 py-3 animate-volare-barrido-derecha">
+                    <BuscadorUsuarios autoFocus onNavegar={() => setBusquedaMovilAbierta(false)} />
+                </div>
+            )}
 
             {menuMovilAbierto && (
                 <div className="md:hidden border-t border-gray-100 px-4 py-3 flex flex-col gap-1 animate-volare-barrido-derecha">
