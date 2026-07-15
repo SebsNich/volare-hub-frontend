@@ -109,20 +109,20 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
     }
 
     return (
-        <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow p-6 flex flex-col gap-3 border border-gray-100">
-            <div className="flex items-center justify-between">
-                <Link to={`/perfil/${post.autorId}`} className="flex items-center gap-2 text-sm font-semibold text-volare-azul hover:underline">
+        <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow p-4 sm:p-6 flex flex-col gap-2.5 sm:gap-3 border border-gray-100">
+            <div className="flex items-center justify-between gap-2">
+                <Link to={`/perfil/${post.autorId}`} className="flex items-center gap-2 text-sm font-semibold text-volare-azul hover:underline min-w-0">
                     <AvatarUsuario foto={post.autor.foto} size={28} />
-                    {nombreCompleto(post.autor)}
+                    <span className="truncate">{nombreCompleto(post.autor)}</span>
                 </Link>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                     {ancladoActivo && (
-                        <span className="flex items-center gap-1 text-xs font-medium text-volare-azul">
+                        <span className="hidden sm:flex items-center gap-1 text-xs font-medium text-volare-azul">
                             <HiMapPin size={14} />
                             Anclado
                         </span>
                     )}
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${tipoColores[post.tipo] || 'bg-gray-400'}`}>
+                    <span className={`px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-semibold text-white ${tipoColores[post.tipo] || 'bg-gray-400'}`}>
                         {post.tipo}
                     </span>
                 </div>
@@ -130,15 +130,15 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
 
             <div className="border-t border-gray-100" />
 
-            <h2 className="text-xl font-bold text-volare-azul">{post.titulo}</h2>
-            <p className={`text-gray-600 leading-relaxed ${descripcionLarga && !descripcionExpandida ? 'line-clamp-3' : ''}`}>
+            <h2 className="text-lg sm:text-xl font-bold text-volare-azul">{post.titulo}</h2>
+            <p className={`text-sm sm:text-base text-gray-600 leading-relaxed ${descripcionLarga && !descripcionExpandida ? 'line-clamp-3' : ''}`}>
                 {post.descripcion}
             </p>
             {descripcionLarga && (
                 <button
                     type="button"
                     onClick={() => setDescripcionExpandida(!descripcionExpandida)}
-                    className="text-volare-azul font-semibold cursor-pointer text-sm self-start -mt-2"
+                    className="text-volare-azul font-semibold cursor-pointer text-sm self-start -mt-1 sm:-mt-2"
                 >
                     {descripcionExpandida ? 'Leer menos' : 'Leer más...'}
                 </button>
@@ -149,7 +149,7 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
                 <img
                     src={post.imagenUrl[0]}
                     onClick={() => setLightboxAbierto(true)}
-                    className="w-full h-72 object-contain rounded-xl border border-gray-200 shadow-sm bg-gray-50 mt-1 cursor-pointer"
+                    className="w-full h-56 sm:h-72 object-contain rounded-xl border border-gray-200 shadow-sm bg-gray-50 mt-1 cursor-pointer"
                 />
             )}
 
@@ -158,12 +158,12 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
                     <img
                         src={post.imagenUrl[imagenIndex]}
                         onClick={() => setLightboxAbierto(true)}
-                        className="w-full h-72 object-contain rounded-xl border border-gray-200 shadow-sm bg-gray-50 cursor-pointer"
+                        className="w-full h-56 sm:h-72 object-contain rounded-xl border border-gray-200 shadow-sm bg-gray-50 cursor-pointer"
                     />
                     <button
                         type="button"
                         onClick={() => setImagenIndex((imagenIndex - 1 + post.imagenUrl.length) % post.imagenUrl.length)}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-1 shadow transition"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-2 shadow transition"
                         aria-label="Imagen anterior"
                     >
                         <HiChevronLeft size={20} />
@@ -171,7 +171,7 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
                     <button
                         type="button"
                         onClick={() => setImagenIndex((imagenIndex + 1) % post.imagenUrl.length)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-1 shadow transition"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-2 shadow transition"
                         aria-label="Imagen siguiente"
                     >
                         <HiChevronRight size={20} />
@@ -205,7 +205,7 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
             )}
 
             {(puedeEditar || puedeAnclar) && (
-                <div className="flex gap-3 mt-2 pt-3 border-t border-gray-100/70">
+                <div className="flex gap-4 sm:gap-3 mt-1 sm:mt-2 pt-3 border-t border-gray-100/70">
                     {puedeAnclar && (
                         <Tooltip texto={contexto === 'perfil' ? 'Anclar en mi perfil' : 'Anclar en el feed'}>
                             <button

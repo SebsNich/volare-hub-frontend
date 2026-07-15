@@ -189,7 +189,7 @@ function PerfilPublico() {
         <div className="max-w-6xl mx-auto px-4 py-8">
             <div className="flex flex-col md:grid md:grid-cols-[280px_1fr_240px] gap-6 items-start">
                 {usuario && (
-                    <div className="w-full md:sticky md:top-24 flex flex-col gap-6">
+                    <div className="order-2 md:order-1 w-full md:sticky md:top-24 flex flex-col gap-6">
                         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4">
                             <AvatarUsuario foto={usuario.foto} size={96} className="mx-auto border border-gray-200 shadow-sm" />
                             <div className="border-b border-gray-200" />
@@ -239,7 +239,7 @@ function PerfilPublico() {
                     </div>
                 )}
 
-                <div className="flex flex-col gap-4 w-full">
+                <div className="order-1 md:order-2 flex flex-col gap-4 w-full">
                     {postsFiltrados.map(post => <PostCard key={post.id} post={post} usuario={usuarioLogueado} eliminar={eliminarPost} onEditar={cargarPerfilPublico} contexto="perfil" />)}
                     {postsFiltrados.length === 0 && (
                         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-10 text-center text-gray-400">
