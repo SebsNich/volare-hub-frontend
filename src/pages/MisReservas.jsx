@@ -10,8 +10,6 @@ import { API_URL } from '../config/api'
 import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA } from '../utilities/constantes'
 import { formatearFechaReserva } from '../utilities/helpers'
 
-const TAMANO_PAGINA = 10
-
 function faltanDocumentos(reserva) {
     return !reserva.comprobantePagoUrls?.length || !reserva.listaInvitadosUrls?.length || !reserva.contratoFirmadoUrls?.length
 }
@@ -27,6 +25,7 @@ function MisReservas() {
     const { mostrarToast } = useToast()
     const navigate = useNavigate()
     const [reservas, setReservas] = useState([])
+    const [totalPaginas, setTotalPaginas] = useState(1)
     const [cargando, setCargando] = useState(true)
     const [reservaSeleccionada, setReservaSeleccionada] = useState(null)
     const [modalTexto, setModalTexto] = useState(null)
@@ -35,15 +34,23 @@ function MisReservas() {
     const [filtroEstado, setFiltroEstado] = useState('TODOS')
     const [paginaReservas, setPaginaReservas] = useState(1)
 
+    const sinFiltrosActivos = filtroFecha === '' && filtroEspacio === 'TODOS' && filtroEstado === 'TODOS'
+
     useEffect(() => {
         async function cargarReservas() {
             try {
-                const respuesta = await fetch(`${API_URL}/api/reservas/mias`, {
+                const params = new URLSearchParams({ pagina: paginaReservas })
+                if (filtroEspacio !== 'TODOS') params.set('espacio', filtroEspacio)
+                if (filtroEstado !== 'TODOS') params.set('estado', filtroEstado)
+                if (filtroFecha) params.set('fecha', filtroFecha)
+
+                const respuesta = await fetch(`${API_URL}/api/reservas/mias?${params.toString()}`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 })
                 if (!respuesta.ok) throw new Error('Error al cargar reservas')
                 const datos = await respuesta.json()
-                setReservas(datos)
+                setReservas(datos.reservas)
+                setTotalPaginas(datos.totalPaginas)
             } catch {
                 mostrarToast('No se pudieron cargar tus reservas', 'error')
             } finally {
@@ -51,12 +58,14 @@ function MisReservas() {
             }
         }
         cargarReservas()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [paginaReservas, filtroEspacio, filtroEstado, filtroFecha])
 
+    useEffect(() => {
         fetch(`${API_URL}/api/reservas/mias/marcar-leidas`, {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         }).catch(() => {})
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     function manejarClickFila(reserva) {
@@ -67,15 +76,6 @@ function MisReservas() {
         }
     }
 
-    const reservasFiltradas = reservas
-        .filter(reserva => filtroFecha === '' || reserva.fecha.slice(0, 10) === filtroFecha)
-        .filter(reserva => filtroEspacio === 'TODOS' || reserva.espacio === filtroEspacio)
-        .filter(reserva => filtroEstado === 'TODOS' || reserva.estado === filtroEstado)
-        .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
-    const totalPaginas = Math.max(1, Math.ceil(reservasFiltradas.length / TAMANO_PAGINA))
-    const paginaEfectiva = Math.min(paginaReservas, totalPaginas)
-    const reservasPagina = reservasFiltradas.slice((paginaEfectiva - 1) * TAMANO_PAGINA, paginaEfectiva * TAMANO_PAGINA)
-
     return (
         <div className="max-w-4xl mx-auto px-4 py-8 flex flex-col gap-6">
             <Link to="/reservas" className="self-start flex items-center gap-1 text-sm text-volare-azul hover:underline">
@@ -85,7 +85,7 @@ function MisReservas() {
 
             <h1 className="text-2xl font-bold text-volare-azul">Mis Reservas</h1>
 
-            {!cargando && reservas.length === 0 && (
+            {!cargando && reservas.length === 0 && sinFiltrosActivos && (
                 <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 flex flex-col items-center text-center gap-3">
                     <p className="text-gray-600">Aún no has hecho ninguna reserva</p>
                     <Link
@@ -97,7 +97,7 @@ function MisReservas() {
                 </div>
             )}
 
-            {reservas.length > 0 && (
+            {!cargando && !(reservas.length === 0 && sinFiltrosActivos) && (
                 <div className="flex flex-col gap-3">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                         <input
@@ -149,7 +149,7 @@ function MisReservas() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {reservasPagina.map(reserva => {
+                                {reservas.map(reserva => {
                                     const estilo = ESTILOS_ESTADO_RESERVA[reserva.estado]
                                     const total = Number(reserva.montoAlquiler) + Number(reserva.montoGarantia)
                                     return (
@@ -202,7 +202,7 @@ function MisReservas() {
                                         </tr>
                                     )
                                 })}
-                                {reservasPagina.length === 0 && (
+                                {reservas.length === 0 && (
                                     <tr>
                                         <td colSpan={5} className="px-4 py-6 text-center text-gray-400">
                                             No se encontraron reservas con esos filtros
@@ -212,10 +212,10 @@ function MisReservas() {
                             </tbody>
                         </table>
                         <ControlesPaginacion
-                            paginaActual={paginaEfectiva}
+                            paginaActual={paginaReservas}
                             totalPaginas={totalPaginas}
-                            onAnterior={() => setPaginaReservas(paginaEfectiva - 1)}
-                            onSiguiente={() => setPaginaReservas(paginaEfectiva + 1)}
+                            onAnterior={() => setPaginaReservas(paginaReservas - 1)}
+                            onSiguiente={() => setPaginaReservas(paginaReservas + 1)}
                         />
                     </div>
                 </div>

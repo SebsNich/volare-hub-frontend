@@ -21,10 +21,11 @@ import {
     HiChevronUp,
     HiChevronDown
 } from 'react-icons/hi2'
-import { normalizarTexto, formatearFechaReserva, nombreCompleto } from '../utilities/helpers'
+import { formatearFechaReserva, nombreCompleto } from '../utilities/helpers'
 import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA, PLATAFORMAS_RED_SOCIAL, ICONO_PLATAFORMA } from '../utilities/constantes'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
+import useDebounce from '../hooks/useDebounce'
 
 const SECCIONES = [
     { id: 'resumen', label: 'Resumen', icono: HiOutlineChartBar },
@@ -55,8 +56,6 @@ const ESTILOS_ESTADO_SUGERENCIA = {
     ARCHIVADA: { color: 'text-gray-400', punto: 'bg-gray-400', label: 'Archivada' },
 }
 
-const TAMANO_PAGINA = 10
-
 function listaArchivos(urls, etiqueta) {
     if (!urls?.length) return null
     return urls.map((url, index) => (
@@ -82,11 +81,15 @@ function Admin() {
     const [filtroManzanaVilla, setFiltroManzanaVilla] = useState('')
     const [filtroEstadoUsuario, setFiltroEstadoUsuario] = useState('TODOS')
     const [paginaUsuarios, setPaginaUsuarios] = useState(1)
+    const [totalPaginasUsuarios, setTotalPaginasUsuarios] = useState(1)
+    const busquedaUsuariosDebounced = useDebounce(busquedaUsuarios)
 
     const [busquedaSugerencias, setBusquedaSugerencias] = useState('')
     const [filtroTipoSugerencia, setFiltroTipoSugerencia] = useState('TODOS')
     const [mostrarArchivadas, setMostrarArchivadas] = useState(false)
     const [paginaSugerencias, setPaginaSugerencias] = useState(1)
+    const [totalPaginasSugerencias, setTotalPaginasSugerencias] = useState(1)
+    const busquedaSugerenciasDebounced = useDebounce(busquedaSugerencias)
 
     const [reservas, setReservas] = useState([])
     const [reservaSeleccionada, setReservaSeleccionada] = useState(null)
@@ -98,6 +101,8 @@ function Admin() {
     const [filtroEstadoReserva, setFiltroEstadoReserva] = useState('TODOS')
     const [filtroFechaReserva, setFiltroFechaReserva] = useState('')
     const [paginaReservas, setPaginaReservas] = useState(1)
+    const [totalPaginasReservas, setTotalPaginasReservas] = useState(1)
+    const busquedaReservasDebounced = useDebounce(busquedaReservas)
 
     const [contactos, setContactos] = useState([])
     const [modalContactoAbierto, setModalContactoAbierto] = useState(null)
@@ -114,13 +119,19 @@ function Admin() {
     }
 
     async function cargarSugerencias() {
-        const respuesta = await fetch(`${API_URL}/api/buzon`, {
+        const params = new URLSearchParams({ pagina: paginaSugerencias })
+        if (busquedaSugerenciasDebounced) params.set('busqueda', busquedaSugerenciasDebounced)
+        if (filtroTipoSugerencia !== 'TODOS') params.set('tipo', filtroTipoSugerencia)
+        if (mostrarArchivadas) params.set('archivadas', 'true')
+
+        const respuesta = await fetch(`${API_URL}/api/buzon?${params.toString()}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         })
         const datos = await respuesta.json()
-        setSugerencias(datos)
+        setSugerencias(datos.sugerencias)
+        setTotalPaginasSugerencias(datos.totalPaginas)
     }
 
     async function marcarLeida(id) {
@@ -156,23 +167,36 @@ function Admin() {
     }
 
     async function cargarUsuarios() {
-        const respuesta = await fetch(`${API_URL}/api/usuarios`, {
+        const params = new URLSearchParams({ pagina: paginaUsuarios })
+        if (busquedaUsuariosDebounced) params.set('busqueda', busquedaUsuariosDebounced)
+        if (filtroManzanaVilla) params.set('manzanaVilla', filtroManzanaVilla)
+        if (filtroEstadoUsuario !== 'TODOS') params.set('estado', filtroEstadoUsuario)
+
+        const respuesta = await fetch(`${API_URL}/api/usuarios?${params.toString()}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         })
         const datos = await respuesta.json()
         setUsuarios(datos.usuarios)
+        setTotalPaginasUsuarios(datos.totalPaginas)
     }
 
     async function cargarReservas() {
-        const respuesta = await fetch(`${API_URL}/api/reservas`, {
+        const params = new URLSearchParams({ pagina: paginaReservas })
+        if (busquedaReservasDebounced) params.set('busqueda', busquedaReservasDebounced)
+        if (filtroEspacioReserva !== 'TODOS') params.set('espacio', filtroEspacioReserva)
+        if (filtroEstadoReserva !== 'TODOS') params.set('estado', filtroEstadoReserva)
+        if (filtroFechaReserva) params.set('fecha', filtroFechaReserva)
+
+        const respuesta = await fetch(`${API_URL}/api/reservas?${params.toString()}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         })
         const datos = await respuesta.json()
-        setReservas(datos)
+        setReservas(datos.reservas)
+        setTotalPaginasReservas(datos.totalPaginas)
     }
 
     async function cargarContactos() {
@@ -388,11 +412,41 @@ function Admin() {
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         cargarResumen()
-        cargarUsuarios()
-        cargarSugerencias()
-        cargarReservas()
         cargarContactos()
     }, [])
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setPaginaUsuarios(1)
+    }, [busquedaUsuariosDebounced])
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        cargarUsuarios()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [paginaUsuarios, busquedaUsuariosDebounced, filtroManzanaVilla, filtroEstadoUsuario])
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setPaginaSugerencias(1)
+    }, [busquedaSugerenciasDebounced])
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        cargarSugerencias()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [paginaSugerencias, busquedaSugerenciasDebounced, filtroTipoSugerencia, mostrarArchivadas])
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setPaginaReservas(1)
+    }, [busquedaReservasDebounced])
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        cargarReservas()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [paginaReservas, busquedaReservasDebounced, filtroEspacioReserva, filtroEstadoReserva, filtroFechaReserva])
 
     async function cambiarEstado(usuarioId, activoActual) {
         const respuesta = await fetch(`${API_URL}/api/usuarios/${usuarioId}/estado`, {
@@ -447,42 +501,6 @@ function Admin() {
         setSeccionActiva(id)
         setMenuAbierto(false)
     }
-
-    const usuariosFiltrados = usuarios.filter(usuario => {
-        const coincideNombre = normalizarTexto(nombreCompleto(usuario)).includes(normalizarTexto(busquedaUsuarios))
-        const textoManzanaVilla = normalizarTexto(`${usuario.manzana || ''} ${usuario.villa || ''}`)
-        const coincideManzanaVilla = textoManzanaVilla.includes(normalizarTexto(filtroManzanaVilla))
-        const coincideEstado = filtroEstadoUsuario === 'TODOS'
-            || (filtroEstadoUsuario === 'ACTIVO' && usuario.activo)
-            || (filtroEstadoUsuario === 'INACTIVO' && !usuario.activo)
-        return coincideNombre && coincideManzanaVilla && coincideEstado
-    })
-    const totalPaginasUsuarios = Math.max(1, Math.ceil(usuariosFiltrados.length / TAMANO_PAGINA))
-    const paginaUsuariosEfectiva = Math.min(paginaUsuarios, totalPaginasUsuarios)
-    const usuariosPagina = usuariosFiltrados.slice((paginaUsuariosEfectiva - 1) * TAMANO_PAGINA, paginaUsuariosEfectiva * TAMANO_PAGINA)
-
-    const sugerenciasFiltradas = sugerencias.filter(sugerencia => {
-        const coincideNombre = busquedaSugerencias === ''
-            || (sugerencia.nombre && normalizarTexto(sugerencia.nombre).includes(normalizarTexto(busquedaSugerencias)))
-        const coincideTipo = filtroTipoSugerencia === 'TODOS' || sugerencia.tipo === filtroTipoSugerencia
-        const coincideArchivado = mostrarArchivadas || sugerencia.estado !== 'ARCHIVADA'
-        return coincideNombre && coincideTipo && coincideArchivado
-    })
-    const totalPaginasSugerencias = Math.max(1, Math.ceil(sugerenciasFiltradas.length / TAMANO_PAGINA))
-    const paginaSugerenciasEfectiva = Math.min(paginaSugerencias, totalPaginasSugerencias)
-    const sugerenciasPagina = sugerenciasFiltradas.slice((paginaSugerenciasEfectiva - 1) * TAMANO_PAGINA, paginaSugerenciasEfectiva * TAMANO_PAGINA)
-
-    const reservasFiltradas = reservas.filter(reserva => {
-        const coincideNombre = busquedaReservas === ''
-            || normalizarTexto(nombreCompleto(reserva.usuario)).includes(normalizarTexto(busquedaReservas))
-        const coincideEspacio = filtroEspacioReserva === 'TODOS' || reserva.espacio === filtroEspacioReserva
-        const coincideEstado = filtroEstadoReserva === 'TODOS' || reserva.estado === filtroEstadoReserva
-        const coincideFecha = filtroFechaReserva === '' || reserva.fecha.slice(0, 10) === filtroFechaReserva
-        return coincideNombre && coincideEspacio && coincideEstado && coincideFecha
-    })
-    const totalPaginasReservas = Math.max(1, Math.ceil(reservasFiltradas.length / TAMANO_PAGINA))
-    const paginaReservasEfectiva = Math.min(paginaReservas, totalPaginasReservas)
-    const reservasPagina = reservasFiltradas.slice((paginaReservasEfectiva - 1) * TAMANO_PAGINA, paginaReservasEfectiva * TAMANO_PAGINA)
 
     const telefonos = contactos.filter(c => c.tipo === 'TELEFONO')
     const correos = contactos.filter(c => c.tipo === 'CORREO')
@@ -606,7 +624,7 @@ function Admin() {
                                 <input
                                     type="text"
                                     value={busquedaUsuarios}
-                                    onChange={(e) => { setBusquedaUsuarios(e.target.value); setPaginaUsuarios(1) }}
+                                    onChange={(e) => setBusquedaUsuarios(e.target.value)}
                                     placeholder="Buscar por nombre..."
                                     className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-volare-azul flex-1"
                                 />
@@ -643,7 +661,7 @@ function Admin() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {usuariosPagina.map(usuario => (
+                                        {usuarios.map(usuario => (
                                             <tr key={usuario.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
                                                 <td className="px-4 py-3 font-semibold text-volare-azul whitespace-nowrap">{nombreCompleto(usuario)}</td>
                                                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.email}</td>
@@ -666,7 +684,7 @@ function Admin() {
                                                 </td>
                                             </tr>
                                         ))}
-                                        {usuariosPagina.length === 0 && (
+                                        {usuarios.length === 0 && (
                                             <tr>
                                                 <td colSpan={8} className="px-4 py-6 text-center text-gray-400">
                                                     No se encontraron usuarios con esos filtros
@@ -676,10 +694,10 @@ function Admin() {
                                     </tbody>
                                 </table>
                                 <ControlesPaginacion
-                                    paginaActual={paginaUsuariosEfectiva}
+                                    paginaActual={paginaUsuarios}
                                     totalPaginas={totalPaginasUsuarios}
-                                    onAnterior={() => setPaginaUsuarios(paginaUsuariosEfectiva - 1)}
-                                    onSiguiente={() => setPaginaUsuarios(paginaUsuariosEfectiva + 1)}
+                                    onAnterior={() => setPaginaUsuarios(paginaUsuarios - 1)}
+                                    onSiguiente={() => setPaginaUsuarios(paginaUsuarios + 1)}
                                 />
                             </div>
                         </div>
@@ -691,7 +709,7 @@ function Admin() {
                                 <input
                                     type="text"
                                     value={busquedaSugerencias}
-                                    onChange={(e) => { setBusquedaSugerencias(e.target.value); setPaginaSugerencias(1) }}
+                                    onChange={(e) => setBusquedaSugerencias(e.target.value)}
                                     placeholder="Buscar por nombre del remitente..."
                                     className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-volare-azul flex-1"
                                 />
@@ -727,7 +745,7 @@ function Admin() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {sugerenciasPagina.map(sugerencia => (
+                                        {sugerencias.map(sugerencia => (
                                             <tr
                                                 key={sugerencia.id}
                                                 onClick={() => setSugerenciaSeleccionada(sugerencia)}
@@ -751,7 +769,7 @@ function Admin() {
                                                 </td>
                                             </tr>
                                         ))}
-                                        {sugerenciasPagina.length === 0 && (
+                                        {sugerencias.length === 0 && (
                                             <tr>
                                                 <td colSpan={4} className="px-4 py-6 text-center text-gray-400">
                                                     No se encontraron sugerencias con esos filtros
@@ -761,10 +779,10 @@ function Admin() {
                                     </tbody>
                                 </table>
                                 <ControlesPaginacion
-                                    paginaActual={paginaSugerenciasEfectiva}
+                                    paginaActual={paginaSugerencias}
                                     totalPaginas={totalPaginasSugerencias}
-                                    onAnterior={() => setPaginaSugerencias(paginaSugerenciasEfectiva - 1)}
-                                    onSiguiente={() => setPaginaSugerencias(paginaSugerenciasEfectiva + 1)}
+                                    onAnterior={() => setPaginaSugerencias(paginaSugerencias - 1)}
+                                    onSiguiente={() => setPaginaSugerencias(paginaSugerencias + 1)}
                                 />
                             </div>
                         </div>
@@ -776,7 +794,7 @@ function Admin() {
                                 <input
                                     type="text"
                                     value={busquedaReservas}
-                                    onChange={(e) => { setBusquedaReservas(e.target.value); setPaginaReservas(1) }}
+                                    onChange={(e) => setBusquedaReservas(e.target.value)}
                                     placeholder="Buscar por nombre del residente..."
                                     className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-volare-azul flex-1"
                                 />
@@ -831,7 +849,7 @@ function Admin() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {reservasPagina.map(reserva => {
+                                        {reservas.map(reserva => {
                                             const estilo = ESTILOS_ESTADO_RESERVA[reserva.estado]
                                             return (
                                                 <tr
@@ -868,7 +886,7 @@ function Admin() {
                                                 </tr>
                                             )
                                         })}
-                                        {reservasPagina.length === 0 && (
+                                        {reservas.length === 0 && (
                                             <tr>
                                                 <td colSpan={6} className="px-4 py-6 text-center text-gray-400">
                                                     No se encontraron reservas con esos filtros
@@ -878,10 +896,10 @@ function Admin() {
                                     </tbody>
                                 </table>
                                 <ControlesPaginacion
-                                    paginaActual={paginaReservasEfectiva}
+                                    paginaActual={paginaReservas}
                                     totalPaginas={totalPaginasReservas}
-                                    onAnterior={() => setPaginaReservas(paginaReservasEfectiva - 1)}
-                                    onSiguiente={() => setPaginaReservas(paginaReservasEfectiva + 1)}
+                                    onAnterior={() => setPaginaReservas(paginaReservas - 1)}
+                                    onSiguiente={() => setPaginaReservas(paginaReservas + 1)}
                                 />
                             </div>
                         </div>

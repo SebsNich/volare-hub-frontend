@@ -14,6 +14,9 @@ import { API_URL } from '../config/api'
 
 function Feed() {
     const [posts, setPosts] = useState([])
+    const [paginaFeed, setPaginaFeed] = useState(1)
+    const [hayMasPosts, setHayMasPosts] = useState(false)
+    const [cargandoMas, setCargandoMas] = useState(false)
     const { usuario } = useContext(AuthContext)
     const { mostrarToast } = useToast()
     const [postAEliminar, setPostAEliminar] = useState(null)
@@ -21,10 +24,18 @@ function Feed() {
 
     const postsFiltrados = filtroTipo === 'TODOS' ? posts : posts.filter(post => post.tipo === filtroTipo)
 
-    async function cargarPosts(){
-        const respuesta = await fetch(`${API_URL}/api/posts`)
+    async function cargarPosts(pagina = 1){
+        const respuesta = await fetch(`${API_URL}/api/posts?pagina=${pagina}`)
         const datos = await respuesta.json()
-        setPosts(datos)
+        setPosts(anteriores => pagina === 1 ? datos.posts : [...anteriores, ...datos.posts])
+        setHayMasPosts(datos.hayMas)
+        setPaginaFeed(pagina)
+    }
+
+    async function cargarMasPosts() {
+        setCargandoMas(true)
+        await cargarPosts(paginaFeed + 1)
+        setCargandoMas(false)
     }
 
     async function eliminarPost(id) {
@@ -42,7 +53,7 @@ function Feed() {
         if (respuesta.ok) {
             setPostAEliminar(null)
             mostrarToast('Publicación eliminada', 'exito')
-            cargarPosts()
+            cargarPosts(1)
         } else {
             mostrarToast('No se pudo eliminar la publicación', 'error')
         }
@@ -50,8 +61,8 @@ function Feed() {
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        cargarPosts()
-}, [])
+        cargarPosts(1)
+}, [filtroTipo])
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
@@ -89,15 +100,29 @@ function Feed() {
 
                 <div className="flex flex-col gap-6 w-full">
                     {usuario && (
-                        <FormularioPost origen="feed" onPublicado={cargarPosts} />
+                        <FormularioPost origen="feed" onPublicado={() => cargarPosts(1)} />
                     )}
 
                     <div className="flex flex-col gap-4">
-                        {postsFiltrados.map(post => <PostCard key={post.id} post={post} usuario={usuario} eliminar={eliminarPost} onEditar={cargarPosts} contexto="feed" />)}
+                        {postsFiltrados.map(post => <PostCard key={post.id} post={post} usuario={usuario} eliminar={eliminarPost} onEditar={() => cargarPosts(1)} contexto="feed" />)}
                         {postsFiltrados.length === 0 && (
                             <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-10 text-center text-gray-400">
                                 {obtenerMensajeVacio(filtroTipo)}
                             </div>
+                        )}
+                        {hayMasPosts && (
+                            <button
+                                type="button"
+                                onClick={cargarMasPosts}
+                                disabled={cargandoMas}
+                                className={`self-center px-6 py-2 rounded-lg text-sm font-semibold border transition ${
+                                    cargandoMas
+                                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                        : 'bg-white text-volare-azul border-gray-200 hover:bg-gray-50'
+                                }`}
+                            >
+                                {cargandoMas ? 'Cargando...' : 'Cargar más'}
+                            </button>
                         )}
                     </div>
 
