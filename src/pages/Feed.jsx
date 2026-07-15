@@ -7,9 +7,9 @@ import Modal from '../components/Modal'
 import FormularioPost from '../components/FormularioPost'
 import AvatarUsuario from '../components/AvatarUsuario'
 import FiltroTipoPublicacion, { obtenerMensajeVacio } from '../components/FiltroTipoPublicacion'
-import { HiOutlinePhone, HiOutlineMapPin, HiOutlineEye } from 'react-icons/hi2'
-import { FaFacebook, FaInstagram } from 'react-icons/fa6'
+import { HiOutlinePhone, HiOutlineMapPin, HiOutlineEye, HiOutlineEnvelope, HiOutlineGlobeAlt } from 'react-icons/hi2'
 import { formatearMesAnio, nombreCompleto } from '../utilities/helpers'
+import { ICONO_PLATAFORMA } from '../utilities/constantes'
 import { API_URL } from '../config/api'
 
 function Feed() {
@@ -18,13 +18,30 @@ function Feed() {
     const { mostrarToast } = useToast()
     const [postAEliminar, setPostAEliminar] = useState(null)
     const [filtroTipo, setFiltroTipo] = useState('TODOS')
+    const [contactoInfo, setContactoInfo] = useState([])
+    const [cargandoContacto, setCargandoContacto] = useState(true)
 
     const postsFiltrados = filtroTipo === 'TODOS' ? posts : posts.filter(post => post.tipo === filtroTipo)
+    const telefonosContacto = contactoInfo.filter(c => c.tipo === 'TELEFONO')
+    const correosContacto = contactoInfo.filter(c => c.tipo === 'CORREO')
+    const redesContacto = contactoInfo.filter(c => c.tipo === 'RED_SOCIAL')
 
     async function cargarPosts(){
         const respuesta = await fetch(`${API_URL}/api/posts`)
         const datos = await respuesta.json()
         setPosts(datos)
+    }
+
+    async function cargarContacto() {
+        try {
+            const respuesta = await fetch(`${API_URL}/api/contacto`)
+            const datos = await respuesta.json()
+            setContactoInfo(datos)
+        } catch {
+            setContactoInfo([])
+        } finally {
+            setCargandoContacto(false)
+        }
     }
 
     async function eliminarPost(id) {
@@ -51,6 +68,7 @@ function Feed() {
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         cargarPosts()
+        cargarContacto()
 }, [])
 
     return (
@@ -90,31 +108,60 @@ function Feed() {
                                 className="rounded-xl w-full object-cover"
                             />
 
-                            <div className="flex items-center justify-center gap-4 border-t border-gray-100 pt-3 mt-3">
-                                <a
-                                    href="https://www.facebook.com/pages/Urbanizacion%20Volare/1235766146472618/"
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    aria-label="Facebook"
-                                    className="text-volare-azul hover:opacity-70 transition-opacity"
-                                >
-                                    <FaFacebook size={22} />
-                                </a>
-                                <a
-                                    href="https://www.instagram.com/urbanizacionvolare/"
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    aria-label="Instagram"
-                                    className="text-volare-azul hover:opacity-70 transition-opacity"
-                                >
-                                    <FaInstagram size={22} />
-                                </a>
-                            </div>
+                            {cargandoContacto ? (
+                                <div className="flex flex-col gap-2 border-t border-gray-100 pt-3 mt-3 animate-pulse">
+                                    <div className="h-3 bg-gray-100 rounded w-3/4 mx-auto" />
+                                    <div className="h-3 bg-gray-100 rounded w-1/2 mx-auto" />
+                                </div>
+                            ) : (
+                                <>
+                                    {telefonosContacto.length > 0 && (
+                                        <div className="flex flex-col gap-1 text-sm text-gray-600 text-center border-t border-gray-100 pt-3 mt-3">
+                                            {telefonosContacto.map(c => (
+                                                <div key={c.id} className="flex items-center justify-center gap-2">
+                                                    <HiOutlinePhone size={16} className="text-volare-azul shrink-0" />
+                                                    {c.etiqueta ? `${c.etiqueta}: ${c.valor}` : c.valor}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
 
-                            <div className="flex items-center justify-center gap-2 text-sm text-gray-600 text-center border-t border-gray-100 pt-3 mt-3">
-                                <HiOutlinePhone size={18} className="text-volare-azul shrink-0" />
-                                Contacto administración: +593 99 999 9999
-                            </div>
+                                    {correosContacto.length > 0 && (
+                                        <div className="flex flex-col gap-1 text-sm text-gray-600 text-center border-t border-gray-100 pt-3 mt-3">
+                                            {correosContacto.map(c => (
+                                                <a
+                                                    key={c.id}
+                                                    href={`mailto:${c.valor}`}
+                                                    className="flex items-center justify-center gap-2 hover:text-volare-azul transition"
+                                                >
+                                                    <HiOutlineEnvelope size={16} className="text-volare-azul shrink-0" />
+                                                    {c.etiqueta ? `${c.etiqueta}: ${c.valor}` : c.valor}
+                                                </a>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {redesContacto.length > 0 && (
+                                        <div className="flex items-center justify-center gap-4 border-t border-gray-100 pt-3 mt-3">
+                                            {redesContacto.map(c => {
+                                                const Icono = ICONO_PLATAFORMA[c.plataforma] || HiOutlineGlobeAlt
+                                                return (
+                                                    <a
+                                                        key={c.id}
+                                                        href={c.valor}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        aria-label={c.plataforma}
+                                                        className="text-volare-azul hover:opacity-70 transition-opacity"
+                                                    >
+                                                        <Icono size={22} />
+                                                    </a>
+                                                )
+                                            })}
+                                        </div>
+                                    )}
+                                </>
+                            )}
 
                             <div className="flex flex-col gap-2 border-t border-gray-100 pt-3 mt-3">
                                 <div className="flex items-center gap-2 text-sm font-semibold text-volare-azul">
