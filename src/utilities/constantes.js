@@ -1,3 +1,19 @@
+import { FaFacebook, FaInstagram, FaWhatsapp, FaTiktok, FaXTwitter, FaYoutube, FaLinkedin } from 'react-icons/fa6'
+import { HiOutlineGlobeAlt } from 'react-icons/hi2'
+
+const PLATAFORMAS_RED_SOCIAL = [
+    { value: 'FACEBOOK', label: 'Facebook', icono: FaFacebook },
+    { value: 'INSTAGRAM', label: 'Instagram', icono: FaInstagram },
+    { value: 'WHATSAPP', label: 'WhatsApp', icono: FaWhatsapp },
+    { value: 'TIKTOK', label: 'TikTok', icono: FaTiktok },
+    { value: 'TWITTER', label: 'Twitter/X', icono: FaXTwitter },
+    { value: 'YOUTUBE', label: 'YouTube', icono: FaYoutube },
+    { value: 'LINKEDIN', label: 'LinkedIn', icono: FaLinkedin },
+    { value: 'OTRO', label: 'Otro', icono: HiOutlineGlobeAlt },
+]
+
+const ICONO_PLATAFORMA = Object.fromEntries(PLATAFORMAS_RED_SOCIAL.map(p => [p.value, p.icono]))
+
 const tipoColores = {
     AVISO: 'bg-volare-naranja',
     OBRA: 'bg-volare-azul',
@@ -35,4 +51,4 @@ const BANCOS_ECUADOR = [
     'Banco Capital', 'Citibank (Sucursal Internacional)'
 ]
 
-export { tipoColores, NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA, BANCOS_ECUADOR }
+export { tipoColores, NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA, BANCOS_ECUADOR, PLATAFORMAS_RED_SOCIAL, ICONO_PLATAFORMA }

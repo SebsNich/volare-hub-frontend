@@ -14,10 +14,15 @@ import {
     HiOutlineEnvelope,
     HiOutlineCalendarDays,
     HiOutlineExclamationTriangle,
-    HiOutlineChatBubbleLeftEllipsis
+    HiOutlineChatBubbleLeftEllipsis,
+    HiOutlineGlobeAlt,
+    HiOutlinePencil,
+    HiOutlineTrash,
+    HiChevronUp,
+    HiChevronDown
 } from 'react-icons/hi2'
 import { normalizarTexto, formatearFechaReserva, nombreCompleto } from '../utilities/helpers'
-import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA } from '../utilities/constantes'
+import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA, PLATAFORMAS_RED_SOCIAL, ICONO_PLATAFORMA } from '../utilities/constantes'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
 
@@ -26,6 +31,7 @@ const SECCIONES = [
     { id: 'usuarios', label: 'Usuarios', icono: HiOutlineUsers },
     { id: 'sugerencias', label: 'Buzón de Sugerencias', icono: HiOutlineInbox },
     { id: 'reservas', label: 'Gestión de Reservas', icono: HiOutlineCalendarDays },
+    { id: 'landing', label: 'Landing Page', icono: HiOutlineGlobeAlt },
 ]
 
 const TARJETAS_RESUMEN = [
@@ -92,6 +98,10 @@ function Admin() {
     const [filtroEstadoReserva, setFiltroEstadoReserva] = useState('TODOS')
     const [filtroFechaReserva, setFiltroFechaReserva] = useState('')
     const [paginaReservas, setPaginaReservas] = useState(1)
+
+    const [contactos, setContactos] = useState([])
+    const [modalContactoAbierto, setModalContactoAbierto] = useState(null)
+    const [contactoAEliminar, setContactoAEliminar] = useState(null)
 
     async function cargarResumen() {
         const respuesta = await fetch(`${API_URL}/api/admin/resumen`, {
@@ -163,6 +173,135 @@ function Admin() {
         })
         const datos = await respuesta.json()
         setReservas(datos)
+    }
+
+    async function cargarContactos() {
+        const respuesta = await fetch(`${API_URL}/api/contacto/admin`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })
+        const datos = await respuesta.json()
+        setContactos(datos)
+    }
+
+    function abrirModalContacto(tipo, contacto = null) {
+        setModalContactoAbierto({
+            tipo,
+            id: contacto?.id ?? null,
+            etiqueta: contacto?.etiqueta ?? '',
+            plataforma: contacto?.plataforma ?? PLATAFORMAS_RED_SOCIAL[0].value,
+            valor: contacto?.valor ?? ''
+        })
+    }
+
+    async function guardarContacto(e) {
+        e.preventDefault()
+        const { tipo, id, etiqueta, plataforma, valor } = modalContactoAbierto
+
+        const respuesta = await fetch(`${API_URL}/api/contacto${id ? `/${id}` : ''}`, {
+            method: id ? 'PUT' : 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ tipo, etiqueta, plataforma, valor })
+        })
+
+        if (respuesta.ok) {
+            mostrarToast(id ? 'Registro actualizado' : 'Registro agregado', 'exito')
+            setModalContactoAbierto(null)
+            cargarContactos()
+        } else {
+            const datos = await respuesta.json().catch(() => ({}))
+            mostrarToast(datos.error || 'No se pudo guardar el registro', 'error')
+        }
+    }
+
+    async function eliminarContactoConfirmado() {
+        const respuesta = await fetch(`${API_URL}/api/contacto/${contactoAEliminar}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })
+
+        if (respuesta.ok) {
+            mostrarToast('Registro eliminado', 'exito')
+            setContactoAEliminar(null)
+            cargarContactos()
+        } else {
+            mostrarToast('No se pudo eliminar el registro', 'error')
+        }
+    }
+
+    async function moverContacto(id, direccion) {
+        const respuesta = await fetch(`${API_URL}/api/contacto/${id}/orden`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ direccion })
+        })
+
+        if (respuesta.ok) {
+            cargarContactos()
+        } else {
+            mostrarToast('No se pudo cambiar el orden', 'error')
+        }
+    }
+
+    function filaContacto(contacto, lista) {
+        const indice = lista.findIndex(c => c.id === contacto.id)
+        const Icono = contacto.tipo === 'RED_SOCIAL' ? ICONO_PLATAFORMA[contacto.plataforma] : null
+        return (
+            <div key={contacto.id} className="flex items-center justify-between gap-3 border-b border-gray-50 last:border-0 py-2">
+                <div className="flex items-center gap-2 min-w-0">
+                    {Icono && <Icono size={18} className="text-volare-azul shrink-0" />}
+                    <div className="min-w-0">
+                        {contacto.etiqueta && <p className="text-xs text-gray-400 truncate">{contacto.etiqueta}</p>}
+                        <p className="text-sm text-gray-700 truncate">{contacto.valor}</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                    <button
+                        type="button"
+                        disabled={indice === 0}
+                        onClick={() => moverContacto(contacto.id, 'subir')}
+                        className="text-gray-400 hover:text-volare-azul disabled:opacity-30 disabled:cursor-not-allowed transition"
+                        aria-label="Subir"
+                    >
+                        <HiChevronUp size={18} />
+                    </button>
+                    <button
+                        type="button"
+                        disabled={indice === lista.length - 1}
+                        onClick={() => moverContacto(contacto.id, 'bajar')}
+                        className="text-gray-400 hover:text-volare-azul disabled:opacity-30 disabled:cursor-not-allowed transition"
+                        aria-label="Bajar"
+                    >
+                        <HiChevronDown size={18} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => abrirModalContacto(contacto.tipo, contacto)}
+                        className="text-volare-azul hover:opacity-70 transition-opacity"
+                        aria-label="Editar"
+                    >
+                        <HiOutlinePencil size={16} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setContactoAEliminar(contacto.id)}
+                        className="text-red-500 hover:opacity-70 transition-opacity"
+                        aria-label="Eliminar"
+                    >
+                        <HiOutlineTrash size={16} />
+                    </button>
+                </div>
+            </div>
+        )
     }
 
     function abrirModalReserva(reserva) {
@@ -252,6 +391,7 @@ function Admin() {
         cargarUsuarios()
         cargarSugerencias()
         cargarReservas()
+        cargarContactos()
     }, [])
 
     async function cambiarEstado(usuarioId, activoActual) {
@@ -343,6 +483,10 @@ function Admin() {
     const totalPaginasReservas = Math.max(1, Math.ceil(reservasFiltradas.length / TAMANO_PAGINA))
     const paginaReservasEfectiva = Math.min(paginaReservas, totalPaginasReservas)
     const reservasPagina = reservasFiltradas.slice((paginaReservasEfectiva - 1) * TAMANO_PAGINA, paginaReservasEfectiva * TAMANO_PAGINA)
+
+    const telefonos = contactos.filter(c => c.tipo === 'TELEFONO')
+    const correos = contactos.filter(c => c.tipo === 'CORREO')
+    const redesSociales = contactos.filter(c => c.tipo === 'RED_SOCIAL')
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col gap-6">
@@ -742,6 +886,61 @@ function Admin() {
                             </div>
                         </div>
                     )}
+
+                    {seccionActiva === 'landing' && (
+                        <div className="flex flex-col gap-4">
+                            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-4">
+                                <h3 className="text-sm font-semibold text-gray-700 mb-2">Teléfonos</h3>
+                                <div className="flex flex-col">
+                                    {telefonos.map(c => filaContacto(c, telefonos))}
+                                    {telefonos.length === 0 && (
+                                        <p className="text-sm text-gray-400 py-2">Sin teléfonos registrados</p>
+                                    )}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => abrirModalContacto('TELEFONO')}
+                                    className="mt-3 text-sm text-volare-azul font-semibold hover:underline"
+                                >
+                                    + Agregar
+                                </button>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-4">
+                                <h3 className="text-sm font-semibold text-gray-700 mb-2">Correos</h3>
+                                <div className="flex flex-col">
+                                    {correos.map(c => filaContacto(c, correos))}
+                                    {correos.length === 0 && (
+                                        <p className="text-sm text-gray-400 py-2">Sin correos registrados</p>
+                                    )}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => abrirModalContacto('CORREO')}
+                                    className="mt-3 text-sm text-volare-azul font-semibold hover:underline"
+                                >
+                                    + Agregar
+                                </button>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-4">
+                                <h3 className="text-sm font-semibold text-gray-700 mb-2">Redes Sociales</h3>
+                                <div className="flex flex-col">
+                                    {redesSociales.map(c => filaContacto(c, redesSociales))}
+                                    {redesSociales.length === 0 && (
+                                        <p className="text-sm text-gray-400 py-2">Sin redes sociales registradas</p>
+                                    )}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => abrirModalContacto('RED_SOCIAL')}
+                                    className="mt-3 text-sm text-volare-azul font-semibold hover:underline"
+                                >
+                                    + Agregar
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -972,6 +1171,78 @@ function Admin() {
                             </div>
                         </>
                     )}
+                </Modal>
+            )}
+
+            {modalContactoAbierto && (
+                <Modal onClose={() => setModalContactoAbierto(null)}>
+                    <h3 className="text-lg font-bold text-volare-azul">
+                        {modalContactoAbierto.id ? 'Editar' : 'Agregar'}{' '}
+                        {modalContactoAbierto.tipo === 'TELEFONO' ? 'Teléfono' : modalContactoAbierto.tipo === 'CORREO' ? 'Correo' : 'Red Social'}
+                    </h3>
+                    <form onSubmit={guardarContacto} className="flex flex-col gap-4">
+                        {modalContactoAbierto.tipo === 'RED_SOCIAL' ? (
+                            <>
+                                <select
+                                    value={modalContactoAbierto.plataforma}
+                                    onChange={(e) => setModalContactoAbierto({ ...modalContactoAbierto, plataforma: e.target.value })}
+                                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                                >
+                                    {PLATAFORMAS_RED_SOCIAL.map(p => (
+                                        <option key={p.value} value={p.value}>{p.label}</option>
+                                    ))}
+                                </select>
+                                <input
+                                    type="text"
+                                    value={modalContactoAbierto.valor}
+                                    onChange={(e) => setModalContactoAbierto({ ...modalContactoAbierto, valor: e.target.value })}
+                                    placeholder="URL (https://...)"
+                                    required
+                                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                                />
+                            </>
+                        ) : (
+                            <>
+                                <input
+                                    type="text"
+                                    value={modalContactoAbierto.etiqueta}
+                                    onChange={(e) => setModalContactoAbierto({ ...modalContactoAbierto, etiqueta: e.target.value })}
+                                    placeholder="Etiqueta (opcional, ej. Administración)"
+                                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                                />
+                                <input
+                                    type={modalContactoAbierto.tipo === 'CORREO' ? 'email' : 'text'}
+                                    value={modalContactoAbierto.valor}
+                                    onChange={(e) => setModalContactoAbierto({ ...modalContactoAbierto, valor: e.target.value })}
+                                    placeholder={modalContactoAbierto.tipo === 'CORREO' ? 'Correo' : 'Número de teléfono'}
+                                    required
+                                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
+                                />
+                            </>
+                        )}
+                        <button
+                            type="submit"
+                            className="bg-volare-verde text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                        >
+                            Guardar
+                        </button>
+                    </form>
+                </Modal>
+            )}
+
+            {contactoAEliminar && (
+                <Modal onClose={() => setContactoAEliminar(null)}>
+                    <div className="flex flex-col items-center text-center gap-4 border border-red-200 rounded-xl p-4">
+                        <p className="text-gray-700">¿Estás seguro de eliminar este registro?</p>
+                        <div className="flex gap-3">
+                            <button onClick={eliminarContactoConfirmado} className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition">
+                                Sí, eliminar
+                            </button>
+                            <button onClick={() => setContactoAEliminar(null)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition">
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
                 </Modal>
             )}
         </div>
