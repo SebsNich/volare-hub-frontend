@@ -9,6 +9,7 @@ import { API_URL } from '../config/api'
 import { NOMBRES_ESPACIO_RESERVA as NOMBRES_ESPACIO, NOMBRES_HORARIO_RESERVA as NOMBRES_HORARIO, BANCOS_ECUADOR } from '../utilities/constantes'
 import { esCedulaValida } from '../utilities/helpers'
 import SelectorBuscable from './SelectorBuscable'
+import CuentasBancarias from './CuentasBancarias'
 
 const PASOS = [
     { numero: 1, titulo: 'Datos personales' },
@@ -581,6 +582,13 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
                             Puedes subir tus documentos ahora o más tarde desde 'Mis Reservas' → Editar. Recuerda que tu reserva no podrá aprobarse hasta que el administrador reciba todos los documentos necesarios.
                         </p>
                     </div>
+                    <div className="flex flex-col gap-2">
+                        <p className="text-sm font-medium text-gray-700">
+                            Realiza tu transferencia a una de estas cuentas antes de subir tu comprobante:
+                        </p>
+                        <CuentasBancarias />
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {SLOTS_ARCHIVOS.map(({ slot, label }) => {
                             const [archivosNuevos, setArchivosNuevos] = archivosPorSlot[slot]
