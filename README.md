@@ -1,16 +1,52 @@
-# React + Vite
+# Volare Hub — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interfaz web de **Volare Hub**, una plataforma para la gestión de comunicación y reservas de áreas comunes de una urbanización residencial. Este repositorio contiene la aplicación cliente: feed de publicaciones, reservas de espacios comunes y panel de administración.
 
-Currently, two official plugins are available:
+**🟢 En producción:** [urbvolare.com](https://urbvolare.com)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack Tecnológico
 
-## React Compiler
+- **React** — construcción de la interfaz por componentes
+- **Vite** — entorno de desarrollo y build
+- **Tailwind CSS v4** — estilos utilitarios y sistema de diseño
+- **React Router** — enrutamiento y rutas protegidas
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Funcionalidades principales
 
-## Expanding the ESLint configuration
+- Diseño responsive completo, con ajustes finales pensados mobile-first
+- Sistema de notificaciones toast
+- Calendario de disponibilidad construido sin librerías externas
+- Wizard multi-paso para reservas de espacios comunes
+- Panel administrativo con tablas paginadas y filtros
+- Feed de publicaciones con roles diferenciados (residente / administrador)
+- Recuperación de contraseña por correo
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Diseño
+
+Paleta de colores personalizada de la marca Volare, aplicada de forma consistente en toda la interfaz. Componentes reutilizables como Modal con Portal, un sistema de drawers para móvil y tooltips propios, pensados para mantener coherencia visual sin depender de librerías de UI externas.
+
+## Arquitectura
+
+Backend y frontend viven en repositorios separados. El frontend se despliega en **Vercel** y consume la API del backend, desplegado en **Render**. La base de datos vive en **Supabase** (PostgreSQL) y los archivos multimedia se almacenan en **Cloudinary**.
+
+## Instalación local
+
+```bash
+# 1. Clonar el repositorio
+git clone <url-del-repo>
+cd frontend
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Configurar variables de entorno
+cp .env.example .env
+# Completar VITE_API_URL apuntando al backend local o desplegado
+
+# 4. Levantar el servidor en modo desarrollo
+npm run dev
+```
+
+---
+
+Este proyecto fue desarrollado como parte de un internado, aplicando prácticas profesionales de seguridad (validación en backend, principio de menor privilegio en credenciales, auditoría de historial de git) y arquitectura escalable.
