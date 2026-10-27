@@ -102,7 +102,9 @@ function ModalAuth({ onClose }) {
             return
         }
 
-        await iniciarSesionConToken(datos.token, 'Cuenta creada correctamente')
+        // RF-08: el registro queda pendiente de aprobación; el servidor ya no entrega token.
+        mostrarToast(datos.mensaje || 'Solicitud enviada. Espera la aprobación del administrador.', 'exito')
+        setModo('login')
     }
 
     async function handleSolicitarRecuperacion(e) {
