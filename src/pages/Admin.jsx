@@ -3,8 +3,10 @@ import Modal from '../components/Modal'
 import ArchivoAdjunto from '../components/ArchivoAdjunto'
 import ControlesPaginacion from '../components/ControlesPaginacion'
 import Tooltip from '../components/Tooltip'
+import SolicitudesRegistro from '../components/SolicitudesRegistro'
 import {
     HiOutlineUsers,
+    HiOutlineUserPlus,
     HiOutlineInbox,
     HiBars3,
     HiXMark,
@@ -31,6 +33,7 @@ import useDebounce from '../hooks/useDebounce'
 const SECCIONES = [
     { id: 'resumen', label: 'Resumen', icono: HiOutlineChartBar },
     { id: 'usuarios', label: 'Usuarios', icono: HiOutlineUsers },
+    { id: 'registros', label: 'Solicitudes de Registro', icono: HiOutlineUserPlus },
     { id: 'sugerencias', label: 'Buzón de Sugerencias', icono: HiOutlineInbox },
     { id: 'reservas', label: 'Gestión de Reservas', icono: HiOutlineCalendarDays },
     { id: 'landing', label: 'Landing Page', icono: HiOutlineGlobeAlt },
@@ -624,6 +627,10 @@ function Admin() {
                                 )
                             })}
                         </div>
+                    )}
+
+                    {seccionActiva === 'registros' && (
+                        <SolicitudesRegistro />
                     )}
 
                     {seccionActiva === 'usuarios' && (
