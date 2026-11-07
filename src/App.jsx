@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Landing from './pages/Landing'
 import Feed from './pages/Feed'
 import { AuthProvider } from './context/AuthContext'
 import { ToastProvider } from './context/ToastContext'
@@ -22,7 +23,8 @@ function App() {
           <div className="min-h-screen bg-gray-50">
             <Navbar />
             <Routes>
-                <Route path="/" element={<Feed />} />
+                <Route path="/" element={<Landing />} />
+                <Route path="/feed" element={<Feed />} />
                 <Route path="/restablecer-contrasena" element={<RestablecerContrasena />} />
                 <Route path="/perfil/:id" element={<PerfilPublico />} />
                 <Route path="/admin" element={
