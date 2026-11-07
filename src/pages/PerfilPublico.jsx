@@ -39,7 +39,11 @@ function PerfilPublico() {
     const { mostrarToast } = useToast()
 
     const cargarPerfilPublico = useCallback(async () => {
-        const respuesta = await fetch(`${API_URL}/api/usuarios/${id}`)
+        const respuesta = await fetch(`${API_URL}/api/usuarios/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })
         const datos = await respuesta.json()
         setUsuario(datos.user)
         setNombres(datos.user.nombres || '')

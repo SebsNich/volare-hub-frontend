@@ -30,7 +30,11 @@ function App() {
                     </RutaProtegida>
                 } />
                 <Route path="/restablecer-contrasena" element={<RestablecerContrasena />} />
-                <Route path="/perfil/:id" element={<PerfilPublico />} />
+                <Route path="/perfil/:id" element={
+                    <RutaProtegida>
+                        <PerfilPublico />
+                    </RutaProtegida>
+                } />
                 <Route path="/admin" element={
                   <RutaProtegida rolRequerido="ADMIN">
                       <Admin />

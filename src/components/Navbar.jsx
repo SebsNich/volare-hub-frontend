@@ -178,15 +178,17 @@ function Navbar() {
                             </button>
                         </Tooltip>
                     )}
-                    <button
-                        type="button"
-                        onClick={alternarBusquedaMovil}
-                        className="md:hidden text-gray-600 hover:text-volare-azul transition"
-                        aria-label={busquedaMovilAbierta ? 'Cerrar búsqueda' : 'Buscar residentes'}
-                        aria-expanded={busquedaMovilAbierta}
-                    >
-                        {busquedaMovilAbierta ? <HiXMark size={22} /> : <HiOutlineMagnifyingGlass size={22} />}
-                    </button>
+                    {usuario && (
+                        <button
+                            type="button"
+                            onClick={alternarBusquedaMovil}
+                            className="md:hidden text-gray-600 hover:text-volare-azul transition"
+                            aria-label={busquedaMovilAbierta ? 'Cerrar búsqueda' : 'Buscar residentes'}
+                            aria-expanded={busquedaMovilAbierta}
+                        >
+                            {busquedaMovilAbierta ? <HiXMark size={22} /> : <HiOutlineMagnifyingGlass size={22} />}
+                        </button>
+                    )}
                     <button
                         onClick={() => { setBusquedaMovilAbierta(false); setMenuMovilAbierto(!menuMovilAbierto) }}
                         className="md:hidden relative text-gray-600 hover:text-volare-azul transition"
@@ -201,7 +203,7 @@ function Navbar() {
                 </div>
             </div>
 
-            {busquedaMovilAbierta && (
+            {usuario && busquedaMovilAbierta && (
                 <div className="md:hidden border-t border-gray-100 px-4 py-3 animate-volare-barrido-derecha">
                     <BuscadorUsuarios autoFocus onNavegar={() => setBusquedaMovilAbierta(false)} />
                 </div>

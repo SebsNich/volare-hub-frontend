@@ -25,7 +25,11 @@ function BuscadorUsuarios({ className = '', inputClassName = '', onNavegar, auto
         async function buscar() {
             setBuscando(true)
             try {
-                const respuesta = await fetch(`${API_URL}/api/usuarios/buscar?q=${encodeURIComponent(consulta)}`)
+                const respuesta = await fetch(`${API_URL}/api/usuarios/buscar?q=${encodeURIComponent(consulta)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                })
                 const datos = await respuesta.json()
                 if (!cancelado) {
                     setResultados(datos.usuarios ?? [])
