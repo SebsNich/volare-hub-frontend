@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { Link } from 'react-router-dom'
-import { HiOutlineHome, HiOutlineArrowRightOnRectangle, HiOutlineCog6Tooth, HiOutlineWrenchScrewdriver, HiChevronDown, HiBars3, HiXMark, HiOutlineMagnifyingGlass } from 'react-icons/hi2'
+import { HiOutlineHome, HiOutlineArrowRightOnRectangle, HiOutlineCog6Tooth, HiOutlineWrenchScrewdriver, HiOutlineUserGroup, HiChevronDown, HiBars3, HiXMark, HiOutlineMagnifyingGlass } from 'react-icons/hi2'
 import AvatarUsuario from './AvatarUsuario'
 import ModalAuth from './ModalAuth'
 import BuscadorUsuarios from './BuscadorUsuarios'
@@ -92,6 +92,14 @@ function Navbar() {
                                 <HiOutlineHome size={22} />
                             </Link>
                         </Tooltip>
+                        {usuario && (
+                            <Tooltip texto="Comunidad" posicion="abajo">
+                                <Link to="/feed" className="flex items-center gap-1.5 hover:text-volare-azul transition">
+                                    <HiOutlineUserGroup size={20} />
+                                    <span className="hidden sm:inline">Comunidad</span>
+                                </Link>
+                            </Tooltip>
+                        )}
                         {usuario && usuario.rol === 'ADMIN' && (
                             <Tooltip texto="Panel de administración" posicion="abajo">
                                 <Link to="/admin" className="flex items-center gap-1.5 hover:text-volare-azul transition">
@@ -209,6 +217,16 @@ function Navbar() {
                         <HiOutlineHome size={20} />
                         Inicio
                     </Link>
+                    {usuario && (
+                        <Link
+                            to="/feed"
+                            onClick={cerrarMenuMovil}
+                            className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-volare-azul transition"
+                        >
+                            <HiOutlineUserGroup size={20} />
+                            Comunidad
+                        </Link>
+                    )}
                     {usuario && usuario.rol === 'ADMIN' && (
                         <Link
                             to="/admin"

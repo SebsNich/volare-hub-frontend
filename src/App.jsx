@@ -24,7 +24,11 @@ function App() {
             <Navbar />
             <Routes>
                 <Route path="/" element={<Landing />} />
-                <Route path="/feed" element={<Feed />} />
+                <Route path="/feed" element={
+                    <RutaProtegida>
+                        <Feed />
+                    </RutaProtegida>
+                } />
                 <Route path="/restablecer-contrasena" element={<RestablecerContrasena />} />
                 <Route path="/perfil/:id" element={<PerfilPublico />} />
                 <Route path="/admin" element={

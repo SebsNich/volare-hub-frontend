@@ -55,7 +55,11 @@ function Feed() {
     const postsFiltrados = filtroTipo === 'TODOS' ? posts : posts.filter(post => post.tipo === filtroTipo)
 
     async function cargarPosts(pagina = 1){
-        const respuesta = await fetch(`${API_URL}/api/posts?pagina=${pagina}`)
+        const respuesta = await fetch(`${API_URL}/api/posts?pagina=${pagina}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })
         const datos = await respuesta.json()
         setPosts(anteriores => pagina === 1 ? datos.posts : [...anteriores, ...datos.posts])
         setHayMasPosts(datos.hayMas)

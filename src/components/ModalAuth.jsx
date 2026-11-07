@@ -49,7 +49,7 @@ function ModalAuth({ onClose }) {
         const datosPerfil = await respuestaPerfil.json()
         setUsuario(datosPerfil.user)
         mostrarToast(mensajeExito, 'exito')
-        navigate('/')
+        navigate('/feed')
         onClose()
     }
 
