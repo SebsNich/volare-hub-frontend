@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom"
 import { useState } from "react"
-import { HiOutlinePencil, HiOutlineTrash, HiChevronLeft, HiChevronRight, HiOutlineMapPin, HiMapPin, HiOutlinePhoto, HiOutlineDocumentText, HiPlusSmall, HiXMark } from "react-icons/hi2"
+import { HiOutlinePencil, HiOutlineTrash, HiChevronLeft, HiChevronRight, HiOutlineMapPin, HiMapPin, HiOutlinePhoto, HiOutlineDocumentText, HiPlusSmall, HiXMark, HiOutlineGlobeAlt, HiOutlineRectangleStack } from "react-icons/hi2"
 import Lightbox from "yet-another-react-lightbox"
 import Zoom from "yet-another-react-lightbox/plugins/zoom"
 import "yet-another-react-lightbox/styles.css"
 import Modal from './Modal'
 import ArchivoAdjunto from './ArchivoAdjunto'
 import Tooltip from './Tooltip'
+import Interruptor from './Interruptor'
 import AvatarUsuario from './AvatarUsuario'
 import obtenerNombreArchivo, { nombreCompleto } from "../utilities/helpers"
 import { tipoColores } from "../utilities/constantes"
@@ -15,8 +16,33 @@ import { API_URL } from '../config/api'
 
 const LIMITE_DESCRIPCION = 200
 
+// Repite la regla del backend solo para explicar en pantalla por qué el
+// interruptor está apagado; quien decide de verdad sigue siendo el backend.
+function motivoSinCarrusel(post) {
+    if (!post.publico) return 'Primero hazla pública'
+    if (post.estado !== 'ACTIVO') return 'Solo publicaciones activas'
+    if (post.imagenUrl.length === 0) return 'Necesita al menos una imagen'
+    return null
+}
+
+// En móvil solo se ve el icono para no apretar la cabecera; el title da el texto.
+function InsigniaEstado({ icono: Icono, texto }) {
+    return (
+        <span title={texto} className="flex items-center gap-1 text-xs font-medium text-volare-verde">
+            <Icono size={14} />
+            <span className="hidden sm:inline">{texto}</span>
+        </span>
+    )
+}
+
 function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
     const { mostrarToast } = useToast()
+    const esAdmin = usuario?.rol === 'ADMIN'
+    // El autor también ve las insignias: si edita un post público, vuelve a privado.
+    const veEstadoPublicacion = esAdmin || usuario?.id === post.autorId
+    const motivoCarrusel = motivoSinCarrusel(post)
+    const [confirmarPublicoAbierto, setConfirmarPublicoAbierto] = useState(false)
+    const [guardandoPublicacion, setGuardandoPublicacion] = useState(false)
     const puedeEditar = usuario && (usuario.id === post.autorId || usuario.rol === 'ADMIN')
     const puedeAnclar = contexto === 'perfil'
         ? usuario && usuario.id === post.autorId
@@ -66,6 +92,52 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
         } else {
             mostrarToast('No se pudo anclar la publicación', 'error')
         }
+    }
+
+    async function enviarCambioPublicacion(ruta, cuerpo, mensajeExito) {
+        setGuardandoPublicacion(true)
+        try {
+            const respuesta = await fetch(`${API_URL}/api/posts/${post.id}/${ruta}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(cuerpo)
+            })
+            if (respuesta.ok) {
+                mostrarToast(mensajeExito, 'exito')
+                onEditar()
+            } else {
+                const datos = await respuesta.json().catch(() => ({}))
+                mostrarToast(datos.error || datos.mensaje || 'No se pudo actualizar la publicación', 'error')
+            }
+        } catch {
+            mostrarToast('No se pudo conectar con el servidor', 'error')
+        } finally {
+            setGuardandoPublicacion(false)
+        }
+    }
+
+    function alternarPublico() {
+        if (!post.publico) {
+            setConfirmarPublicoAbierto(true)
+            return
+        }
+        const mensaje = post.enCarrusel
+            ? 'La publicación ahora es privada y salió del carrusel'
+            : 'La publicación ahora es privada'
+        enviarCambioPublicacion('publico', { publico: false }, mensaje)
+    }
+
+    function confirmarHacerPublico() {
+        setConfirmarPublicoAbierto(false)
+        enviarCambioPublicacion('publico', { publico: true }, 'La publicación ahora es pública')
+    }
+
+    function alternarCarrusel() {
+        const mensaje = post.enCarrusel ? 'Publicación quitada del carrusel' : 'Publicación agregada al carrusel'
+        enviarCambioPublicacion('carrusel', { enCarrusel: !post.enCarrusel }, mensaje)
     }
 
     const imagenesVisibles = post.imagenUrl.filter(url => !imagenesAEliminar.includes(url))
@@ -121,6 +193,12 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
                             <HiMapPin size={14} />
                             Anclado
                         </span>
+                    )}
+                    {veEstadoPublicacion && post.publico && (
+                        <InsigniaEstado icono={HiOutlineGlobeAlt} texto="Público" />
+                    )}
+                    {veEstadoPublicacion && post.enCarrusel && (
+                        <InsigniaEstado icono={HiOutlineRectangleStack} texto="Carrusel" />
                     )}
                     <span className={`px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-semibold text-white ${tipoColores[post.tipo] || 'bg-gray-400'}`}>
                         {post.tipo}
@@ -205,7 +283,7 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
             )}
 
             {(puedeEditar || puedeAnclar) && (
-                <div className="flex gap-4 sm:gap-3 mt-1 sm:mt-2 pt-3 border-t border-gray-100/70">
+                <div className="flex flex-wrap items-center gap-4 sm:gap-3 mt-1 sm:mt-2 pt-3 border-t border-gray-100/70">
                     {puedeAnclar && (
                         <Tooltip texto={contexto === 'perfil' ? 'Anclar en mi perfil' : 'Anclar en el feed'}>
                             <button
@@ -239,7 +317,50 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
                             </Tooltip>
                         </>
                     )}
+                    {esAdmin && (
+                        <div className="flex gap-2 ml-auto">
+                            <Tooltip texto={post.publico ? 'Quitar de la página pública' : 'Mostrar en la página pública'}>
+                                <Interruptor
+                                    etiqueta="Público"
+                                    activo={post.publico}
+                                    onCambiar={alternarPublico}
+                                    deshabilitado={guardandoPublicacion}
+                                />
+                            </Tooltip>
+                            <Tooltip texto={motivoCarrusel || (post.enCarrusel ? 'Quitar del carrusel' : 'Mostrar en el carrusel')}>
+                                <Interruptor
+                                    etiqueta="Carrusel"
+                                    activo={post.enCarrusel}
+                                    onCambiar={alternarCarrusel}
+                                    deshabilitado={guardandoPublicacion || Boolean(motivoCarrusel)}
+                                />
+                            </Tooltip>
+                        </div>
+                    )}
                 </div>
+            )}
+
+            {confirmarPublicoAbierto && (
+                <Modal onClose={() => setConfirmarPublicoAbierto(false)}>
+                    <h3 className="text-lg font-bold text-volare-azul">¿Hacer pública esta publicación?</h3>
+                    <p className="text-sm text-gray-600">
+                        Será visible para cualquier persona en la página pública de Volare, sin necesidad de iniciar sesión.
+                    </p>
+                    <div className="flex gap-3 justify-end">
+                        <button
+                            onClick={() => setConfirmarPublicoAbierto(false)}
+                            className="px-4 py-2 rounded-lg font-semibold text-gray-600 hover:bg-gray-100 transition"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={confirmarHacerPublico}
+                            className="bg-volare-verde text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                        >
+                            Publicar
+                        </button>
+                    </div>
+                </Modal>
             )}
 
             {modalAbierto && (
