@@ -75,10 +75,16 @@ function AuthProvider({ children }) {
         return () => document.removeEventListener('visibilitychange', alCambiarVisibilidad)
     }, [refrescarUsuario])
 
+    // Con la pestaña oculta no se consulta: un aviso detectado ahí saldría y se
+    // borraría sin que nadie lo viera. Al volver, el efecto de visibilidad de
+    // arriba hace la revisión y el aviso aparece delante del usuario.
     const pendiente = esCuentaPendiente(usuario)
     useEffect(() => {
         if (!pendiente) return
-        const intervalo = setInterval(refrescarUsuario, INTERVALO_REVISION_PENDIENTE_MS)
+        function revisarSiEstaVisible() {
+            if (document.visibilityState === 'visible') refrescarUsuario()
+        }
+        const intervalo = setInterval(revisarSiEstaVisible, INTERVALO_REVISION_PENDIENTE_MS)
         return () => clearInterval(intervalo)
     }, [pendiente, refrescarUsuario])
 
