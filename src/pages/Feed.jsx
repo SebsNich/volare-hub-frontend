@@ -9,9 +9,51 @@ import AvatarUsuario from '../components/AvatarUsuario'
 import MiniLandingCompleta from '../components/MiniLandingCompleta'
 import FiltroTipoPublicacion, { obtenerMensajeVacio } from '../components/FiltroTipoPublicacion'
 import DrawerMovil from '../components/DrawerMovil'
-import { HiOutlineEye, HiOutlineUserCircle, HiXMark } from 'react-icons/hi2'
-import { formatearMesAnio, nombreCompleto } from '../utilities/helpers'
+import { HiOutlineEye, HiOutlineUserCircle, HiXMark, HiOutlineClock } from 'react-icons/hi2'
+import { formatearMesAnio, nombreCompleto, esCuentaPendiente } from '../utilities/helpers'
 import { API_URL } from '../config/api'
+
+// Ocupa el lugar del formulario de publicar. No se puede cerrar: mientras la
+// cuenta esté pendiente, el usuario debe entender por qué no puede publicar.
+function AvisoCuentaPendiente() {
+    const { refrescarUsuario } = useContext(AuthContext)
+    const { mostrarToast } = useToast()
+    const [comprobando, setComprobando] = useState(false)
+
+    async function comprobarAhora() {
+        setComprobando(true)
+        const usuarioActualizado = await refrescarUsuario()
+        setComprobando(false)
+        // Si fue aprobada, AuthContext ya avisa; aquí solo se cubren los otros casos.
+        if (usuarioActualizado === undefined) {
+            mostrarToast('No se pudo comprobar tu cuenta. Inténtalo de nuevo.', 'error')
+        } else if (esCuentaPendiente(usuarioActualizado)) {
+            mostrarToast('Tu cuenta sigue pendiente de aprobación.', 'exito')
+        }
+    }
+
+    return (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+            <HiOutlineClock size={32} className="text-amber-500 shrink-0" />
+            <div className="flex-1 text-sm text-amber-900">
+                <p className="font-semibold">Tu cuenta está pendiente de aprobación.</p>
+                <p>Puedes ver las publicaciones de la comunidad. Podrás publicar y reservar cuando un administrador apruebe tu cuenta.</p>
+            </div>
+            <button
+                type="button"
+                onClick={comprobarAhora}
+                disabled={comprobando}
+                className={`shrink-0 px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                    comprobando
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-amber-500 text-white hover:opacity-90'
+                }`}
+            >
+                {comprobando ? 'Comprobando...' : 'Comprobar ahora'}
+            </button>
+        </div>
+    )
+}
 
 function ContenidoPerfil({ usuario }) {
     return (
@@ -109,8 +151,9 @@ function Feed() {
                 </aside>
 
                 <div className="md:order-2 flex flex-col gap-6 w-full">
-                    {usuario && (
-                        <FormularioPost origen="feed" onPublicado={() => cargarPosts(1)} />
+                    {usuario && (esCuentaPendiente(usuario)
+                        ? <AvisoCuentaPendiente />
+                        : <FormularioPost origen="feed" onPublicado={() => cargarPosts(1)} />
                     )}
 
                     <div className="flex flex-col gap-4">

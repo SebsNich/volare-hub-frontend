@@ -12,7 +12,7 @@ import Tooltip from '../components/Tooltip'
 import FiltroTipoPublicacion, { obtenerMensajeVacio } from '../components/FiltroTipoPublicacion'
 import { HiXMark, HiOutlineEye } from 'react-icons/hi2'
 import { API_URL } from '../config/api'
-import { nombreCompleto } from '../utilities/helpers'
+import { nombreCompleto, esCuentaPendiente } from '../utilities/helpers'
 
 function PerfilPublico() {
     const { id } = useParams()
@@ -34,6 +34,7 @@ function PerfilPublico() {
     const [modalSeguridadAbierto, setModalSeguridadAbierto] = useState(false)
     const [postAEliminar, setPostAEliminar] = useState(null)
     const [filtroTipo, setFiltroTipo] = useState('TODOS')
+    const [errorPerfil, setErrorPerfil] = useState('')
 
     const { usuario: usuarioLogueado, setUsuario: setUsuarioLogueado } = useContext(AuthContext)
     const { mostrarToast } = useToast()
@@ -44,7 +45,14 @@ function PerfilPublico() {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         })
-        const datos = await respuesta.json()
+        const datos = await respuesta.json().catch(() => ({}))
+        // Sin esto, un 403 (por ejemplo, una cuenta pendiente que abre un perfil
+        // ajeno) rompía la página al leer datos.user, que no viene.
+        if (!respuesta.ok) {
+            setErrorPerfil(datos.mensaje || 'No se pudo cargar el perfil')
+            return
+        }
+        setErrorPerfil('')
         setUsuario(datos.user)
         setNombres(datos.user.nombres || '')
         setApellidos(datos.user.apellidos || '')
@@ -186,8 +194,19 @@ function PerfilPublico() {
 
     const esPropioPerfil = usuarioLogueado?.id === usuario?.id
     const esAdmin = usuarioLogueado?.rol === 'ADMIN'
+    const puedePublicar = !esCuentaPendiente(usuarioLogueado)
     const fotoAMostrarEnPreview = eliminarFoto ? null : (fotoPreview || usuario?.foto)
     const postsFiltrados = filtroTipo === 'TODOS' ? posts : posts.filter(post => post.tipo === filtroTipo)
+
+    if (errorPerfil) {
+        return (
+            <div className="max-w-xl mx-auto px-4 py-16">
+                <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 text-center text-gray-600">
+                    {errorPerfil}
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
@@ -219,7 +238,7 @@ function PerfilPublico() {
                                         </button>
                                         <p className="text-sm text-gray-500 mt-1">Actualiza tu nombre, biografía y foto de perfil</p>
                                     </div>
-                                    <div className="py-4">
+                                    <div className={puedePublicar ? 'py-4' : 'pt-4'}>
                                         <button
                                             onClick={() => setModalSeguridadAbierto(true)}
                                             className="bg-volare-verde text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:opacity-90 transition w-full"
@@ -228,15 +247,17 @@ function PerfilPublico() {
                                         </button>
                                         <p className="text-sm text-gray-500 mt-1">Cambia tu contraseña o correo electrónico</p>
                                     </div>
-                                    <div className="pt-4">
-                                        <button
-                                            onClick={() => setModalCrearPostAbierto(true)}
-                                            className="bg-volare-naranja text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:opacity-90 transition w-full"
-                                        >
-                                            Crear Publicación
-                                        </button>
-                                        <p className="text-sm text-gray-500 mt-1">Comparte una publicación en tu perfil</p>
-                                    </div>
+                                    {puedePublicar && (
+                                        <div className="pt-4">
+                                            <button
+                                                onClick={() => setModalCrearPostAbierto(true)}
+                                                className="bg-volare-naranja text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:opacity-90 transition w-full"
+                                            >
+                                                Crear Publicación
+                                            </button>
+                                            <p className="text-sm text-gray-500 mt-1">Comparte una publicación en tu perfil</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}

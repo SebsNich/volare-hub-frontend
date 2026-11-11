@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { HiOutlineFunnel, HiXMark } from 'react-icons/hi2'
 import { tipoColores } from '../utilities/constantes'
+import { AuthContext } from '../context/AuthContext'
+import { esCuentaPendiente } from '../utilities/helpers'
 import DrawerMovil from './DrawerMovil'
 import BuscadorUsuarios from './BuscadorUsuarios'
 
@@ -44,6 +46,10 @@ function ListaOpciones({ filtroTipo, onSeleccionar }) {
 function FiltroTipoPublicacion({ filtroTipo, setFiltroTipo }) {
     const [drawerAbierto, setDrawerAbierto] = useState(false)
     const hayFiltroActivo = filtroTipo !== 'TODOS'
+    // Se lee aquí (y no por props) porque el filtro aparece en el feed y en el perfil:
+    // una cuenta pendiente no puede buscar residentes en ninguno de los dos.
+    const { usuario } = useContext(AuthContext)
+    const mostrarBuscador = !esCuentaPendiente(usuario)
 
     function seleccionarYCerrar(value) {
         setFiltroTipo(value)
@@ -53,9 +59,11 @@ function FiltroTipoPublicacion({ filtroTipo, setFiltroTipo }) {
     return (
         <>
             <aside className="hidden md:flex md:order-3 w-full md:sticky md:top-24 bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex-col gap-3">
-                <div className="border-b border-gray-100 pb-4 mb-1">
-                    <BuscadorUsuarios />
-                </div>
+                {mostrarBuscador && (
+                    <div className="border-b border-gray-100 pb-4 mb-1">
+                        <BuscadorUsuarios />
+                    </div>
+                )}
                 <h2 className="text-lg font-semibold text-volare-azul">Filtrar por tipo</h2>
                 <ListaOpciones filtroTipo={filtroTipo} onSeleccionar={setFiltroTipo} />
             </aside>
@@ -73,9 +81,11 @@ function FiltroTipoPublicacion({ filtroTipo, setFiltroTipo }) {
             </button>
 
             <DrawerMovil abierto={drawerAbierto} onClose={() => setDrawerAbierto(false)}>
-                <div className="border-b border-gray-100 pb-4 mb-1">
-                    <BuscadorUsuarios onNavegar={() => setDrawerAbierto(false)} />
-                </div>
+                {mostrarBuscador && (
+                    <div className="border-b border-gray-100 pb-4 mb-1">
+                        <BuscadorUsuarios onNavegar={() => setDrawerAbierto(false)} />
+                    </div>
+                )}
                 <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-volare-azul">Filtrar por tipo</h2>
                     <button

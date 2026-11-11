@@ -9,7 +9,7 @@ import ArchivoAdjunto from './ArchivoAdjunto'
 import Tooltip from './Tooltip'
 import Interruptor from './Interruptor'
 import AvatarUsuario from './AvatarUsuario'
-import obtenerNombreArchivo, { nombreCompleto } from "../utilities/helpers"
+import obtenerNombreArchivo, { nombreCompleto, esCuentaPendiente } from "../utilities/helpers"
 import { tipoColores } from "../utilities/constantes"
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
@@ -183,10 +183,18 @@ function PostCard({ post, usuario, eliminar, onEditar, contexto = 'feed' }) {
     return (
         <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow p-4 sm:p-6 flex flex-col gap-2.5 sm:gap-3 border border-gray-100">
             <div className="flex items-center justify-between gap-2">
-                <Link to={`/perfil/${post.autorId}`} className="flex items-center gap-2 text-sm font-semibold text-volare-azul hover:underline min-w-0">
-                    <AvatarUsuario foto={post.autor.foto} size={28} />
-                    <span className="truncate">{nombreCompleto(post.autor)}</span>
-                </Link>
+                {/* Una cuenta pendiente no puede abrir perfiles ajenos: el autor se muestra sin enlace. */}
+                {esCuentaPendiente(usuario) ? (
+                    <span className="flex items-center gap-2 text-sm font-semibold text-volare-azul min-w-0">
+                        <AvatarUsuario foto={post.autor.foto} size={28} />
+                        <span className="truncate">{nombreCompleto(post.autor)}</span>
+                    </span>
+                ) : (
+                    <Link to={`/perfil/${post.autorId}`} className="flex items-center gap-2 text-sm font-semibold text-volare-azul hover:underline min-w-0">
+                        <AvatarUsuario foto={post.autor.foto} size={28} />
+                        <span className="truncate">{nombreCompleto(post.autor)}</span>
+                    </Link>
+                )}
                 <div className="flex items-center gap-2 shrink-0">
                     {ancladoActivo && (
                         <span className="hidden sm:flex items-center gap-1 text-xs font-medium text-volare-azul">
