@@ -7,6 +7,21 @@ import CampoContrasena from './CampoContrasena'
 import { API_URL } from '../config/api'
 import { esCedulaValida } from '../utilities/helpers'
 
+// Qué campos del registro se marcan en rojo según el código de error del backend.
+// El texto del error lo da el backend; aquí solo se señala dónde corregir.
+const CAMPOS_POR_CODIGO = {
+    LIMITE_VILLA: ['manzana', 'villa'],
+    EMAIL_DUPLICADO: ['email'],
+    CEDULA_DUPLICADA: ['cedula']
+}
+// En el login, estos errores se quedan dentro del modal (sin toast) porque
+// pueden traer un motivo largo que el usuario necesita leer con calma.
+const CODIGOS_LOGIN_EN_MODAL = ['CUENTA_RECHAZADA', 'CUENTA_INACTIVA']
+const MENSAJE_SIN_CONEXION = 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.'
+const DURACION_AVISO_LARGO_MS = 8000
+
+const CLASE_CAMPO_REGISTRO = 'border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde'
+
 function ModalAuth({ onClose }) {
     const [modo, setModo] = useState('login')
     const { setUsuario } = useContext(AuthContext)
@@ -30,12 +45,30 @@ function ModalAuth({ onClose }) {
     const [enviandoRecuperacion, setEnviandoRecuperacion] = useState(false)
 
     const [error, setError] = useState('')
+    const [codigoError, setCodigoError] = useState(null)
+    const [enviandoRegistro, setEnviandoRegistro] = useState(false)
 
     const esLogin = modo === 'login'
     const esRegistro = modo === 'registro'
     const esRecuperar = modo === 'recuperar'
 
-    async function iniciarSesionConToken(token, mensajeExito) {
+    function cambiarModo(nuevoModo) {
+        setModo(nuevoModo)
+        setError('')
+        setCodigoError(null)
+    }
+
+    function claseCampoRegistro(campo) {
+        const conError = CAMPOS_POR_CODIGO[codigoError]?.includes(campo)
+        return `${CLASE_CAMPO_REGISTRO} ${conError ? 'border-red-500' : 'border-gray-300'}`
+    }
+
+    function irAlLoginConEmail() {
+        setEmail(emailRegistro)
+        cambiarModo('login')
+    }
+
+    async function iniciarSesionConToken(token, mensajeExito, duracion) {
         localStorage.setItem('token', token)
         const respuestaPerfil = await fetch(`${API_URL}/api/auth/perfil`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -48,7 +81,7 @@ function ModalAuth({ onClose }) {
 
         const datosPerfil = await respuestaPerfil.json()
         setUsuario(datosPerfil.user)
-        mostrarToast(mensajeExito, 'exito')
+        mostrarToast(mensajeExito, 'exito', duracion)
         navigate('/feed')
         onClose()
     }
@@ -57,25 +90,37 @@ function ModalAuth({ onClose }) {
         e.preventDefault()
         setError('')
 
-        const respuesta = await fetch(`${API_URL}/api/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        })
-        const datos = await respuesta.json()
+        let respuesta
+        try {
+            respuesta = await fetch(`${API_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            })
+        } catch {
+            setError(MENSAJE_SIN_CONEXION)
+            return
+        }
+        const datos = await respuesta.json().catch(() => ({}))
 
         if (!respuesta.ok) {
-            setError(datos.mensaje || 'No se pudo iniciar sesión')
-            mostrarToast(datos.mensaje || 'No se pudo iniciar sesión', 'error')
+            const mensaje = datos.mensaje || 'No se pudo iniciar sesión'
+            setError(mensaje)
+            if (!CODIGOS_LOGIN_EN_MODAL.includes(datos.codigo)) mostrarToast(mensaje, 'error')
             return
         }
 
-        await iniciarSesionConToken(datos.token, 'Bienvenido de nuevo')
+        if (datos.codigo === 'CUENTA_PENDIENTE') {
+            await iniciarSesionConToken(datos.token, datos.mensaje, DURACION_AVISO_LARGO_MS)
+        } else {
+            await iniciarSesionConToken(datos.token, 'Bienvenido de nuevo')
+        }
     }
 
     async function handleRegistro(e) {
         e.preventDefault()
         setError('')
+        setCodigoError(null)
 
         if (passwordRegistro !== confirmarPasswordRegistro) {
             setError('Las contraseñas no coinciden')
@@ -89,20 +134,37 @@ function ModalAuth({ onClose }) {
             return
         }
 
-        const respuesta = await fetch(`${API_URL}/api/auth/registrar`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombres, apellidos, cedula, celular, email: emailRegistro, password: passwordRegistro, manzana, villa })
-        })
-        const datos = await respuesta.json()
+        // Se desactiva el botón mientras tanto: un doble clic enviaría dos registros.
+        setEnviandoRegistro(true)
+        let respuesta
+        try {
+            respuesta = await fetch(`${API_URL}/api/auth/registrar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombres, apellidos, cedula, celular, email: emailRegistro, password: passwordRegistro, manzana, villa })
+            })
+        } catch {
+            setError(MENSAJE_SIN_CONEXION)
+            setEnviandoRegistro(false)
+            return
+        }
+        const datos = await respuesta.json().catch(() => ({}))
 
         if (!respuesta.ok) {
-            setError(datos.mensaje || 'No se pudo completar el registro')
-            mostrarToast(datos.mensaje || 'No se pudo completar el registro', 'error')
+            const mensaje = datos.mensaje || 'No se pudo completar el registro'
+            setError(mensaje)
+            setCodigoError(datos.codigo || null)
+            mostrarToast(mensaje, 'error')
+            setEnviandoRegistro(false)
             return
         }
 
-        await iniciarSesionConToken(datos.token, 'Cuenta creada correctamente')
+        await iniciarSesionConToken(
+            datos.token,
+            'Cuenta creada. Un administrador debe aprobarla; mientras tanto puedes ver las publicaciones.',
+            DURACION_AVISO_LARGO_MS
+        )
+        setEnviandoRegistro(false)
     }
 
     async function handleSolicitarRecuperacion(e) {
@@ -159,7 +221,7 @@ function ModalAuth({ onClose }) {
                     <p className="text-sm text-center">
                         <button
                             type="button"
-                            onClick={() => { setModo('recuperar'); setError('') }}
+                            onClick={() => cambiarModo('recuperar')}
                             className="text-volare-azul text-sm hover:underline"
                         >
                             ¿Olvidaste tu contraseña?
@@ -169,7 +231,7 @@ function ModalAuth({ onClose }) {
                         ¿No tienes cuenta?{' '}
                         <button
                             type="button"
-                            onClick={() => { setModo('registro'); setError('') }}
+                            onClick={() => cambiarModo('registro')}
                             className="text-volare-verde font-semibold hover:underline"
                         >
                             Regístrate aquí
@@ -208,7 +270,7 @@ function ModalAuth({ onClose }) {
                                 maxLength={10}
                                 required
                                 onChange={(e) => setCedula(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
+                                className={claseCampoRegistro('cedula')}
                             />
                             <input
                                 type="text"
@@ -223,27 +285,28 @@ function ModalAuth({ onClose }) {
                             <input
                                 type="text"
                                 value={manzana}
-                                placeholder="Manzana"
+                                placeholder="Manzana (ej. 07)"
                                 required
                                 onChange={(e) => setManzana(e.target.value)}
-                                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
+                                className={claseCampoRegistro('manzana')}
                             />
                             <input
                                 type="text"
                                 value={villa}
-                                placeholder="Villa"
+                                placeholder="Villa (ej. 03)"
                                 required
                                 onChange={(e) => setVilla(e.target.value)}
-                                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
+                                className={claseCampoRegistro('villa')}
                             />
                         </div>
+                        <p className="text-xs text-gray-500 -mt-2">Puedes escribir 7 o 07; lo guardamos como 07.</p>
                         <input
                             type="email"
                             value={emailRegistro}
                             placeholder="Email"
                             required
                             onChange={(e) => setEmailRegistro(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
+                            className={claseCampoRegistro('email')}
                         />
                         <CampoContrasena
                             value={passwordRegistro}
@@ -260,18 +323,31 @@ function ModalAuth({ onClose }) {
                             inputClassName="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
                         />
                         {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+                        {codigoError === 'EMAIL_DUPLICADO' && (
+                            <p className="text-sm text-gray-600 text-center -mt-2">
+                                ¿Ya tienes cuenta?{' '}
+                                <button type="button" onClick={irAlLoginConEmail} className="text-volare-azul font-semibold hover:underline">
+                                    Inicia sesión con este email
+                                </button>
+                            </p>
+                        )}
                         <button
                             type="submit"
-                            className="bg-volare-verde text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                            disabled={enviandoRegistro}
+                            className={`px-4 py-2 rounded-lg font-semibold transition ${
+                                enviandoRegistro
+                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    : 'bg-volare-verde text-white hover:opacity-90'
+                            }`}
                         >
-                            Registrar
+                            {enviandoRegistro ? 'Registrando...' : 'Registrar'}
                         </button>
                     </form>
                     <p className="text-sm text-gray-600 text-center">
                         ¿Ya tienes cuenta?{' '}
                         <button
                             type="button"
-                            onClick={() => { setModo('login'); setError('') }}
+                            onClick={() => cambiarModo('login')}
                             className="text-volare-azul font-semibold hover:underline"
                         >
                             Inicia sesión aquí
@@ -306,7 +382,7 @@ function ModalAuth({ onClose }) {
                     <p className="text-sm text-gray-600 text-center">
                         <button
                             type="button"
-                            onClick={() => { setModo('login'); setError('') }}
+                            onClick={() => cambiarModo('login')}
                             className="text-volare-azul font-semibold hover:underline"
                         >
                             ‹ Volver a Iniciar Sesión
