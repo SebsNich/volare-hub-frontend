@@ -1,9 +1,22 @@
-import { useContext } from 'react'
+import { useContext, useEffect, useRef } from 'react'
 import { Navigate } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
+import { esCuentaPendiente } from '../utilities/helpers'
 
-function RutaProtegida({ children, rolRequerido }) {
+function RutaProtegida({ children, rolRequerido, soloAprobadas = false }) {
     const { usuario, cargando } = useContext(AuthContext)
+    const { mostrarToast } = useToast()
+    const bloqueadaPorPendiente = soloAprobadas && esCuentaPendiente(usuario)
+    // El ref evita que StrictMode (que repite los efectos en desarrollo) muestre el aviso dos veces.
+    const avisoMostrado = useRef(false)
+
+    useEffect(() => {
+        if (bloqueadaPorPendiente && !avisoMostrado.current) {
+            avisoMostrado.current = true
+            mostrarToast('Esta sección estará disponible cuando un administrador apruebe tu cuenta.', 'error')
+        }
+    }, [bloqueadaPorPendiente, mostrarToast])
 
     if (cargando) return null // o un spinner
 
@@ -16,6 +29,10 @@ function RutaProtegida({ children, rolRequerido }) {
         if (!rolesPermitidos.includes(usuario.rol)) {
             return <Navigate to="/" />
         }
+    }
+
+    if (bloqueadaPorPendiente) {
+        return <Navigate to="/feed" replace />
     }
 
     return children

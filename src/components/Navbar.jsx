@@ -8,7 +8,7 @@ import ModalAuth from './ModalAuth'
 import BuscadorUsuarios from './BuscadorUsuarios'
 import Tooltip from './Tooltip'
 import { API_URL } from '../config/api'
-import { nombreCompleto } from '../utilities/helpers'
+import { nombreCompleto, esCuentaPendiente } from '../utilities/helpers'
 
 const INTERVALO_NOTIFICACIONES_MS = 60000
 
@@ -24,7 +24,11 @@ function Navbar() {
     const serviciosRef = useRef(null)
     const navRef = useRef(null)
 
-    const mostrarServicios = usuario && (usuario.rol === 'RESIDENTE' || usuario.rol === 'ADMIN')
+    // Una cuenta pendiente no usa servicios ni el buscador (el backend se lo niega),
+    // así que tampoco se le muestran ni se consultan sus notificaciones de reservas.
+    const cuentaPendiente = esCuentaPendiente(usuario)
+    const mostrarServicios = usuario && !cuentaPendiente && (usuario.rol === 'RESIDENTE' || usuario.rol === 'ADMIN')
+    const mostrarBuscador = usuario && !cuentaPendiente
 
     function manejarLogout() {
         logout()
@@ -178,7 +182,7 @@ function Navbar() {
                             </button>
                         </Tooltip>
                     )}
-                    {usuario && (
+                    {mostrarBuscador && (
                         <button
                             type="button"
                             onClick={alternarBusquedaMovil}
@@ -203,7 +207,7 @@ function Navbar() {
                 </div>
             </div>
 
-            {usuario && busquedaMovilAbierta && (
+            {mostrarBuscador && busquedaMovilAbierta && (
                 <div className="md:hidden border-t border-gray-100 px-4 py-3 animate-volare-barrido-derecha">
                     <BuscadorUsuarios autoFocus onNavegar={() => setBusquedaMovilAbierta(false)} />
                 </div>

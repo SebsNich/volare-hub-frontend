@@ -41,37 +41,37 @@ function App() {
                   </RutaProtegida>
               } />
               <Route path="/reservas" element={
-                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']}>
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']} soloAprobadas>
                       <Reservas />
                   </RutaProtegida>
               } />
               <Route path="/reservas/cabanas" element={
-                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']}>
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']} soloAprobadas>
                       <ReservaCabanas />
                   </RutaProtegida>
               } />
               <Route path="/reservas/casa-club" element={
-                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']}>
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']} soloAprobadas>
                       <ReservaCasaClub />
                   </RutaProtegida>
               } />
               <Route path="/reservas/cabanas/formulario" element={
-                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']}>
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']} soloAprobadas>
                       <ReservaFormulario />
                   </RutaProtegida>
               } />
               <Route path="/reservas/casa-club/formulario" element={
-                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']}>
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']} soloAprobadas>
                       <ReservaFormulario />
                   </RutaProtegida>
               } />
               <Route path="/reservas/editar/:id" element={
-                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']}>
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']} soloAprobadas>
                       <ReservaFormulario />
                   </RutaProtegida>
               } />
               <Route path="/reservas/mis-reservas" element={
-                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']}>
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']} soloAprobadas>
                       <MisReservas />
                   </RutaProtegida>
               } />

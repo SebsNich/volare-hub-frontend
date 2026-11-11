@@ -25,17 +25,18 @@ function Toast({ mensaje, tipo, saliendo }) {
 function ToastProvider({ children }) {
     const [toasts, setToasts] = useState([])
 
-    const mostrarToast = useCallback((mensaje, tipo = 'exito') => {
+    // duracion es opcional: los mensajes largos (como el motivo de un cierre de sesión) necesitan más tiempo para leerse.
+    const mostrarToast = useCallback((mensaje, tipo = 'exito', duracion = DURACION_MS) => {
         const id = ++siguienteId
         setToasts(actuales => [...actuales, { id, mensaje, tipo, saliendo: false }])
 
         setTimeout(() => {
             setToasts(actuales => actuales.map(toast => toast.id === id ? { ...toast, saliendo: true } : toast))
-        }, DURACION_MS - DURACION_SALIDA_MS)
+        }, duracion - DURACION_SALIDA_MS)
 
         setTimeout(() => {
             setToasts(actuales => actuales.filter(toast => toast.id !== id))
-        }, DURACION_MS)
+        }, duracion)
     }, [])
 
     return (

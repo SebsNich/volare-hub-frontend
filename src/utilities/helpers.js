@@ -32,5 +32,15 @@ function nombreCompleto(usuario) {
     return `${usuario.nombres || ''} ${usuario.apellidos || ''}`.trim()
 }
 
+// Si el backend no envía estadoCuenta (datos de antes del bloque 8) se trata
+// como APROBADA: es el mismo criterio con el que se migraron las cuentas viejas.
+function estadoDeCuenta(usuario) {
+    return usuario?.estadoCuenta ?? 'APROBADA'
+}
+
+function esCuentaPendiente(usuario) {
+    return Boolean(usuario) && estadoDeCuenta(usuario) === 'PENDIENTE'
+}
+
 export default obtenerNombreArchivo
-export { formatearMesAnio, normalizarTexto, formatearFechaReserva, esCedulaValida, nombreCompleto }
+export { formatearMesAnio, normalizarTexto, formatearFechaReserva, esCedulaValida, nombreCompleto, estadoDeCuenta, esCuentaPendiente }
