@@ -286,7 +286,9 @@ function SolicitudesPendientes({ onDecision }) {
                         Vas a rechazar la solicitud de <strong>{nombreCompleto(solicitudARechazar)}</strong> (Mz. {solicitudARechazar.manzana}, Villa {solicitudARechazar.villa}).
                         Verá este motivo al intentar iniciar sesión.
                     </p>
+                    {/* Con foco al abrir: si no, lo primero que se teclea se pierde. */}
                     <textarea
+                        autoFocus
                         value={motivoRechazo}
                         onChange={(e) => setMotivoRechazo(e.target.value)}
                         maxLength={LARGO_MAXIMO_MOTIVO}
