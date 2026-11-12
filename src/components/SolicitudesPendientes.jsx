@@ -7,6 +7,13 @@ import { nombreCompleto } from '../utilities/helpers'
 
 // Solo para mostrar el cupo; quien hace cumplir el límite es el backend.
 const LIMITE_CUENTAS_POR_CASA = 2
+// Igual que en el backend; aquí solo evita escribir de más.
+const LARGO_MAXIMO_MOTIVO = 500
+
+// Con estos códigos el modal sigue abierto: la solicitud no cambió y el ADMIN
+// puede corregir el motivo o volver a pulsar. Con los demás (otro admin ya
+// decidió, la cuenta no existe) la lista está desactualizada y se recarga.
+const CODIGOS_QUE_CONSERVAN_MODAL = ['REINTENTAR', 'MOTIVO_INVALIDO']
 
 function formatearFechaSolicitud(fecha) {
     return new Date(fecha).toLocaleDateString('es-EC', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -26,7 +33,7 @@ function EtiquetaCupo({ cuentasEnCasa }) {
     )
 }
 
-function BotonesDecision({ solicitud, onAprobar, deshabilitado }) {
+function BotonesDecision({ solicitud, onAprobar, onRechazar, deshabilitado }) {
     return (
         <div className="flex gap-2">
             <button
@@ -36,6 +43,14 @@ function BotonesDecision({ solicitud, onAprobar, deshabilitado }) {
                 className="bg-volare-verde text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 Aprobar
+            </button>
+            <button
+                type="button"
+                onClick={() => onRechazar(solicitud)}
+                disabled={deshabilitado}
+                className="border border-red-500 text-red-500 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                Rechazar
             </button>
         </div>
     )
@@ -49,6 +64,8 @@ function SolicitudesPendientes({ onDecision }) {
     const [totalPaginas, setTotalPaginas] = useState(1)
     const [errorCarga, setErrorCarga] = useState('')
     const [solicitudAAprobar, setSolicitudAAprobar] = useState(null)
+    const [solicitudARechazar, setSolicitudARechazar] = useState(null)
+    const [motivoRechazo, setMotivoRechazo] = useState('')
     const [enviando, setEnviando] = useState(false)
 
     const cargarSolicitudes = useCallback(async () => {
@@ -101,11 +118,47 @@ function SolicitudesPendientes({ onDecision }) {
                 return
             }
             mostrarToast(datos.mensaje || 'No se pudo aprobar la cuenta', 'error')
-            // REINTENTAR es un choque momentáneo: la solicitud sigue igual y basta con
-            // volver a pulsar. En los demás casos (otro admin ya decidió, la cuenta no
-            // existe) la lista está desactualizada y se recarga.
-            if (datos.codigo !== 'REINTENTAR') {
+            if (!CODIGOS_QUE_CONSERVAN_MODAL.includes(datos.codigo)) {
                 setSolicitudAAprobar(null)
+                recargarTrasDecision()
+            }
+        } catch {
+            mostrarToast('No se pudo conectar con el servidor', 'error')
+        } finally {
+            setEnviando(false)
+        }
+    }
+
+    function abrirRechazo(solicitud) {
+        setMotivoRechazo('')
+        setSolicitudARechazar(solicitud)
+    }
+
+    async function rechazar() {
+        if (!motivoRechazo.trim()) {
+            mostrarToast('Debes indicar el motivo del rechazo', 'error')
+            return
+        }
+        setEnviando(true)
+        try {
+            const respuesta = await fetch(`${API_URL}/api/usuarios/${solicitudARechazar.id}/rechazar`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ motivo: motivoRechazo })
+            })
+            const datos = await respuesta.json().catch(() => ({}))
+            if (respuesta.ok) {
+                mostrarToast(`Solicitud de ${nombreCompleto(solicitudARechazar)} rechazada`, 'exito')
+                setSolicitudARechazar(null)
+                recargarTrasDecision()
+                return
+            }
+            mostrarToast(datos.mensaje || 'No se pudo rechazar la solicitud', 'error')
+            if (!CODIGOS_QUE_CONSERVAN_MODAL.includes(datos.codigo)) {
+                setSolicitudARechazar(null)
                 recargarTrasDecision()
             }
         } catch {
@@ -159,7 +212,7 @@ function SolicitudesPendientes({ onDecision }) {
                                         <td className="px-4 py-3"><EtiquetaCupo cuentasEnCasa={solicitud.cuentasEnCasa} /></td>
                                         <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatearFechaSolicitud(solicitud.creadoEn)}</td>
                                         <td className="px-4 py-3">
-                                            <BotonesDecision solicitud={solicitud} onAprobar={setSolicitudAAprobar} deshabilitado={enviando} />
+                                            <BotonesDecision solicitud={solicitud} onAprobar={setSolicitudAAprobar} onRechazar={abrirRechazo} deshabilitado={enviando} />
                                         </td>
                                     </tr>
                                 ))}
@@ -182,7 +235,7 @@ function SolicitudesPendientes({ onDecision }) {
                                     <EtiquetaCupo cuentasEnCasa={solicitud.cuentasEnCasa} />
                                 </div>
                                 <p className="text-xs text-gray-400">Solicitada el {formatearFechaSolicitud(solicitud.creadoEn)}</p>
-                                <BotonesDecision solicitud={solicitud} onAprobar={setSolicitudAAprobar} deshabilitado={enviando} />
+                                <BotonesDecision solicitud={solicitud} onAprobar={setSolicitudAAprobar} onRechazar={abrirRechazo} deshabilitado={enviando} />
                             </div>
                         ))}
                     </div>
@@ -217,6 +270,44 @@ function SolicitudesPendientes({ onDecision }) {
                         <button
                             type="button"
                             onClick={() => setSolicitudAAprobar(null)}
+                            disabled={enviando}
+                            className="bg-gray-200 text-gray-600 px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition disabled:opacity-50"
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                </Modal>
+            )}
+
+            {solicitudARechazar && (
+                <Modal onClose={() => !enviando && setSolicitudARechazar(null)}>
+                    <h3 className="text-lg font-bold text-volare-azul">Rechazar solicitud</h3>
+                    <p className="text-sm text-gray-600">
+                        Vas a rechazar la solicitud de <strong>{nombreCompleto(solicitudARechazar)}</strong> (Mz. {solicitudARechazar.manzana}, Villa {solicitudARechazar.villa}).
+                        Verá este motivo al intentar iniciar sesión.
+                    </p>
+                    <textarea
+                        value={motivoRechazo}
+                        onChange={(e) => setMotivoRechazo(e.target.value)}
+                        maxLength={LARGO_MAXIMO_MOTIVO}
+                        disabled={enviando}
+                        placeholder="Motivo del rechazo (obligatorio)"
+                        rows={3}
+                        className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-volare-azul resize-none disabled:bg-gray-50"
+                    />
+                    <p className="text-xs text-gray-400 self-end">{motivoRechazo.length}/{LARGO_MAXIMO_MOTIVO}</p>
+                    <div className="flex gap-3 self-start">
+                        <button
+                            type="button"
+                            onClick={rechazar}
+                            disabled={enviando || !motivoRechazo.trim()}
+                            className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
+                        >
+                            {enviando ? 'Rechazando...' : 'Sí, rechazar'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setSolicitudARechazar(null)}
                             disabled={enviando}
                             className="bg-gray-200 text-gray-600 px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition disabled:opacity-50"
                         >
