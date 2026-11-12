@@ -4,6 +4,8 @@ import ArchivoAdjunto from '../components/ArchivoAdjunto'
 import ControlesPaginacion from '../components/ControlesPaginacion'
 import Tooltip from '../components/Tooltip'
 import SolicitudesPendientes from '../components/SolicitudesPendientes'
+import EtiquetaCuenta from '../components/EtiquetaCuenta'
+import AprobarCuentaRechazada from '../components/AprobarCuentaRechazada'
 import {
     HiOutlineUsers,
     HiOutlineInbox,
@@ -89,6 +91,7 @@ function Admin() {
     const [busquedaUsuarios, setBusquedaUsuarios] = useState('')
     const [filtroManzanaVilla, setFiltroManzanaVilla] = useState('')
     const [filtroEstadoUsuario, setFiltroEstadoUsuario] = useState('TODOS')
+    const [rechazadaAReconsiderar, setRechazadaAReconsiderar] = useState(null)
     const [paginaUsuarios, setPaginaUsuarios] = useState(1)
     const [totalPaginasUsuarios, setTotalPaginasUsuarios] = useState(1)
     const busquedaUsuariosDebounced = useDebounce(busquedaUsuarios)
@@ -653,6 +656,8 @@ function Admin() {
                                     <option value="TODOS">Todos los estados</option>
                                     <option value="ACTIVO">Activo</option>
                                     <option value="INACTIVO">Desactivado</option>
+                                    <option value="PENDIENTE">Cuenta pendiente</option>
+                                    <option value="RECHAZADA">Cuenta rechazada</option>
                                 </select>
                             </div>
 
@@ -660,43 +665,57 @@ function Admin() {
                                 <table className="w-full text-sm text-left">
                                     <thead>
                                         <tr className="border-b border-gray-100 text-gray-500 text-xs uppercase">
-                                            <th className="px-4 py-3 whitespace-nowrap">Nombre</th>
-                                            <th className="px-4 py-3 whitespace-nowrap">Correo</th>
-                                            <th className="px-4 py-3 whitespace-nowrap">Cédula</th>
-                                            <th className="px-4 py-3 whitespace-nowrap">Celular</th>
-                                            <th className="px-4 py-3 whitespace-nowrap">Manzana/Villa</th>
+                                            <th className="px-3 py-3 whitespace-nowrap">Nombre</th>
+                                            <th className="px-3 py-3 whitespace-nowrap">Correo</th>
+                                            <th className="px-3 py-3 whitespace-nowrap">Cédula</th>
+                                            <th className="px-3 py-3 whitespace-nowrap">Celular</th>
+                                            <th className="px-3 py-3 whitespace-nowrap">Manzana/Villa</th>
                                             {/* Rol y Estado apilados: por separado la tabla no cabía junto al menú. */}
-                                            <th className="px-4 py-3 whitespace-nowrap">Rol / Estado</th>
-                                            <th className="px-4 py-3 whitespace-nowrap">Acción</th>
+                                            <th className="px-3 py-3 whitespace-nowrap">Rol / Estado</th>
+                                            <th className="px-3 py-3 whitespace-nowrap">Cuenta</th>
+                                            <th className="px-3 py-3 whitespace-nowrap">Acción</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {usuarios.map(usuario => (
                                             <tr key={usuario.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
-                                                <td className="px-4 py-3 font-semibold text-volare-azul whitespace-nowrap">{nombreCompleto(usuario)}</td>
-                                                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.email}</td>
-                                                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.cedula || '—'}</td>
-                                                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.celular || '—'}</td>
-                                                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">Mz. {usuario.manzana} Villa {usuario.villa}</td>
-                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                <td className="px-3 py-3 font-semibold text-volare-azul whitespace-nowrap">{nombreCompleto(usuario)}</td>
+                                                {/* El correo puede partirse: es la columna más variable y un correo largo no debe ensanchar la tabla. */}
+                                                <td className="px-3 py-3 text-gray-500 break-all">{usuario.email}</td>
+                                                <td className="px-3 py-3 text-gray-500 whitespace-nowrap">{usuario.cedula || '—'}</td>
+                                                <td className="px-3 py-3 text-gray-500 whitespace-nowrap">{usuario.celular || '—'}</td>
+                                                <td className="px-3 py-3 text-gray-500 whitespace-nowrap">Mz. {usuario.manzana} Villa {usuario.villa}</td>
+                                                <td className="px-3 py-3 whitespace-nowrap">
                                                     <p className="text-xs text-gray-500 mb-1">{usuario.rol}</p>
                                                     <span className={`px-2 py-0.5 rounded-full text-xs font-semibold text-white ${usuario.activo ? 'bg-volare-verde' : 'bg-gray-400'}`}>
                                                         {usuario.activo ? 'Activo' : 'Inactivo'}
                                                     </span>
                                                 </td>
-                                                <td className="px-4 py-3 whitespace-nowrap">
-                                                    <button
-                                                        onClick={() => cambiarEstado(usuario.id, usuario.activo)}
-                                                        className="bg-volare-naranja text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition"
-                                                    >
-                                                        {usuario.activo ? 'Desactivar' : 'Activar'}
-                                                    </button>
+                                                <td className="px-3 py-3"><EtiquetaCuenta usuario={usuario} /></td>
+                                                <td className="px-3 py-3 whitespace-nowrap">
+                                                    <div className="flex flex-col items-start gap-1.5">
+                                                        <button
+                                                            onClick={() => cambiarEstado(usuario.id, usuario.activo)}
+                                                            className="bg-volare-naranja text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition"
+                                                        >
+                                                            {usuario.activo ? 'Desactivar' : 'Activar'}
+                                                        </button>
+                                                        {/* Las pendientes se deciden arriba, en Solicitudes; aquí solo se reconsidera un rechazo. */}
+                                                        {usuario.estadoCuenta === 'RECHAZADA' && (
+                                                            <button
+                                                                onClick={() => setRechazadaAReconsiderar(usuario)}
+                                                                className="bg-volare-verde text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition"
+                                                            >
+                                                                Aprobar
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
                                         {usuarios.length === 0 && (
                                             <tr>
-                                                <td colSpan={7} className="px-4 py-6 text-center text-gray-400">
+                                                <td colSpan={8} className="px-4 py-6 text-center text-gray-400">
                                                     No se encontraron usuarios con esos filtros
                                                 </td>
                                             </tr>
@@ -710,6 +729,14 @@ function Admin() {
                                     onSiguiente={() => setPaginaUsuarios(paginaUsuarios + 1)}
                                 />
                             </div>
+
+                            {rechazadaAReconsiderar && (
+                                <AprobarCuentaRechazada
+                                    usuario={rechazadaAReconsiderar}
+                                    onCerrar={() => setRechazadaAReconsiderar(null)}
+                                    onAprobada={() => { setRechazadaAReconsiderar(null); cargarUsuarios() }}
+                                />
+                            )}
                         </div>
                     )}
 
