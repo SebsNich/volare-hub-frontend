@@ -516,7 +516,7 @@ function Admin() {
     const redesSociales = contactos.filter(c => c.tipo === 'RED_SOCIAL')
 
     return (
-        <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col gap-6">
+        <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col gap-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-volare-azul">Panel de Administración</h1>
                 <div className="flex items-center gap-3">
@@ -664,9 +664,9 @@ function Admin() {
                                             <th className="px-4 py-3 whitespace-nowrap">Correo</th>
                                             <th className="px-4 py-3 whitespace-nowrap">Cédula</th>
                                             <th className="px-4 py-3 whitespace-nowrap">Celular</th>
-                                            <th className="px-4 py-3 whitespace-nowrap">Rol</th>
                                             <th className="px-4 py-3 whitespace-nowrap">Manzana/Villa</th>
-                                            <th className="px-4 py-3 whitespace-nowrap">Estado</th>
+                                            {/* Rol y Estado apilados: por separado la tabla no cabía junto al menú. */}
+                                            <th className="px-4 py-3 whitespace-nowrap">Rol / Estado</th>
                                             <th className="px-4 py-3 whitespace-nowrap">Acción</th>
                                         </tr>
                                     </thead>
@@ -677,9 +677,9 @@ function Admin() {
                                                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.email}</td>
                                                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.cedula || '—'}</td>
                                                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.celular || '—'}</td>
-                                                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{usuario.rol}</td>
                                                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">Mz. {usuario.manzana} Villa {usuario.villa}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap">
+                                                    <p className="text-xs text-gray-500 mb-1">{usuario.rol}</p>
                                                     <span className={`px-2 py-0.5 rounded-full text-xs font-semibold text-white ${usuario.activo ? 'bg-volare-verde' : 'bg-gray-400'}`}>
                                                         {usuario.activo ? 'Activo' : 'Inactivo'}
                                                     </span>
@@ -696,7 +696,7 @@ function Admin() {
                                         ))}
                                         {usuarios.length === 0 && (
                                             <tr>
-                                                <td colSpan={8} className="px-4 py-6 text-center text-gray-400">
+                                                <td colSpan={7} className="px-4 py-6 text-center text-gray-400">
                                                     No se encontraron usuarios con esos filtros
                                                 </td>
                                             </tr>
