@@ -185,33 +185,37 @@ function SolicitudesPendientes({ onDecision }) {
 
             {!errorCarga && solicitudes.length > 0 && (
                 <>
-                    {/* Escritorio: tabla. En móvil una tabla de 7 columnas no cabe, por eso tarjetas. */}
-                    <div className="hidden md:block overflow-x-auto">
+                    {/* Escritorio: tabla. Los datos van apilados de a dos (cédula/celular,
+                        casa/cupo) para que quepa junto al menú lateral sin scroll horizontal.
+                        Necesita unos 620 px, que junto al menú solo hay desde lg; debajo, tarjetas. */}
+                    <div className="hidden lg:block overflow-x-auto">
                         <table className="w-full text-sm text-left">
                             <thead>
                                 <tr className="border-b border-gray-100 text-gray-500 text-xs uppercase">
-                                    <th className="px-4 py-3 whitespace-nowrap">Solicitante</th>
-                                    <th className="px-4 py-3 whitespace-nowrap">Cédula</th>
-                                    <th className="px-4 py-3 whitespace-nowrap">Celular</th>
-                                    <th className="px-4 py-3 whitespace-nowrap">Manzana/Villa</th>
-                                    <th className="px-4 py-3 whitespace-nowrap">Cupo</th>
-                                    <th className="px-4 py-3 whitespace-nowrap">Solicitada</th>
-                                    <th className="px-4 py-3 whitespace-nowrap">Acción</th>
+                                    <th className="px-3 py-3 whitespace-nowrap">Solicitante</th>
+                                    <th className="px-3 py-3 whitespace-nowrap">Contacto</th>
+                                    <th className="px-3 py-3 whitespace-nowrap">Casa</th>
+                                    <th className="px-3 py-3 whitespace-nowrap">Solicitada</th>
+                                    <th className="px-3 py-3 whitespace-nowrap">Acción</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {solicitudes.map(solicitud => (
                                     <tr key={solicitud.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
-                                        <td className="px-4 py-3">
-                                            <p className="font-semibold text-volare-azul whitespace-nowrap">{nombreCompleto(solicitud)}</p>
-                                            <p className="text-xs text-gray-500">{solicitud.email}</p>
+                                        <td className="px-3 py-3">
+                                            <p className="font-semibold text-volare-azul">{nombreCompleto(solicitud)}</p>
+                                            <p className="text-xs text-gray-500 break-all">{solicitud.email}</p>
                                         </td>
-                                        <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{solicitud.cedula}</td>
-                                        <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{solicitud.celular}</td>
-                                        <td className="px-4 py-3 text-gray-500 whitespace-nowrap">Mz. {solicitud.manzana} Villa {solicitud.villa}</td>
-                                        <td className="px-4 py-3"><EtiquetaCupo cuentasEnCasa={solicitud.cuentasEnCasa} /></td>
-                                        <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatearFechaSolicitud(solicitud.creadoEn)}</td>
-                                        <td className="px-4 py-3">
+                                        <td className="px-3 py-3 text-gray-500 whitespace-nowrap">
+                                            <p>CI {solicitud.cedula}</p>
+                                            <p className="text-xs">Cel. {solicitud.celular}</p>
+                                        </td>
+                                        <td className="px-3 py-3 text-gray-500">
+                                            <p className="whitespace-nowrap mb-1">Mz. {solicitud.manzana} Villa {solicitud.villa}</p>
+                                            <EtiquetaCupo cuentasEnCasa={solicitud.cuentasEnCasa} />
+                                        </td>
+                                        <td className="px-3 py-3 text-gray-500 whitespace-nowrap">{formatearFechaSolicitud(solicitud.creadoEn)}</td>
+                                        <td className="px-3 py-3">
                                             <BotonesDecision solicitud={solicitud} onAprobar={setSolicitudAAprobar} onRechazar={abrirRechazo} deshabilitado={enviando} />
                                         </td>
                                     </tr>
@@ -220,7 +224,7 @@ function SolicitudesPendientes({ onDecision }) {
                         </table>
                     </div>
 
-                    <div className="md:hidden flex flex-col divide-y divide-gray-100">
+                    <div className="lg:hidden flex flex-col divide-y divide-gray-100">
                         {solicitudes.map(solicitud => (
                             <div key={solicitud.id} className="px-4 py-3 flex flex-col gap-2">
                                 <div>
