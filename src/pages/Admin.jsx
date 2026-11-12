@@ -3,6 +3,7 @@ import Modal from '../components/Modal'
 import ArchivoAdjunto from '../components/ArchivoAdjunto'
 import ControlesPaginacion from '../components/ControlesPaginacion'
 import Tooltip from '../components/Tooltip'
+import SolicitudesPendientes from '../components/SolicitudesPendientes'
 import {
     HiOutlineUsers,
     HiOutlineInbox,
@@ -628,6 +629,7 @@ function Admin() {
 
                     {seccionActiva === 'usuarios' && (
                         <div className="flex flex-col gap-3">
+                            <SolicitudesPendientes onDecision={cargarUsuarios} />
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <input
                                     type="text"
