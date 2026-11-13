@@ -14,6 +14,7 @@ import {
     HiOutlineChartBar,
     HiOutlineDocumentText,
     HiOutlineUserGroup,
+    HiOutlineUserPlus,
     HiOutlineBuildingOffice2,
     HiOutlineEnvelope,
     HiOutlineCalendarDays,
@@ -42,6 +43,7 @@ const SECCIONES = [
 const TARJETAS_RESUMEN = [
     { id: 'publicacionesTotales', label: 'Publicaciones totales', icono: HiOutlineDocumentText, color: 'text-volare-azul' },
     { id: 'residentesActivos', label: 'Residentes activos', icono: HiOutlineUserGroup, color: 'text-volare-verde' },
+    { id: 'solicitudesPendientes', label: 'Solicitudes pendientes', icono: HiOutlineUserPlus, color: 'text-amber-600' },
     { id: 'obrasActivas', label: 'Obras activas', icono: HiOutlineBuildingOffice2, color: 'text-volare-naranja' },
     { id: 'mensajesSinLeer', label: 'Mensajes sin leer', icono: HiOutlineEnvelope, color: 'text-volare-morado' },
     { id: 'reservasPendientes', label: 'Reservas pendientes', icono: HiOutlineCalendarDays, color: 'text-volare-naranja' },
@@ -611,7 +613,7 @@ function Admin() {
 
                 <div className="flex-1 w-full min-w-0">
                     {seccionActiva === 'resumen' && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             {TARJETAS_RESUMEN.map(tarjeta => {
                                 const Icono = tarjeta.icono
                                 return (

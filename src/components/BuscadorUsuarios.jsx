@@ -5,6 +5,19 @@ import AvatarUsuario from './AvatarUsuario'
 import useDebounce from '../hooks/useDebounce'
 import { nombreCompleto } from '../utilities/helpers'
 import { API_URL } from '../config/api'
+import EtiquetaCuenta from './EtiquetaCuenta'
+
+// Solo el admin recibe cuentas no aprobadas o inactivas (RF-29); la etiqueta
+// se muestra solo en esas, para no llenar de "Aprobada" la lista normal.
+function EtiquetaBusqueda({ usuario }) {
+    if (usuario.activo === false) {
+        return <span className="ml-auto px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap bg-gray-200 text-gray-700">Inactiva</span>
+    }
+    if (usuario.estadoCuenta && usuario.estadoCuenta !== 'APROBADA') {
+        return <span className="ml-auto"><EtiquetaCuenta usuario={usuario} /></span>
+    }
+    return null
+}
 
 function BuscadorUsuarios({ className = '', inputClassName = '', onNavegar, autoFocus = false }) {
     const [texto, setTexto] = useState('')
@@ -93,6 +106,7 @@ function BuscadorUsuarios({ className = '', inputClassName = '', onNavegar, auto
                             >
                                 <AvatarUsuario foto={usuario.foto} size={32} />
                                 <span className="text-sm font-medium text-gray-700 truncate">{nombreCompleto(usuario)}</span>
+                                <EtiquetaBusqueda usuario={usuario} />
                             </button>
                         ))
                     ) : (
