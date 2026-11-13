@@ -4,6 +4,8 @@ import { AuthContext } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import Modal from './Modal'
 import CampoContrasena from './CampoContrasena'
+import AvisoContrasena from './AvisoContrasena'
+import { validarContrasena } from '../utilities/contrasena'
 import { API_URL } from '../config/api'
 import { esCedulaValida } from '../utilities/helpers'
 
@@ -121,6 +123,13 @@ function ModalAuth({ onClose }) {
         e.preventDefault()
         setError('')
         setCodigoError(null)
+
+        const errorContrasena = validarContrasena(passwordRegistro)
+        if (errorContrasena) {
+            setError(errorContrasena)
+            mostrarToast(errorContrasena, 'error')
+            return
+        }
 
         if (passwordRegistro !== confirmarPasswordRegistro) {
             setError('Las contraseñas no coinciden')
@@ -315,6 +324,7 @@ function ModalAuth({ onClose }) {
                             onChange={(e) => setPasswordRegistro(e.target.value)}
                             inputClassName="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde"
                         />
+                        <div className="-mt-2"><AvisoContrasena password={passwordRegistro} /></div>
                         <CampoContrasena
                             value={confirmarPasswordRegistro}
                             placeholder="Confirmar Contraseña"

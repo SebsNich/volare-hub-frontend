@@ -13,6 +13,8 @@ import FiltroTipoPublicacion, { obtenerMensajeVacio } from '../components/Filtro
 import { HiXMark, HiOutlineEye } from 'react-icons/hi2'
 import { API_URL } from '../config/api'
 import { nombreCompleto, esCuentaPendiente } from '../utilities/helpers'
+import AvisoContrasena from '../components/AvisoContrasena'
+import { validarContrasena } from '../utilities/contrasena'
 
 function PerfilPublico() {
     const { id } = useParams()
@@ -144,6 +146,12 @@ function PerfilPublico() {
 
     async function handleSubmitPassword(e) {
     e.preventDefault()
+
+    const errorContrasena = validarContrasena(passwordNueva)
+    if (errorContrasena) {
+        mostrarToast(errorContrasena, 'error')
+        return
+    }
 
     if (passwordNueva !== confirmarPassword) {
         mostrarToast('Las contraseñas no coinciden', 'error')
@@ -286,6 +294,7 @@ function PerfilPublico() {
                             <form onSubmit={handleSubmitPassword} className="flex flex-col gap-4">
                                 <input type="password" value={passwordActual} onChange={(e) => setPasswordActual(e.target.value)} placeholder="Contraseña actual" className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul" />
                                 <input type="password" value={passwordNueva} onChange={(e) => setPasswordNueva(e.target.value)} placeholder="Nueva contraseña" className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul" />
+                                <div className="-mt-2"><AvisoContrasena password={passwordNueva} /></div>
                                 <input type="password" value={confirmarPassword} onChange={(e) => setConfirmarPassword(e.target.value)} placeholder="Confirmar contraseña" className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul" />
                                 <button type="submit" className="bg-volare-verde text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition">
                                     Cambiar Contraseña

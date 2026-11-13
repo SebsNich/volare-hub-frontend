@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useToast } from '../context/ToastContext'
 import CampoContrasena from '../components/CampoContrasena'
+import AvisoContrasena from '../components/AvisoContrasena'
+import { validarContrasena } from '../utilities/contrasena'
 import { API_URL } from '../config/api'
 
 function RestablecerContrasena() {
@@ -16,6 +18,11 @@ function RestablecerContrasena() {
 
     async function handleSubmit(e) {
         e.preventDefault()
+        const errorContrasena = validarContrasena(nuevaContrasena)
+        if (errorContrasena) {
+            mostrarToast(errorContrasena, 'error')
+            return
+        }
         setEnviando(true)
 
         try {
@@ -58,6 +65,7 @@ function RestablecerContrasena() {
                             onChange={(e) => setNuevaContrasena(e.target.value)}
                             inputClassName="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
                         />
+                        <div className="-mt-2"><AvisoContrasena password={nuevaContrasena} /></div>
                         <CampoContrasena
                             value={confirmarContrasena}
                             placeholder="Confirmar contraseña"

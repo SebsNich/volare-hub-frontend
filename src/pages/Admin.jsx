@@ -6,6 +6,8 @@ import Tooltip from '../components/Tooltip'
 import SolicitudesPendientes from '../components/SolicitudesPendientes'
 import EtiquetaCuenta from '../components/EtiquetaCuenta'
 import AprobarCuentaRechazada from '../components/AprobarCuentaRechazada'
+import AvisoContrasena from '../components/AvisoContrasena'
+import { validarContrasena } from '../utilities/contrasena'
 import {
     HiOutlineUsers,
     HiOutlineInbox,
@@ -483,6 +485,12 @@ function Admin() {
     async function crearAdmin(e) {
         e.preventDefault()
 
+        const errorContrasena = validarContrasena(passwordAdmin)
+        if (errorContrasena) {
+            mostrarToast(errorContrasena, 'error')
+            return
+        }
+
         const respuesta = await fetch(`${API_URL}/api/usuarios/crear-admin`, {
             method: 'POST',
             headers: {
@@ -584,6 +592,7 @@ function Admin() {
                             placeholder="Contraseña"
                             className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
                         />
+                        <div className="-mt-2"><AvisoContrasena password={passwordAdmin} /></div>
                         <button
                             type="submit"
                             className="bg-volare-verde text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition"
