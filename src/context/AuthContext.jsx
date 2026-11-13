@@ -56,8 +56,7 @@ function AuthProvider({ children }) {
 
     useEffect(() => {
         async function verificarSesion() {
-            const user = await refrescarUsuario()
-            console.log(user) // pendiente del viernes 2026-11-13: quitar
+            await refrescarUsuario()
             setCargando(false)
         }
         verificarSesion()
