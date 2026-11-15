@@ -8,6 +8,7 @@ import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
 import { NOMBRES_ESPACIO_RESERVA as NOMBRES_ESPACIO, NOMBRES_HORARIO_RESERVA as NOMBRES_HORARIO, BANCOS_ECUADOR } from '../utilities/constantes'
 import { esCedulaValida } from '../utilities/helpers'
+import { montosDeTarifa, formatearDolares } from '../utilities/tarifas'
 import SelectorBuscable from './SelectorBuscable'
 import CuentasBancarias from './CuentasBancarias'
 
@@ -30,18 +31,22 @@ function esCabana(espacio) {
     return espacio?.startsWith('CABANA')
 }
 
-function calcularMontos(espacio, horario, esParaTercero) {
-    if (esCabana(espacio)) {
-        return { montoAlquiler: 15, montoGarantia: 25 }
+function ResumenMontos({ montos, error, grande = false }) {
+    if (error) {
+        return <p className="text-sm font-semibold text-red-600" role="alert">No se pudieron cargar los precios. Recarga la página.</p>
     }
-    if (horario === 'CASA_CLUB_NOCTURNO') {
-        return esParaTercero
-            ? { montoAlquiler: 200, montoGarantia: 200 }
-            : { montoAlquiler: 100, montoGarantia: 100 }
+    if (!montos) {
+        return <p className="text-sm text-gray-500">Cargando precios...</p>
     }
-    return esParaTercero
-        ? { montoAlquiler: 120, montoGarantia: 120 }
-        : { montoAlquiler: 80, montoGarantia: 80 }
+    const claseTotal = grande ? 'text-2xl font-bold text-volare-verde' : 'font-bold text-volare-azul text-lg leading-none'
+    return (
+        <>
+            <p className={claseTotal}>Total: ${formatearDolares(montos.totalCentavos)}</p>
+            <p className="text-xs text-gray-500">
+                ${formatearDolares(montos.alquilerCentavos)} alquiler + ${formatearDolares(montos.garantiaCentavos)} garantía
+            </p>
+        </>
+    )
 }
 
 function formatearFechaLocal(fechaStr) {
@@ -267,11 +272,27 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
     const mostrarToggleTercero = espacio === 'CASA_CLUB'
     const aplicaTercero = mostrarToggleTercero && esParaTercero
 
-    const { montoAlquiler, montoGarantia } = useMemo(
-        () => calcularMontos(espacio, horario, aplicaTercero),
-        [espacio, horario, aplicaTercero]
+    // null mientras carga; 'error' si falló. Los precios solo vienen del backend.
+    const [tarifas, setTarifas] = useState(null)
+
+    useEffect(() => {
+        async function cargarTarifas() {
+            try {
+                const respuesta = await fetch(`${API_URL}/api/reservas/tarifas`)
+                if (!respuesta.ok) throw new Error('Respuesta no válida')
+                const datos = await respuesta.json()
+                setTarifas(datos.tarifas)
+            } catch {
+                setTarifas('error')
+            }
+        }
+        cargarTarifas()
+    }, [])
+
+    const montos = useMemo(
+        () => (tarifas === 'error' ? null : montosDeTarifa(tarifas, espacio, horario, aplicaTercero)),
+        [tarifas, espacio, horario, aplicaTercero]
     )
-    const montoTotal = montoAlquiler + montoGarantia
 
     const archivosPorSlot = { comprobantePago: [comprobantePago, setComprobantePago], listaInvitados: [listaInvitados, setListaInvitados], contratoFirmado: [contratoFirmado, setContratoFirmado] }
 
@@ -343,6 +364,10 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
     }
 
     async function enviarSolicitud() {
+        if (!montos) {
+            mostrarToast('No se pudieron cargar los precios. Recarga la página antes de enviar.', 'error')
+            return
+        }
         if (!aceptaReglamento) {
             mostrarToast('Debes aceptar el reglamento del contrato', 'error')
             return
@@ -439,8 +464,7 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
                     {' — '}{formatearFechaLocal(fecha)}{' — '}{NOMBRES_HORARIO[horario]}
                 </div>
                 <div className="text-right shrink-0">
-                    <p className="font-bold text-volare-azul text-lg leading-none">Total: ${montoTotal}</p>
-                    <p className="text-xs text-gray-500">${montoAlquiler} alquiler + ${montoGarantia} garantía</p>
+                    <ResumenMontos montos={montos} error={tarifas === 'error'} />
                 </div>
             </div>
 
@@ -643,8 +667,7 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
                         <p><span className="font-semibold">Contrato firmado:</span> {archivosExistentes.contratoFirmado.length + contratoFirmado.length} archivo(s)</p>
                     </div>
                     <div className="bg-volare-verde/10 border border-volare-verde/30 rounded-lg p-4 text-center">
-                        <p className="text-2xl font-bold text-volare-verde">Total: ${montoTotal}</p>
-                        <p className="text-xs text-gray-500">${montoAlquiler} alquiler + ${montoGarantia} garantía</p>
+                        <ResumenMontos montos={montos} error={tarifas === 'error'} grande />
                     </div>
                     <label className="flex items-start gap-3 cursor-pointer">
                         <input
