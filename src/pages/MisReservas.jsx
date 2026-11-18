@@ -173,6 +173,19 @@ function MisReservas() {
                                                             <HiOutlineExclamationTriangle size={16} className="text-yellow-500 shrink-0" aria-label="Faltan documentos por subir" />
                                                         </Tooltip>
                                                     )}
+                                                    {reserva.estado === 'PENDIENTE' && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                // Sin esto, el clic también abriría la edición de la fila.
+                                                                e.stopPropagation()
+                                                                navigate(`/reservas/${reserva.id}/pagar`)
+                                                            }}
+                                                            className="bg-volare-verde text-white text-xs px-2 py-1 rounded-lg font-semibold hover:opacity-90 transition shrink-0"
+                                                        >
+                                                            Pagar
+                                                        </button>
+                                                    )}
                                                     {reserva.estado === 'PENDIENTE' && reserva.observacionAdmin && (
                                                         <button
                                                             type="button"
