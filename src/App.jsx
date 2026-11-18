@@ -14,6 +14,8 @@ import ReservaCasaClub from './pages/ReservaCasaClub'
 import ReservaFormulario from './pages/ReservaFormulario'
 import MisReservas from './pages/MisReservas'
 import RestablecerContrasena from './pages/RestablecerContrasena'
+import PagarReserva from './pages/PagarReserva'
+import RetornoPago from './pages/RetornoPago'
 
 function App() {
   return (
@@ -73,6 +75,16 @@ function App() {
               <Route path="/reservas/mis-reservas" element={
                   <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']} soloAprobadas>
                       <MisReservas />
+                  </RutaProtegida>
+              } />
+              <Route path="/reservas/:id/pagar" element={
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']} soloAprobadas>
+                      <PagarReserva />
+                  </RutaProtegida>
+              } />
+              <Route path="/pagos/retorno" element={
+                  <RutaProtegida rolRequerido={['RESIDENTE', 'ADMIN']} soloAprobadas>
+                      <RetornoPago />
                   </RutaProtegida>
               } />
             </Routes>
