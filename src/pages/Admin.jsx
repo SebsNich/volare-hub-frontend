@@ -29,6 +29,7 @@ import {
     HiChevronDown
 } from 'react-icons/hi2'
 import { formatearFechaReserva, nombreCompleto } from '../utilities/helpers'
+import PagosReservaAdmin from '../components/PagosReservaAdmin'
 import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA, PLATAFORMAS_RED_SOCIAL, ICONO_PLATAFORMA } from '../utilities/constantes'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
@@ -1128,6 +1129,10 @@ function Admin() {
                         {listaArchivos(reservaSeleccionada.listaInvitadosUrls, 'Lista de invitados')}
                         {listaArchivos(reservaSeleccionada.contratoFirmadoUrls, 'Contrato firmado')}
                     </div>
+
+                    <hr className="border-gray-200" />
+
+                    <PagosReservaAdmin key={reservaSeleccionada.id} reservaId={reservaSeleccionada.id} />
 
                     <hr className="border-gray-200" />
 

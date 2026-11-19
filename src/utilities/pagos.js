@@ -1,3 +1,5 @@
+import { formatearDolares } from './tarifas.js'
+
 // Lógica de las pantallas de pago. No calcula montos ni decide si se puede
 // pagar: eso lo dice el servidor. Aquí solo se interpreta lo que respondió.
 
@@ -40,4 +42,22 @@ export function accionPagoEnLista(reserva) {
     if (reserva?.alquilerPagado === true) return 'PAGADO'
     if (reserva?.estado === 'PENDIENTE') return 'PAGAR'
     return null
+}
+
+const NOMBRES_CONCEPTO = { ALQUILER: 'Alquiler', GARANTIA: 'Garantía' }
+const NOMBRES_PROVEEDOR = { SIMULADO: 'En línea (simulado)', TRANSFERENCIA_MANUAL: 'Transferencia' }
+
+// Una fila de la tabla de pagos que ve el admin en el detalle de la reserva.
+export function filaPagoAdmin(pago) {
+    const estado = textoEstadoPago(pago.estado)
+    return {
+        id: pago.id,
+        concepto: NOMBRES_CONCEPTO[pago.concepto] ?? pago.concepto,
+        proveedor: NOMBRES_PROVEEDOR[pago.proveedor] ?? pago.proveedor,
+        estado: estado.titulo,
+        tono: estado.tono,
+        monto: `$${formatearDolares(pago.montoCentavos)}`,
+        creadoEn: pago.creadoEn,
+        motivo: pago.motivoRechazo ?? null
+    }
 }

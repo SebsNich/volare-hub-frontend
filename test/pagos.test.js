@@ -6,7 +6,8 @@ import {
     pagoDelAlquiler,
     alquilerPagado,
     mostrarBotonesSimulador,
-    accionPagoEnLista
+    accionPagoEnLista,
+    filaPagoAdmin
 } from '../src/utilities/pagos.js'
 
 test('lee el id del pago y si viene del simulador', () => {
@@ -73,4 +74,31 @@ test('una reserva aprobada o rechazada sin pago en línea no muestra nada', () =
 
 test('si el servidor no manda alquilerPagado, se trata como no pagado', () => {
     assert.equal(accionPagoEnLista({ estado: 'PENDIENTE' }), 'PAGAR')
+})
+
+// Admin: cada pago de la reserva en una fila legible.
+test('fila de pago del admin: concepto, proveedor, estado y monto legibles', () => {
+    const fila = filaPagoAdmin({ id: 'p1', concepto: 'ALQUILER', proveedor: 'SIMULADO', estado: 'APROBADO', montoCentavos: 1500, creadoEn: '2026-11-18T20:05:00.000Z' })
+    assert.equal(fila.concepto, 'Alquiler')
+    assert.equal(fila.proveedor, 'En línea (simulado)')
+    assert.equal(fila.estado, 'Aprobado')
+    assert.equal(fila.tono, 'exito')
+    assert.equal(fila.monto, '$15')
+    assert.equal(fila.creadoEn, '2026-11-18T20:05:00.000Z')
+})
+
+test('fila de pago del admin: transferencia y garantía', () => {
+    const fila = filaPagoAdmin({ concepto: 'GARANTIA', proveedor: 'TRANSFERENCIA_MANUAL', estado: 'PENDIENTE', montoCentavos: 2550 })
+    assert.equal(fila.concepto, 'Garantía')
+    assert.equal(fila.proveedor, 'Transferencia')
+    assert.equal(fila.monto, '$25.50')
+})
+
+test('fila de pago del admin: un proveedor desconocido se muestra con su código', () => {
+    assert.equal(filaPagoAdmin({ concepto: 'ALQUILER', proveedor: 'OTRO', estado: 'RECHAZADO', montoCentavos: 100 }).proveedor, 'OTRO')
+})
+
+test('fila de pago del admin: muestra el motivo si el pago lo tiene', () => {
+    assert.equal(filaPagoAdmin({ concepto: 'ALQUILER', proveedor: 'SIMULADO', estado: 'VENCIDO', montoCentavos: 100, motivoRechazo: 'Plazo' }).motivo, 'Plazo')
+    assert.equal(filaPagoAdmin({ concepto: 'ALQUILER', proveedor: 'SIMULADO', estado: 'VENCIDO', montoCentavos: 100 }).motivo, null)
 })
