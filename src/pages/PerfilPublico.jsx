@@ -15,6 +15,7 @@ import { API_URL } from '../config/api'
 import { nombreCompleto, esCuentaPendiente } from '../utilities/helpers'
 import AvisoContrasena from '../components/AvisoContrasena'
 import { validarContrasena } from '../utilities/contrasena'
+import { textoUbicacion } from '../utilities/perfil'
 
 function PerfilPublico() {
     const { id } = useParams()
@@ -203,6 +204,7 @@ function PerfilPublico() {
     const esPropioPerfil = usuarioLogueado?.id === usuario?.id
     const esAdmin = usuarioLogueado?.rol === 'ADMIN'
     const puedePublicar = !esCuentaPendiente(usuarioLogueado)
+    const ubicacion = textoUbicacion(usuario)
     const fotoAMostrarEnPreview = eliminarFoto ? null : (fotoPreview || usuario?.foto)
     const postsFiltrados = filtroTipo === 'TODOS' ? posts : posts.filter(post => post.tipo === filtroTipo)
 
@@ -226,6 +228,9 @@ function PerfilPublico() {
                             <div className="border-b border-gray-200" />
                             <div className="text-center">
                                 <h2 className="text-xl font-bold text-volare-azul">{nombreCompleto(usuario)}</h2>
+                                {ubicacion && (
+                                    <p className="text-sm font-medium text-gray-500 mt-1">{ubicacion}</p>
+                                )}
                                 <p className="text-gray-600 text-sm mt-1">{usuario.bio}</p>
                                 <p className="flex items-center justify-center gap-1 text-xs text-gray-400 mt-2">
                                     <HiOutlineEye size={14} />
@@ -345,6 +350,12 @@ function PerfilPublico() {
                                     rows={3}
                                     className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul resize-none"
                                 />
+                                {/* Texto, no input: la casa y el rol los gestiona la administración. */}
+                                {ubicacion && (
+                                    <p className="text-sm text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
+                                        {ubicacion}. Para cambiarla, escribe a la administración.
+                                    </p>
+                                )}
                                 <button type="submit" className="bg-volare-verde text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition">
                                     Guardar Cambios
                                 </button>

@@ -4,6 +4,7 @@ import { HiOutlineMagnifyingGlass } from 'react-icons/hi2'
 import AvatarUsuario from './AvatarUsuario'
 import useDebounce from '../hooks/useDebounce'
 import { nombreCompleto } from '../utilities/helpers'
+import { textoUbicacion } from '../utilities/perfil'
 import { API_URL } from '../config/api'
 import EtiquetaCuenta from './EtiquetaCuenta'
 
@@ -105,7 +106,12 @@ function BuscadorUsuarios({ className = '', inputClassName = '', onNavegar, auto
                                 className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 transition"
                             >
                                 <AvatarUsuario foto={usuario.foto} size={32} />
-                                <span className="text-sm font-medium text-gray-700 truncate">{nombreCompleto(usuario)}</span>
+                                <span className="flex flex-col min-w-0">
+                                    <span className="text-sm font-medium text-gray-700 truncate">{nombreCompleto(usuario)}</span>
+                                    {textoUbicacion(usuario) && (
+                                        <span className="text-xs text-gray-400 truncate">{textoUbicacion(usuario)}</span>
+                                    )}
+                                </span>
                                 <EtiquetaBusqueda usuario={usuario} />
                             </button>
                         ))
