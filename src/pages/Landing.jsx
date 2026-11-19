@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import CarruselLanding from '../components/CarruselLanding'
 import TarjetaNoticia from '../components/TarjetaNoticia'
 import MiniLandingCompleta from '../components/MiniLandingCompleta'
+import BienvenidaLanding from '../components/BienvenidaLanding'
 import { API_URL } from '../config/api'
 
 function Landing() {
@@ -86,6 +87,10 @@ function Landing() {
                 >
                     Reintentar
                 </button>
+                {/* Registrarse e iniciar sesión no dependen de las noticias. */}
+                <div className="w-full text-left">
+                    <BienvenidaLanding />
+                </div>
             </div>
         )
     }
@@ -93,6 +98,8 @@ function Landing() {
     return (
         <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col gap-6">
             <CarruselLanding slides={slides} />
+
+            <BienvenidaLanding />
 
             <div className="flex flex-col md:grid md:grid-cols-[1fr_280px] gap-6 items-start">
                 <div className="flex flex-col gap-4">

@@ -8,6 +8,7 @@ import AvisoContrasena from './AvisoContrasena'
 import { validarContrasena } from '../utilities/contrasena'
 import { API_URL } from '../config/api'
 import { esCedulaValida } from '../utilities/helpers'
+import { modoInicialAuth } from '../utilities/landing'
 
 // Qué campos del registro se marcan en rojo según el código de error del backend.
 // El texto del error lo da el backend; aquí solo se señala dónde corregir.
@@ -24,8 +25,9 @@ const DURACION_AVISO_LARGO_MS = 8000
 
 const CLASE_CAMPO_REGISTRO = 'border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-verde'
 
-function ModalAuth({ onClose }) {
-    const [modo, setModo] = useState('login')
+// modoInicial: 'registro' para "Soy propietario: registrarme" (RF-03); por defecto, inicio de sesión.
+function ModalAuth({ onClose, modoInicial }) {
+    const [modo, setModo] = useState(() => modoInicialAuth(modoInicial))
     const { setUsuario } = useContext(AuthContext)
     const { mostrarToast } = useToast()
     const navigate = useNavigate()
