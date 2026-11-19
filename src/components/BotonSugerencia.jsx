@@ -68,6 +68,7 @@ function BotonSugerencia() {
                         <input
                             type="text"
                             value={nombre}
+                            maxLength={100}
                             onChange={(e) => setNombre(e.target.value)}
                             placeholder="Nombre de usuario"
                             className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
@@ -75,6 +76,7 @@ function BotonSugerencia() {
                         <input
                             type="text"
                             value={manzana}
+                            maxLength={20}
                             onChange={(e) => setManzana(e.target.value)}
                             placeholder="Manzana"
                             className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
@@ -82,6 +84,7 @@ function BotonSugerencia() {
                         <input
                             type="text"
                             value={villa}
+                            maxLength={20}
                             onChange={(e) => setVilla(e.target.value)}
                             placeholder="Villa"
                             className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul"
@@ -99,6 +102,7 @@ function BotonSugerencia() {
                         </select>
                         <textarea
                             value={mensaje}
+                            maxLength={2000}
                             onChange={(e) => setMensaje(e.target.value)}
                             placeholder="Describe tu sugerencia, queja o consulta con detalle"
                             rows={4}
