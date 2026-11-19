@@ -13,8 +13,8 @@ const TEXTOS_ESTADO = {
     RECHAZADO: { titulo: 'Rechazado', detalle: 'El pago no se completó. Puedes intentarlo de nuevo desde Mis Reservas.', tono: 'error' },
     PENDIENTE: { titulo: 'Pendiente', detalle: 'Todavía no hay respuesta del proveedor de pago.', tono: 'aviso' },
     VENCIDO: { titulo: 'Vencido', detalle: 'Pasó el plazo para pagar en línea.', tono: 'aviso' },
-    DUPLICADO: { titulo: 'Cobro duplicado', detalle: 'Este alquiler ya estaba pagado. La administración devolverá este cobro.', tono: 'aviso' },
-    REVERSADO: { titulo: 'Cobro devuelto', detalle: 'Este alquiler ya estaba pagado, así que este cobro se devolvió.', tono: 'aviso' }
+    DUPLICADO: { titulo: 'Cobro duplicado', detalle: 'El cobro llegó cuando el alquiler ya estaba cubierto o la reserva ya no estaba pendiente. La administración devolverá este cobro.', tono: 'aviso' },
+    REVERSADO: { titulo: 'Cobro devuelto', detalle: 'El cobro llegó cuando el alquiler ya estaba cubierto o la reserva ya no estaba pendiente, así que se devolvió.', tono: 'aviso' }
 }
 
 export function textoEstadoPago(estado) {

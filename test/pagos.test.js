@@ -102,3 +102,13 @@ test('fila de pago del admin: muestra el motivo si el pago lo tiene', () => {
     assert.equal(filaPagoAdmin({ concepto: 'ALQUILER', proveedor: 'SIMULADO', estado: 'VENCIDO', montoCentavos: 100, motivoRechazo: 'Plazo' }).motivo, 'Plazo')
     assert.equal(filaPagoAdmin({ concepto: 'ALQUILER', proveedor: 'SIMULADO', estado: 'VENCIDO', montoCentavos: 100 }).motivo, null)
 })
+
+// Bloque E2 (d): un cobro tardío tras el vencimiento también queda DUPLICADO o
+// REVERSADO, y ahí el alquiler NO estaba pagado. El texto debe servir para ambos casos.
+test('los textos de cobro duplicado o devuelto no afirman que el alquiler ya estaba pagado', () => {
+    for (const estado of ['DUPLICADO', 'REVERSADO']) {
+        const { detalle } = textoEstadoPago(estado)
+        assert.doesNotMatch(detalle, /ya estaba pagado/)
+        assert.match(detalle, /ya no estaba pendiente/)
+    }
+})
