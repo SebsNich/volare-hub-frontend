@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs'
 // RF-06: metadatos descriptivos para buscadores y para compartir el enlace.
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
 const meta = (atributo, valor) => {
-    const encontrado = html.match(new RegExp(`<meta\s+${atributo}="${valor}"\s+content="([^"]*)"`))
+    const encontrado = html.match(new RegExp(`<meta\\s+${atributo}="${valor}"\\s+content="([^"]*)"`))
     return encontrado ? encontrado[1] : null
 }
 
