@@ -33,3 +33,11 @@ export function alquilerPagado(pagos) {
 export function mostrarBotonesSimulador(pago, esSimulado) {
     return Boolean(esSimulado) && pago?.estado === 'PENDIENTE'
 }
+
+// Qué muestra Mis Reservas en la columna de estado. "Pagado" se muestra en
+// cualquier estado de la reserva, para que el residente vea que su dinero llegó.
+export function accionPagoEnLista(reserva) {
+    if (reserva?.alquilerPagado === true) return 'PAGADO'
+    if (reserva?.estado === 'PENDIENTE') return 'PAGAR'
+    return null
+}

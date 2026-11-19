@@ -9,6 +9,7 @@ import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
 import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA } from '../utilities/constantes'
 import { formatearFechaReserva } from '../utilities/helpers'
+import { accionPagoEnLista } from '../utilities/pagos'
 
 function faltanDocumentos(reserva) {
     return !reserva.comprobantePagoUrls?.length || !reserva.listaInvitadosUrls?.length || !reserva.contratoFirmadoUrls?.length
@@ -173,7 +174,12 @@ function MisReservas() {
                                                             <HiOutlineExclamationTriangle size={16} className="text-yellow-500 shrink-0" aria-label="Faltan documentos por subir" />
                                                         </Tooltip>
                                                     )}
-                                                    {reserva.estado === 'PENDIENTE' && (
+                                                    {accionPagoEnLista(reserva) === 'PAGADO' && (
+                                                        <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-lg font-semibold shrink-0">
+                                                            Pagado
+                                                        </span>
+                                                    )}
+                                                    {accionPagoEnLista(reserva) === 'PAGAR' && (
                                                         <button
                                                             type="button"
                                                             onClick={(e) => {

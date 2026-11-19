@@ -5,7 +5,8 @@ import {
     textoEstadoPago,
     pagoDelAlquiler,
     alquilerPagado,
-    mostrarBotonesSimulador
+    mostrarBotonesSimulador,
+    accionPagoEnLista
 } from '../src/utilities/pagos.js'
 
 test('lee el id del pago y si viene del simulador', () => {
@@ -53,4 +54,23 @@ test('los botones del simulador solo aparecen con un pago pendiente que viene de
     assert.equal(mostrarBotonesSimulador({ estado: 'PENDIENTE' }, false), false)
     assert.equal(mostrarBotonesSimulador({ estado: 'APROBADO' }, true), false)
     assert.equal(mostrarBotonesSimulador(null, true), false)
+})
+
+// Mis Reservas: el servidor manda alquilerPagado; aquí solo se elige qué mostrar.
+test('una reserva pendiente sin pagar muestra el botón Pagar', () => {
+    assert.equal(accionPagoEnLista({ estado: 'PENDIENTE', alquilerPagado: false }), 'PAGAR')
+})
+
+test('una reserva con el alquiler pagado muestra Pagado y no Pagar', () => {
+    assert.equal(accionPagoEnLista({ estado: 'PENDIENTE', alquilerPagado: true }), 'PAGADO')
+    assert.equal(accionPagoEnLista({ estado: 'APROBADA', alquilerPagado: true }), 'PAGADO')
+})
+
+test('una reserva aprobada o rechazada sin pago en línea no muestra nada', () => {
+    assert.equal(accionPagoEnLista({ estado: 'APROBADA', alquilerPagado: false }), null)
+    assert.equal(accionPagoEnLista({ estado: 'RECHAZADA', alquilerPagado: false }), null)
+})
+
+test('si el servidor no manda alquilerPagado, se trata como no pagado', () => {
+    assert.equal(accionPagoEnLista({ estado: 'PENDIENTE' }), 'PAGAR')
 })
