@@ -7,7 +7,11 @@ import { PROVEEDOR_PAGO_EN_LINEA } from '../config/pagos'
 import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA } from '../utilities/constantes'
 import { formatearFechaReserva } from '../utilities/helpers'
 import { formatearDolares } from '../utilities/tarifas'
-import { pagoDelAlquiler, alquilerPagado, textoEstadoPago } from '../utilities/pagos'
+import {
+    pagoDelAlquiler, alquilerPagado, textoEstadoPago,
+    transferenciaDelAlquiler, puedeEnviarTransferencia, textoTransferencia
+} from '../utilities/pagos'
+import CuentasBancarias from '../components/CuentasBancarias'
 
 const encabezados = () => ({ 'Authorization': `Bearer ${localStorage.getItem('token')}` })
 
@@ -28,12 +32,42 @@ function PagarReserva() {
     const [datos, setDatos] = useState(null)
     const [error, setError] = useState('')
     const [enviando, setEnviando] = useState(false)
+    const [archivos, setArchivos] = useState([])
+    const [enviandoTransferencia, setEnviandoTransferencia] = useState(false)
 
     useEffect(() => {
         cargarDatos(id)
             .then(setDatos)
             .catch(() => setError('No se pudo cargar la reserva'))
     }, [id])
+
+    async function enviarTransferencia() {
+        if (archivos.length === 0) {
+            mostrarToast('Adjunta el comprobante de la transferencia', 'error')
+            return
+        }
+        setEnviandoTransferencia(true)
+        try {
+            // Sin Content-Type: el navegador lo arma con el separador del multipart.
+            const formulario = new FormData()
+            formulario.append('reservaId', id)
+            formulario.append('concepto', 'ALQUILER')
+            archivos.forEach(archivo => formulario.append('evidencia', archivo))
+            const respuesta = await fetch(`${API_URL}/api/pagos/transferencia`, { method: 'POST', headers: encabezados(), body: formulario })
+            const cuerpo = await respuesta.json().catch(() => ({}))
+            if (!respuesta.ok) {
+                mostrarToast(cuerpo.error || 'No se pudo enviar la transferencia', 'error')
+                return
+            }
+            mostrarToast('Comprobante enviado. La administración lo revisará.', 'exito')
+            setArchivos([])
+            setDatos(await cargarDatos(id))
+        } catch {
+            mostrarToast('No se pudo conectar con el servidor', 'error')
+        } finally {
+            setEnviandoTransferencia(false)
+        }
+    }
 
     async function pagar() {
         setEnviando(true)
@@ -66,6 +100,8 @@ function PagarReserva() {
     const { reserva, pagos } = datos
     const pagado = alquilerPagado(pagos)
     const ultimoPago = pagoDelAlquiler(pagos)
+    const transferencia = transferenciaDelAlquiler(pagos)
+    const transferenciaEnRevision = transferencia?.estado === 'PENDIENTE'
 
     return (
         <div className="max-w-xl mx-auto px-4 py-8 flex flex-col gap-6">
@@ -93,11 +129,18 @@ function PagarReserva() {
                     </p>
                 )}
 
-                {!pagado && ultimoPago && (
+                {/* La transferencia ya tiene su propio texto debajo. */}
+                {!pagado && ultimoPago && ultimoPago !== transferencia && (
                     <p className="text-sm text-gray-500">Último intento: {textoEstadoPago(ultimoPago.estado).titulo}</p>
                 )}
 
-                {!pagado && reserva.estado === 'PENDIENTE' && (
+                {transferencia && (
+                    <p className={`text-sm ${transferencia.estado === 'RECHAZADO' ? 'text-red-600' : 'text-gray-600'}`}>
+                        {textoTransferencia(transferencia)}
+                    </p>
+                )}
+
+                {!pagado && reserva.estado === 'PENDIENTE' && !transferenciaEnRevision && (
                     <button
                         type="button"
                         onClick={pagar}
@@ -112,6 +155,31 @@ function PagarReserva() {
                     <p className="text-sm text-gray-500">Esta reserva ya no está pendiente: no se puede pagar.</p>
                 )}
             </div>
+
+            {puedeEnviarTransferencia(reserva, pagos) && (
+                <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4">
+                    <h2 className="text-lg font-bold text-volare-azul">O paga por transferencia</h2>
+                    <p className="text-sm text-gray-600">
+                        Transfiere ${Number(reserva.montoAlquiler)} a una de estas cuentas y adjunta el comprobante (JPG, PNG o PDF, hasta 5 archivos).
+                    </p>
+                    <CuentasBancarias />
+                    <input
+                        type="file"
+                        multiple
+                        accept=".jpg,.jpeg,.png,.pdf"
+                        onChange={(e) => setArchivos(Array.from(e.target.files ?? []))}
+                        className="text-sm"
+                    />
+                    <button
+                        type="button"
+                        onClick={enviarTransferencia}
+                        disabled={enviandoTransferencia}
+                        className="bg-volare-azul text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition disabled:opacity-50"
+                    >
+                        {enviandoTransferencia ? 'Enviando…' : 'Enviar comprobante'}
+                    </button>
+                </div>
+            )}
         </div>
     )
 }

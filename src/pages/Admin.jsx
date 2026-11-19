@@ -1132,7 +1132,11 @@ function Admin() {
 
                     <hr className="border-gray-200" />
 
-                    <PagosReservaAdmin key={reservaSeleccionada.id} reservaId={reservaSeleccionada.id} />
+                    <PagosReservaAdmin
+                        key={reservaSeleccionada.id}
+                        reservaId={reservaSeleccionada.id}
+                        onReservaAprobada={() => { cargarReservas(); cargarResumen(); cerrarModalReserva() }}
+                    />
 
                     <hr className="border-gray-200" />
 

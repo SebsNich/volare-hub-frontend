@@ -7,7 +7,10 @@ import {
     alquilerPagado,
     mostrarBotonesSimulador,
     accionPagoEnLista,
-    filaPagoAdmin
+    filaPagoAdmin,
+    transferenciaDelAlquiler,
+    puedeEnviarTransferencia,
+    textoTransferencia
 } from '../src/utilities/pagos.js'
 
 test('lee el id del pago y si viene del simulador', () => {
@@ -111,4 +114,39 @@ test('los textos de cobro duplicado o devuelto no afirman que el alquiler ya est
         assert.doesNotMatch(detalle, /ya estaba pagado/)
         assert.match(detalle, /ya no estaba pendiente/)
     }
+})
+
+// ---------- Bloque E2 (c): transferencia manual ----------
+const tm = (estado, extra = {}) => ({ concepto: 'ALQUILER', proveedor: 'TRANSFERENCIA_MANUAL', estado, ...extra })
+const sim = (estado) => ({ concepto: 'ALQUILER', proveedor: 'SIMULADO', estado })
+const pendiente = { estado: 'PENDIENTE' }
+
+test('transferenciaDelAlquiler toma la transferencia más reciente e ignora los pagos en línea', () => {
+    assert.equal(transferenciaDelAlquiler([sim('RECHAZADO')]), null)
+    assert.equal(transferenciaDelAlquiler([tm('PENDIENTE', { id: 'nueva' }), tm('RECHAZADO', { id: 'vieja' })]).id, 'nueva')
+})
+
+test('puedeEnviarTransferencia: reserva pendiente, sin pagar y sin otra en revisión', () => {
+    assert.equal(puedeEnviarTransferencia(pendiente, []), true)
+    assert.equal(puedeEnviarTransferencia(pendiente, [sim('RECHAZADO')]), true)
+    assert.equal(puedeEnviarTransferencia(pendiente, [tm('RECHAZADO')]), true)
+    assert.equal(puedeEnviarTransferencia(pendiente, [tm('PENDIENTE')]), false)
+    assert.equal(puedeEnviarTransferencia(pendiente, [sim('APROBADO')]), false)
+    assert.equal(puedeEnviarTransferencia({ estado: 'RECHAZADA' }, []), false)
+})
+
+test('textoTransferencia: en revisión, rechazada con motivo y aprobada', () => {
+    assert.match(textoTransferencia(tm('PENDIENTE')), /revisión/)
+    assert.match(textoTransferencia(tm('RECHAZADO', { motivoRechazo: 'El monto no coincide' })), /El monto no coincide/)
+    assert.match(textoTransferencia(tm('APROBADO')), /aprobada/)
+    assert.equal(textoTransferencia(null), null)
+})
+
+test('filaPagoAdmin marca como decidible solo la transferencia PENDIENTE y trae la evidencia', () => {
+    const fila = filaPagoAdmin({ ...tm('PENDIENTE'), montoCentavos: 1500, evidenciaUrls: ['a.jpg'] })
+    assert.equal(fila.decidible, true)
+    assert.deepEqual(fila.evidenciaUrls, ['a.jpg'])
+    assert.equal(filaPagoAdmin({ ...tm('APROBADO'), montoCentavos: 1500 }).decidible, false)
+    assert.equal(filaPagoAdmin({ ...sim('PENDIENTE'), montoCentavos: 1500 }).decidible, false)
+    assert.deepEqual(filaPagoAdmin({ ...sim('PENDIENTE'), montoCentavos: 1500 }).evidenciaUrls, [])
 })

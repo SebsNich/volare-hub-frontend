@@ -45,7 +45,10 @@ export function accionPagoEnLista(reserva) {
 }
 
 const NOMBRES_CONCEPTO = { ALQUILER: 'Alquiler', GARANTIA: 'Garantía' }
-const NOMBRES_PROVEEDOR = { SIMULADO: 'En línea (simulado)', TRANSFERENCIA_MANUAL: 'Transferencia' }
+const TRANSFERENCIA = 'TRANSFERENCIA_MANUAL'
+const NOMBRES_PROVEEDOR = { SIMULADO: 'En línea (simulado)', [TRANSFERENCIA]: 'Transferencia' }
+
+const esTransferenciaDelAlquiler = (pago) => pago.concepto === 'ALQUILER' && pago.proveedor === TRANSFERENCIA
 
 // Una fila de la tabla de pagos que ve el admin en el detalle de la reserva.
 export function filaPagoAdmin(pago) {
@@ -58,6 +61,30 @@ export function filaPagoAdmin(pago) {
         tono: estado.tono,
         monto: `$${formatearDolares(pago.montoCentavos)}`,
         creadoEn: pago.creadoEn,
-        motivo: pago.motivoRechazo ?? null
+        motivo: pago.motivoRechazo ?? null,
+        // Solo una transferencia en revisión espera la decisión del admin.
+        decidible: pago.proveedor === TRANSFERENCIA && pago.estado === 'PENDIENTE',
+        evidenciaUrls: pago.evidenciaUrls ?? []
     }
+}
+
+// ---------- Transferencia manual (residente) ----------
+
+// El servidor devuelve los pagos del más reciente al más antiguo.
+export function transferenciaDelAlquiler(pagos) {
+    return (pagos ?? []).find(esTransferenciaDelAlquiler) ?? null
+}
+
+// El servidor vuelve a validar todo; esto solo decide si se muestra el formulario.
+export function puedeEnviarTransferencia(reserva, pagos) {
+    if (reserva?.estado !== 'PENDIENTE' || alquilerPagado(pagos)) return false
+    return transferenciaDelAlquiler(pagos)?.estado !== 'PENDIENTE'
+}
+
+export function textoTransferencia(pago) {
+    if (!pago) return null
+    if (pago.estado === 'PENDIENTE') return 'Transferencia en revisión: la administración revisará tu comprobante.'
+    if (pago.estado === 'RECHAZADO') return `Transferencia rechazada: ${pago.motivoRechazo ?? 'sin motivo'}. Puedes enviar otro comprobante.`
+    if (pago.estado === 'APROBADO') return 'Transferencia aprobada.'
+    return textoEstadoPago(pago.estado).detalle
 }
