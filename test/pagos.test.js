@@ -150,3 +150,12 @@ test('filaPagoAdmin marca como decidible solo la transferencia PENDIENTE y trae 
     assert.equal(filaPagoAdmin({ ...sim('PENDIENTE'), montoCentavos: 1500 }).decidible, false)
     assert.deepEqual(filaPagoAdmin({ ...sim('PENDIENTE'), montoCentavos: 1500 }).evidenciaUrls, [])
 })
+
+// Tarea 3: una transferencia en revisión se muestra como "En revisión", no como "Pagar".
+test('accionPagoEnLista: con transferencia en revisión devuelve EN_REVISION', () => {
+    assert.equal(accionPagoEnLista({ estado: 'PENDIENTE', alquilerPagado: false, transferenciaEnRevision: true }), 'EN_REVISION')
+})
+
+test('accionPagoEnLista: Pagado gana sobre En revisión', () => {
+    assert.equal(accionPagoEnLista({ estado: 'PENDIENTE', alquilerPagado: true, transferenciaEnRevision: true }), 'PAGADO')
+})

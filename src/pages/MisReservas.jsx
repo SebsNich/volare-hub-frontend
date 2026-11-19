@@ -179,6 +179,11 @@ function MisReservas() {
                                                             Pagado
                                                         </span>
                                                     )}
+                                                    {accionPagoEnLista(reserva) === 'EN_REVISION' && (
+                                                        <span className="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded-lg font-semibold shrink-0">
+                                                            En revisión
+                                                        </span>
+                                                    )}
                                                     {accionPagoEnLista(reserva) === 'PAGAR' && (
                                                         <button
                                                             type="button"

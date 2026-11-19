@@ -40,6 +40,8 @@ export function mostrarBotonesSimulador(pago, esSimulado) {
 // cualquier estado de la reserva, para que el residente vea que su dinero llegó.
 export function accionPagoEnLista(reserva) {
     if (reserva?.alquilerPagado === true) return 'PAGADO'
+    // Con una transferencia en revisión no se ofrece pagar otra vez (sería cobrar dos veces).
+    if (reserva?.estado === 'PENDIENTE' && reserva?.transferenciaEnRevision === true) return 'EN_REVISION'
     if (reserva?.estado === 'PENDIENTE') return 'PAGAR'
     return null
 }
