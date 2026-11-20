@@ -90,6 +90,9 @@ h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
 .bg-white\/80 { background-color: color-mix(in oklab, var(--superficie) 80%, transparent); }
 .bg-white\/75 { background-color: color-mix(in oklab, var(--superficie) 75%, transparent); }
 .bg-white\/50 { background-color: color-mix(in oklab, var(--superficie) 50%, transparent); }
+.bg-white\/60 { background-color: color-mix(in oklab, var(--superficie) 60%, transparent); }
+.bg-white\/70 { background-color: color-mix(in oklab, var(--superficie) 70%, transparent); }
+.bg-white\/90 { background-color: color-mix(in oklab, var(--superficie) 90%, transparent); }
 .ring-white { --tw-ring-color: var(--superficie); }
 .border-white { border-color: var(--superficie); }
 

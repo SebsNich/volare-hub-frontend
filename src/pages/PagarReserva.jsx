@@ -257,10 +257,10 @@ function PagarReserva() {
                             <button
                                 type="button"
                                 onClick={pagar}
-                                disabled={enviando}
+                                disabled={enviando || minutos === 0}
                                 className="bg-volare-verde text-white px-5 py-3 rounded-xl font-bold text-base hover:opacity-90 transition disabled:opacity-50"
                             >
-                                {enviando ? 'Iniciando pago…' : `Pagar $${Number(reserva.montoAlquiler)}`}
+                                {enviando ? 'Iniciando pago…' : minutos === 0 ? 'Plazo terminado: paga por transferencia' : `Pagar $${Number(reserva.montoAlquiler)}`}
                             </button>
                             <p className="flex items-center gap-1.5 text-xs text-gray-500">
                                 <HiOutlineShieldCheck size={16} className="text-volare-verde shrink-0" />
