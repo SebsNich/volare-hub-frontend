@@ -8,7 +8,8 @@ function ResumenCobro({ reserva, minutos }) {
     const garantia = Number(reserva.montoGarantia)
 
     return (
-        <aside className="tarjeta-brillo p-6 flex flex-col gap-5 lg:sticky lg:top-24">
+        <aside className="lg:sticky lg:top-24">
+        <div className="tarjeta-brillo p-6 flex flex-col gap-5">
             <div className="flex flex-col gap-1">
                 <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">Resumen</span>
                 <h2 className="text-xl font-bold text-gray-800">{NOMBRES_ESPACIO_RESERVA[reserva.espacio]}</h2>
@@ -42,6 +43,7 @@ function ResumenCobro({ reserva, minutos }) {
                         : 'El plazo del pago en línea terminó'}
                 </div>
             )}
+        </div>
         </aside>
     )
 }

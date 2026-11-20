@@ -163,8 +163,8 @@ function MisReservas() {
                                             <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatearFechaReserva(reserva.fecha)}</td>
                                             <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{NOMBRES_HORARIO_RESERVA[reserva.horario]}</td>
                                             <td className="px-4 py-3 text-gray-500 whitespace-nowrap">${total}</td>
-                                            <td className="px-4 py-3 whitespace-nowrap">
-                                                <div className="flex items-center gap-2">
+                                            <td className="px-4 py-3">
+                                                <div className="flex flex-wrap items-center gap-2">
                                                     <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${estilo.color}`}>
                                                         <span className={`w-2 h-2 rounded-full ${estilo.punto}`} />
                                                         {estilo.label}

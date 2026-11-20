@@ -38,7 +38,7 @@ function TarjetaBanco({ cuenta }) {
                 className="flex flex-col items-center gap-2 py-5 px-4"
                 style={{ backgroundColor: cuenta.colorBanda }}
             >
-                <div className="w-16 h-16 rounded-full bg-white p-1.5 shadow-sm shrink-0">
+                <div className="w-16 h-16 rounded-full bg-[#ffffff] p-1.5 shadow-sm shrink-0">
                     <img src={cuenta.logo} alt={cuenta.banco} className="w-full h-full object-contain rounded-full" />
                 </div>
                 <span className="font-bold text-white text-center leading-tight">{cuenta.banco}</span>
