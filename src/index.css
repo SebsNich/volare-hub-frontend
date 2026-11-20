@@ -144,10 +144,11 @@ input:focus, select:focus, textarea:focus {
     .bg-green-50 { background-color: rgba(67, 176, 42, 0.14); }
     .bg-green-100 { background-color: rgba(67, 176, 42, 0.24); }
     .border-green-100 { border-color: rgba(67, 176, 42, 0.35); }
-    .text-green-700 { color: #6ee7a0; }
+    .border-green-200 { border-color: rgba(67, 176, 42, 0.4); }
+    .text-green-700, .text-green-800 { color: #6ee7a0; }
     .bg-yellow-50, .bg-amber-50 { background-color: rgba(247, 209, 23, 0.12); }
     .bg-yellow-100, .bg-amber-100 { background-color: rgba(247, 209, 23, 0.2); }
-    .border-yellow-300, .border-amber-200 { border-color: rgba(247, 209, 23, 0.4); }
+    .border-yellow-200, .border-yellow-300, .border-amber-200 { border-color: rgba(247, 209, 23, 0.4); }
     .text-yellow-700, .text-yellow-800, .text-yellow-900, .text-amber-700, .text-amber-900 { color: #fde68a; }
     .bg-orange-50 { background-color: rgba(233, 131, 36, 0.14); }
     .bg-blue-50 { background-color: rgba(46, 139, 214, 0.16); }
