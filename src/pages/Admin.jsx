@@ -479,7 +479,9 @@ function Admin() {
             mostrarToast(activoActual ? 'Usuario desactivado' : 'Usuario activado', 'exito')
             cargarUsuarios()
         } else {
-            mostrarToast('No se pudo cambiar el estado del usuario', 'error')
+            // El servidor explica el motivo (por ejemplo, que un admin no puede desactivarse a sí mismo).
+            const cuerpo = await respuesta.json().catch(() => ({}))
+            mostrarToast(cuerpo.error || 'No se pudo cambiar el estado del usuario', 'error')
         }
     }
 

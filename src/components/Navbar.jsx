@@ -7,6 +7,7 @@ import AvatarUsuario from './AvatarUsuario'
 import ModalAuth from './ModalAuth'
 import BuscadorUsuarios from './BuscadorUsuarios'
 import Tooltip from './Tooltip'
+import SelectorTema from './SelectorTema'
 import { API_URL } from '../config/api'
 import { nombreCompleto, esCuentaPendiente } from '../utilities/helpers'
 
@@ -82,8 +83,8 @@ function Navbar() {
     }, [mostrarServicios])
 
     return (
-        <nav ref={navRef} className="sticky top-0 z-50 bg-white text-volare-azul shadow-lg">
-            <div className="px-4 sm:px-6 py-4 flex items-center justify-between">
+        <nav ref={navRef} className="sticky top-0 z-50 vidrio border-b border-gray-100 text-volare-azul">
+            <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
                 <Link to="/" className="flex items-center gap-3 min-w-0">
                     <img src="/logo-volare.png" alt="Logo Urbanización Volare" className="h-10 sm:h-12 w-auto shrink-0" />
                     <div className="hidden sm:block w-px h-8 bg-gray-300" />
@@ -155,6 +156,7 @@ function Navbar() {
                             </div>
                         )}
                     </div>
+                    <SelectorTema className="hidden md:inline-flex" />
                     {usuario && (
                         <Tooltip texto="Mi perfil" posicion="abajo">
                             <Link to={`/perfil/${usuario.id}`} className="flex items-center gap-2 hover:text-volare-azul transition">
@@ -215,6 +217,10 @@ function Navbar() {
 
             {menuMovilAbierto && (
                 <div className="md:hidden border-t border-gray-100 px-4 py-3 flex flex-col gap-1 animate-volare-barrido-derecha">
+                    <div className="flex items-center justify-between px-3 py-2 text-sm text-gray-600">
+                        Tema
+                        <SelectorTema />
+                    </div>
                     <Link
                         to="/"
                         onClick={cerrarMenuMovil}
@@ -287,7 +293,7 @@ function Navbar() {
                 </div>
             )}
 
-            <div className="flex h-1.5">
+            <div className="flex h-[3px]">
                 <div className="flex-1 bg-volare-azul" />
                 <div className="flex-1 bg-volare-verde" />
                 <div className="flex-1 bg-volare-naranja" />

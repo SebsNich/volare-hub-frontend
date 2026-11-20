@@ -44,9 +44,9 @@ function TemaProvider({ children }) {
     return <TemaContext.Provider value={valor}>{children}</TemaContext.Provider>
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 function useTema() {
     return useContext(TemaContext)
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { TemaProvider, useTema }
