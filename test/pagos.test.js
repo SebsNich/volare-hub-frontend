@@ -159,3 +159,12 @@ test('accionPagoEnLista: con transferencia en revisión devuelve EN_REVISION', (
 test('accionPagoEnLista: Pagado gana sobre En revisión', () => {
     assert.equal(accionPagoEnLista({ estado: 'PENDIENTE', alquilerPagado: true, transferenciaEnRevision: true }), 'PAGADO')
 })
+
+test('textoEstadoPago habla de la alícuota cuando el pago es de una alícuota', () => {
+    const aprobado = textoEstadoPago('APROBADO', 'ALICUOTA')
+    assert.match(aprobado.detalle, /alícuota/i)
+    assert.doesNotMatch(aprobado.detalle, /alquiler|reserva/i)
+    assert.doesNotMatch(textoEstadoPago('RECHAZADO', 'ALICUOTA').detalle, /Mis Reservas/)
+    assert.doesNotMatch(textoEstadoPago('DUPLICADO', 'ALICUOTA').detalle, /alquiler|reserva/i)
+    assert.match(textoEstadoPago('APROBADO').detalle, /alquiler/)
+})

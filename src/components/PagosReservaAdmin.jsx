@@ -10,7 +10,8 @@ const formatearFechaHora = (iso) => iso ? new Date(iso).toLocaleString('es-EC', 
 
 // Botones del admin para una transferencia en revisión. Rechazar pide motivo
 // porque el residente lo va a leer.
-function DecisionTransferencia({ pagoId, onDecidido }) {
+// conReserva=false: pagos que no son de una reserva (alícuotas) solo se aprueban o rechazan.
+export function DecisionTransferencia({ pagoId, onDecidido, conReserva = true }) {
     const { mostrarToast } = useToast()
     const [motivo, setMotivo] = useState('')
     const [enviando, setEnviando] = useState(false)
@@ -40,13 +41,17 @@ function DecisionTransferencia({ pagoId, onDecidido }) {
     return (
         <div className="w-full flex flex-col gap-2 mt-1">
             <div className="flex flex-wrap gap-2">
-                <button type="button" disabled={enviando} onClick={() => decidir({ decision: 'APROBAR', aprobarReserva: true })}
-                    className="bg-volare-verde text-white text-xs px-3 py-1.5 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50">
-                    Aprobar pago y reserva
-                </button>
+                {conReserva && (
+                    <button type="button" disabled={enviando} onClick={() => decidir({ decision: 'APROBAR', aprobarReserva: true })}
+                        className="bg-volare-verde text-white text-xs px-3 py-1.5 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50">
+                        Aprobar pago y reserva
+                    </button>
+                )}
                 <button type="button" disabled={enviando} onClick={() => decidir({ decision: 'APROBAR' })}
-                    className="border border-volare-verde text-volare-verde text-xs px-3 py-1.5 rounded-lg font-semibold hover:bg-green-50 disabled:opacity-50">
-                    Aprobar solo el pago
+                    className={conReserva
+                        ? 'border border-volare-verde text-volare-verde text-xs px-3 py-1.5 rounded-lg font-semibold hover:bg-green-50 disabled:opacity-50'
+                        : 'bg-volare-verde text-white text-xs px-3 py-1.5 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50'}>
+                    {conReserva ? 'Aprobar solo el pago' : 'Aprobar pago'}
                 </button>
             </div>
             <div className="flex flex-wrap gap-2 items-center">

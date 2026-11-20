@@ -23,6 +23,7 @@ import {
     HiOutlineExclamationTriangle,
     HiOutlineChatBubbleLeftEllipsis,
     HiOutlineGlobeAlt,
+    HiOutlineBanknotes,
     HiOutlinePencil,
     HiOutlineTrash,
     HiChevronUp,
@@ -30,6 +31,7 @@ import {
 } from 'react-icons/hi2'
 import { formatearFechaReserva, nombreCompleto } from '../utilities/helpers'
 import PagosReservaAdmin from '../components/PagosReservaAdmin'
+import AlicuotasAdmin from '../components/AlicuotasAdmin'
 import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA, PLATAFORMAS_RED_SOCIAL, ICONO_PLATAFORMA } from '../utilities/constantes'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
@@ -40,6 +42,7 @@ const SECCIONES = [
     { id: 'usuarios', label: 'Usuarios', icono: HiOutlineUsers },
     { id: 'sugerencias', label: 'Buzón de Sugerencias', icono: HiOutlineInbox },
     { id: 'reservas', label: 'Gestión de Reservas', icono: HiOutlineCalendarDays },
+    { id: 'alicuotas', label: 'Alícuotas', icono: HiOutlineBanknotes },
     { id: 'landing', label: 'Landing Page', icono: HiOutlineGlobeAlt },
 ]
 
@@ -966,6 +969,8 @@ function Admin() {
                             </div>
                         </div>
                     )}
+
+                    {seccionActiva === 'alicuotas' && <AlicuotasAdmin />}
 
                     {seccionActiva === 'landing' && (
                         <div className="flex flex-col gap-4">

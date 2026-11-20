@@ -17,8 +17,18 @@ const TEXTOS_ESTADO = {
     REVERSADO: { titulo: 'Cobro devuelto', detalle: 'El cobro llegó cuando el alquiler ya estaba cubierto o la reserva ya no estaba pendiente, así que se devolvió.', tono: 'aviso' }
 }
 
-export function textoEstadoPago(estado) {
-    return TEXTOS_ESTADO[estado] ?? { titulo: 'Estado desconocido', detalle: 'Consulta con la administración.', tono: 'aviso' }
+// Lo que cambia entre reservas y alícuotas es solo el detalle: el título y el tono son los mismos.
+const DETALLES_ALICUOTA = {
+    APROBADO: 'Tu alícuota quedó pagada. Gracias por estar al día.',
+    RECHAZADO: 'El pago no se completó. Puedes intentarlo de nuevo desde Mis alícuotas.',
+    DUPLICADO: 'El cobro llegó cuando la alícuota ya estaba pagada. La administración devolverá este cobro.',
+    REVERSADO: 'El cobro llegó cuando la alícuota ya estaba pagada, así que se devolvió.'
+}
+
+export function textoEstadoPago(estado, tipo) {
+    const texto = TEXTOS_ESTADO[estado] ?? { titulo: 'Estado desconocido', detalle: 'Consulta con la administración.', tono: 'aviso' }
+    const detalleAlicuota = tipo === 'ALICUOTA' ? DETALLES_ALICUOTA[estado] : null
+    return detalleAlicuota ? { ...texto, detalle: detalleAlicuota } : texto
 }
 
 // El servidor devuelve los pagos del más reciente al más antiguo.

@@ -67,9 +67,10 @@ function RetornoPago() {
     }
     if (!pago) return <div className="max-w-xl mx-auto px-4 py-16 text-center text-gray-400">Consultando tu pago…</div>
 
-    const texto = textoEstadoPago(pago.estado)
+    const texto = textoEstadoPago(pago.estado, pago.tipo)
     // El monto viene del pago guardado en el servidor.
-    const monto = `Alquiler · $${formatearDolares(pago.montoCentavos)}`
+    const esAlicuota = pago.tipo === 'ALICUOTA'
+    const monto = `${esAlicuota ? 'Alícuota' : 'Alquiler'} · $${formatearDolares(pago.montoCentavos)}`
 
     return (
         <div className="max-w-xl mx-auto px-4 py-10 flex flex-col gap-5">
@@ -112,8 +113,8 @@ function RetornoPago() {
                 </EstadoPagoPanel>
             )}
 
-            <Link to="/reservas/mis-reservas" className="self-center text-sm text-volare-azul font-semibold hover:underline">
-                Ir a Mis Reservas
+            <Link to={esAlicuota ? '/alicuotas' : '/reservas/mis-reservas'} className="self-center text-sm text-volare-azul font-semibold hover:underline">
+                {esAlicuota ? 'Ir a Mis alícuotas' : 'Ir a Mis Reservas'}
             </Link>
         </div>
     )

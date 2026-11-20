@@ -140,6 +140,13 @@ function Navbar() {
                                             Reservas
                                         </Link>
                                         <Link
+                                            to="/alicuotas"
+                                            onClick={() => setServiciosAbierto(false)}
+                                            className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-volare-azul transition"
+                                        >
+                                            Alícuotas
+                                        </Link>
+                                        <Link
                                             to="/reservas/mis-reservas"
                                             onClick={() => setServiciosAbierto(false)}
                                             className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-volare-azul transition"
@@ -273,6 +280,13 @@ function Navbar() {
                                         className="px-3 py-2.5 text-sm text-gray-600 hover:text-volare-azul transition"
                                     >
                                         Reservas
+                                    </Link>
+                                    <Link
+                                        to="/alicuotas"
+                                        onClick={cerrarMenuMovil}
+                                        className="px-3 py-2.5 text-sm text-gray-600 hover:text-volare-azul transition"
+                                    >
+                                        Alícuotas
                                     </Link>
                                     <Link
                                         to="/reservas/mis-reservas"

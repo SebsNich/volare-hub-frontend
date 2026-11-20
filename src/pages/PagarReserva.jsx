@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
-    HiOutlineArrowLeft, HiOutlineCreditCard, HiOutlineBuildingLibrary,
-    HiOutlineArrowUpTray, HiOutlineXMark, HiOutlineShieldCheck
+    HiOutlineArrowLeft, HiOutlineCreditCard, HiOutlineBuildingLibrary, HiOutlineShieldCheck
 } from 'react-icons/hi2'
 import { useToast } from '../context/ToastContext'
 import { useMetodosPago } from '../hooks/useMetodosPago'
@@ -16,8 +15,9 @@ import CuentasBancarias from '../components/CuentasBancarias'
 import PasosPago from '../components/pagos/PasosPago'
 import ResumenCobro from '../components/pagos/ResumenCobro'
 import EstadoPagoPanel from '../components/pagos/EstadoPagoPanel'
+import TarjetaMetodo from '../components/pagos/TarjetaMetodo'
+import ZonaArchivos from '../components/pagos/ZonaArchivos'
 
-const MAX_ARCHIVOS = 5
 const encabezados = () => ({ 'Authorization': `Bearer ${localStorage.getItem('token')}` })
 
 async function cargarDatos(reservaId) {
@@ -29,82 +29,6 @@ async function cargarDatos(reservaId) {
     const reserva = await respReserva.json()
     const { pagos } = await respPagos.json()
     return { reserva, pagos }
-}
-
-function TarjetaMetodo({ icono: Icono, titulo, descripcion, etiqueta, children }) {
-    return (
-        <section className="tarjeta-pro p-6 flex flex-col gap-4 aparecer">
-            <header className="flex items-start gap-3">
-                <span className="w-11 h-11 shrink-0 rounded-xl bg-gradient-to-br from-volare-azul to-volare-morado text-white flex items-center justify-center shadow-md">
-                    <Icono size={22} />
-                </span>
-                <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-lg font-bold text-gray-800">{titulo}</h2>
-                        {etiqueta && <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800">{etiqueta}</span>}
-                    </div>
-                    <p className="text-sm text-gray-500">{descripcion}</p>
-                </div>
-            </header>
-            {children}
-        </section>
-    )
-}
-
-function ZonaArchivos({ archivos, alCambiar }) {
-    const entrada = useRef(null)
-    const [arrastrando, setArrastrando] = useState(false)
-
-    function recibir(lista) {
-        const nuevos = Array.from(lista ?? [])
-        alCambiar([...archivos, ...nuevos].slice(0, MAX_ARCHIVOS))
-    }
-
-    return (
-        <div className="flex flex-col gap-2">
-            <div
-                role="button"
-                tabIndex={0}
-                onClick={() => entrada.current?.click()}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); entrada.current?.click() } }}
-                onDragOver={(e) => { e.preventDefault(); setArrastrando(true) }}
-                onDragLeave={() => setArrastrando(false)}
-                onDrop={(e) => { e.preventDefault(); setArrastrando(false); recibir(e.dataTransfer.files) }}
-                className={`cursor-pointer rounded-2xl border-2 border-dashed px-4 py-6 flex flex-col items-center gap-1 text-center transition ${
-                    arrastrando ? 'border-volare-azul bg-blue-50' : 'border-gray-300 hover:border-volare-azul hover:bg-gray-50'
-                }`}
-            >
-                <HiOutlineArrowUpTray size={26} className="text-volare-azul" />
-                <span className="text-sm font-semibold text-gray-700">Arrastra tu comprobante o toca para elegirlo</span>
-                <span className="text-xs text-gray-500">JPG, PNG o PDF · hasta {MAX_ARCHIVOS} archivos</span>
-                <input
-                    ref={entrada}
-                    type="file"
-                    multiple
-                    accept=".jpg,.jpeg,.png,.pdf"
-                    className="hidden"
-                    onChange={(e) => { recibir(e.target.files); e.target.value = '' }}
-                />
-            </div>
-            {archivos.length > 0 && (
-                <ul className="flex flex-col gap-1.5">
-                    {archivos.map((archivo, indice) => (
-                        <li key={`${archivo.name}-${indice}`} className="flex items-center justify-between gap-2 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700">
-                            <span className="truncate">{archivo.name}</span>
-                            <button
-                                type="button"
-                                onClick={() => alCambiar(archivos.filter((_, i) => i !== indice))}
-                                aria-label={`Quitar ${archivo.name}`}
-                                className="text-gray-400 hover:text-red-500 transition shrink-0"
-                            >
-                                <HiOutlineXMark size={18} />
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
-    )
 }
 
 function PagarReserva() {
