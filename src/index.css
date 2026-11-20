@@ -1,11 +1,238 @@
 @import "tailwindcss";
 
+/* Las clases dark: de Tailwind siguen el tema elegido en la app (claro/oscuro/sistema), no solo el del sistema. */
+@custom-variant dark (&:where([data-tema="oscuro"], [data-tema="oscuro"] *));
+
 @theme {
     --color-volare-azul: #1A75BB;
     --color-volare-verde: #43B02A;
     --color-volare-naranja: #E98324;
     --color-volare-amarillo: #F7D117;
     --color-volare-morado: #7F4095;
+    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ---------- Tokens del tema ---------- */
+:root {
+    --fondo: #f3f6fb;
+    --superficie: #ffffff;
+    --borde-suave: rgba(15, 30, 60, 0.08);
+    --brillo-a: rgba(26, 117, 187, 0.16);
+    --brillo-b: rgba(67, 176, 42, 0.12);
+    --brillo-c: rgba(127, 64, 149, 0.10);
+    --vidrio: rgba(255, 255, 255, 0.72);
+    --sombra-tarjeta: 0 1px 2px rgba(15, 30, 60, 0.06), 0 8px 24px -8px rgba(15, 30, 60, 0.10);
+    --sombra-elevada: 0 2px 4px rgba(15, 30, 60, 0.06), 0 18px 40px -12px rgba(26, 117, 187, 0.25);
+    --degradado-marca: linear-gradient(135deg, #1A75BB 0%, #2F9BE0 55%, #43B02A 130%);
+}
+
+:root[data-tema="oscuro"] {
+    --fondo: #070b16;
+    --superficie: #111a2e;
+    --borde-suave: rgba(148, 170, 220, 0.14);
+    --brillo-a: rgba(46, 139, 214, 0.22);
+    --brillo-b: rgba(67, 176, 42, 0.10);
+    --brillo-c: rgba(127, 64, 149, 0.22);
+    --vidrio: rgba(12, 18, 36, 0.72);
+    --sombra-tarjeta: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 10px 30px -12px rgba(0, 0, 0, 0.7);
+    --sombra-elevada: 0 0 0 1px rgba(90, 160, 240, 0.25), 0 18px 50px -14px rgba(46, 139, 214, 0.45);
+    --degradado-marca: linear-gradient(135deg, #2E8BD6 0%, #5B6CF0 60%, #9B5CD0 130%);
+
+    /* Los grises de Tailwind se invierten: así todo lo que ya usa gray-* se ve bien sin tocarlo. */
+    --color-gray-50: #0d1426;
+    --color-gray-100: #1c2742;
+    --color-gray-200: #27355a;
+    --color-gray-300: #36466e;
+    --color-gray-400: #7f8cab;
+    --color-gray-500: #9aa6c0;
+    --color-gray-600: #b4bed3;
+    --color-gray-700: #ccd4e4;
+    --color-gray-800: #e1e6f1;
+    --color-gray-900: #f2f5fb;
+}
+
+/* ---------- Base ---------- */
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--fondo);
+    color: #1f2a44;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+:root[data-tema="oscuro"] body { color: #dfe5f2; }
+
+h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
+
+::selection { background: rgba(26, 117, 187, 0.28); }
+
+:focus-visible {
+    outline: 2px solid #2E8BD6;
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+/* Fondo de la aplicación: malla de luz suave que da profundidad sin distraer. */
+.fondo-app {
+    min-height: 100vh;
+    background-color: var(--fondo);
+    background-image:
+        radial-gradient(60rem 36rem at 8% -10%, var(--brillo-a), transparent 60%),
+        radial-gradient(50rem 30rem at 100% 0%, var(--brillo-c), transparent 55%),
+        radial-gradient(46rem 30rem at 50% 110%, var(--brillo-b), transparent 60%);
+    background-attachment: fixed;
+}
+
+/* ---------- Superficies y bordes (lo que ya usa bg-white / bordes grises) ---------- */
+.bg-white { background-color: var(--superficie); }
+.bg-white\/80 { background-color: color-mix(in oklab, var(--superficie) 80%, transparent); }
+.bg-white\/75 { background-color: color-mix(in oklab, var(--superficie) 75%, transparent); }
+.bg-white\/50 { background-color: color-mix(in oklab, var(--superficie) 50%, transparent); }
+.ring-white { --tw-ring-color: var(--superficie); }
+.border-white { border-color: var(--superficie); }
+
+.rounded-2xl.bg-white, .rounded-xl.bg-white {
+    border-color: var(--borde-suave);
+    box-shadow: var(--sombra-tarjeta);
+}
+
+.shadow-md { --tw-shadow-color: initial; box-shadow: var(--sombra-tarjeta); }
+.shadow-lg, .shadow-xl { box-shadow: var(--sombra-elevada); }
+
+/* Botones de marca: degradado y brillo al pasar el cursor. */
+button.bg-volare-azul, a.bg-volare-azul {
+    background-image: var(--degradado-marca);
+    box-shadow: 0 6px 18px -8px rgba(26, 117, 187, 0.7);
+    transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+}
+button.bg-volare-verde, a.bg-volare-verde {
+    background-image: linear-gradient(135deg, #43B02A 0%, #5CC93F 100%);
+    box-shadow: 0 6px 18px -8px rgba(67, 176, 42, 0.7);
+    transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+}
+button.bg-volare-azul:hover:not(:disabled), a.bg-volare-azul:hover,
+button.bg-volare-verde:hover:not(:disabled), a.bg-volare-verde:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px -8px rgba(26, 117, 187, 0.8);
+}
+button:active:not(:disabled) { transform: translateY(0) scale(0.985); }
+
+input, select, textarea {
+    background-color: transparent;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #2E8BD6;
+    box-shadow: 0 0 0 3px rgba(46, 139, 214, 0.25);
+}
+
+/* ---------- Ajustes del modo oscuro para colores de estado ---------- */
+:root[data-tema="oscuro"] {
+    .text-volare-azul, .hover\:text-volare-azul:hover { color: #62b4f5; }
+    .text-volare-morado { color: #c68bdc; }
+    .bg-red-50 { background-color: rgba(239, 68, 68, 0.14); }
+    .bg-red-100 { background-color: rgba(239, 68, 68, 0.22); }
+    .border-red-100, .border-red-200 { border-color: rgba(248, 113, 113, 0.35); }
+    .text-red-600 { color: #f87171; }
+    .text-red-700 { color: #fca5a5; }
+    .bg-green-50 { background-color: rgba(67, 176, 42, 0.14); }
+    .bg-green-100 { background-color: rgba(67, 176, 42, 0.24); }
+    .border-green-100 { border-color: rgba(67, 176, 42, 0.35); }
+    .text-green-700 { color: #6ee7a0; }
+    .bg-yellow-50, .bg-amber-50 { background-color: rgba(247, 209, 23, 0.12); }
+    .bg-yellow-100, .bg-amber-100 { background-color: rgba(247, 209, 23, 0.2); }
+    .border-yellow-300, .border-amber-200 { border-color: rgba(247, 209, 23, 0.4); }
+    .text-yellow-700, .text-yellow-800, .text-yellow-900, .text-amber-700, .text-amber-900 { color: #fde68a; }
+    .bg-orange-50 { background-color: rgba(233, 131, 36, 0.14); }
+    .bg-blue-50 { background-color: rgba(46, 139, 214, 0.16); }
+    .bg-blue-100 { background-color: rgba(46, 139, 214, 0.26); }
+    .hover\:bg-blue-50:hover { background-color: rgba(46, 139, 214, 0.16); }
+    .hover\:bg-gray-50:hover { background-color: var(--color-gray-100); }
+}
+
+/* ---------- Componentes nuevos ---------- */
+.vidrio {
+    background: var(--vidrio);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    backdrop-filter: blur(18px) saturate(1.4);
+}
+
+.texto-degradado {
+    background: var(--degradado-marca);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.tarjeta-pro {
+    background: var(--superficie);
+    border: 1px solid var(--borde-suave);
+    border-radius: 1.25rem;
+    box-shadow: var(--sombra-tarjeta);
+}
+
+/* Borde luminoso para el elemento destacado de una pantalla. */
+.tarjeta-brillo {
+    position: relative;
+    background: var(--superficie);
+    border-radius: 1.25rem;
+    box-shadow: var(--sombra-elevada);
+}
+.tarjeta-brillo::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: var(--degradado-marca);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: .55;
+    pointer-events: none;
+}
+
+.selector-tema {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--superficie) 70%, transparent);
+    border: 1px solid var(--borde-suave);
+}
+.selector-tema__opcion {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    color: var(--color-gray-500);
+    transition: background .15s ease, color .15s ease;
+}
+.selector-tema__opcion:hover { color: var(--color-gray-800); }
+.selector-tema__opcion[aria-checked="true"] {
+    background: var(--degradado-marca);
+    color: #fff;
+}
+
+@keyframes volare-aparecer {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.aparecer { animation: volare-aparecer .45s cubic-bezier(.2,.7,.2,1) both; }
+
+@keyframes volare-pulso {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(67, 176, 42, .45); }
+    50% { box-shadow: 0 0 0 8px rgba(67, 176, 42, 0); }
+}
+.punto-vivo { animation: volare-pulso 2s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
 
 @keyframes volare-barrido-derecha {

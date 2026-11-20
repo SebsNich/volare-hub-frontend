@@ -22,7 +22,7 @@ function App() {
     <BrowserRouter>
       <ToastProvider>
         <AuthProvider>
-          <div className="min-h-screen bg-gray-50">
+          <div className="fondo-app">
             <Navbar />
             <Routes>
                 <Route path="/" element={<Landing />} />
