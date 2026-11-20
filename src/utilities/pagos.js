@@ -90,3 +90,37 @@ export function textoTransferencia(pago) {
     if (pago.estado === 'APROBADO') return 'Transferencia aprobada.'
     return textoEstadoPago(pago.estado).detalle
 }
+
+// ---------- Métodos de pago que ofrece el servidor ----------
+
+// Si la respuesta falla o viene rara, se ofrece solo la transferencia: es el camino
+// que existe en producción, así nadie ve un botón que luego no funciona.
+export function normalizarMetodos(respuesta) {
+    const enLinea = respuesta?.enLinea
+    const hayEnLinea = Boolean(enLinea?.disponible) && typeof enLinea?.proveedor === 'string' && enLinea.proveedor !== ''
+    return {
+        enLinea: {
+            disponible: hayEnLinea,
+            proveedor: hayEnLinea ? enLinea.proveedor : null,
+            esSimulacion: hayEnLinea && enLinea.esSimulacion === true,
+            vigenciaMinutos: hayEnLinea && Number.isInteger(enLinea.vigenciaMinutos) ? enLinea.vigenciaMinutos : null
+        },
+        transferencia: { disponible: respuesta?.transferencia?.disponible !== false }
+    }
+}
+
+// Solo para mostrar la cuenta regresiva. El servidor es quien vence la reserva.
+export function minutosRestantes(creadoEn, vigenciaMinutos, ahora = Date.now()) {
+    const inicio = Date.parse(creadoEn)
+    if (!Number.isFinite(inicio) || !Number.isInteger(vigenciaMinutos) || vigenciaMinutos <= 0) return null
+    const restanteMs = inicio + vigenciaMinutos * 60000 - ahora
+    return Math.max(0, Math.ceil(restanteMs / 60000))
+}
+
+// En qué punto del camino está la reserva: PAGO, REVISION, CONFIRMADA o CERRADA.
+export function pasoDelPago(reserva, pagos) {
+    if (reserva?.estado === 'RECHAZADA') return 'CERRADA'
+    if (reserva?.estado === 'APROBADA') return 'CONFIRMADA'
+    const enRevision = transferenciaDelAlquiler(pagos)?.estado === 'PENDIENTE'
+    return alquilerPagado(pagos) || enRevision ? 'REVISION' : 'PAGO'
+}

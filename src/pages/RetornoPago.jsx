@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { HiOutlineBeaker } from 'react-icons/hi2'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
 import { formatearDolares } from '../utilities/tarifas'
 import { leerParametrosRetorno, textoEstadoPago, mostrarBotonesSimulador } from '../utilities/pagos'
+import EstadoPagoPanel from '../components/pagos/EstadoPagoPanel'
 
-const COLOR_TONO = { exito: 'text-green-700', error: 'text-red-600', aviso: 'text-yellow-700' }
 const encabezados = () => ({ 'Authorization': `Bearer ${localStorage.getItem('token')}` })
 
 async function pedirPago(pagoId) {
@@ -64,54 +65,56 @@ function RetornoPago() {
     if (error) {
         return <div className="max-w-xl mx-auto px-4 py-16 text-center text-gray-600">{error}</div>
     }
-    if (!pago) return null
+    if (!pago) return <div className="max-w-xl mx-auto px-4 py-16 text-center text-gray-400">Consultando tu pago…</div>
 
     const texto = textoEstadoPago(pago.estado)
+    // El monto viene del pago guardado en el servidor.
+    const monto = `Alquiler · $${formatearDolares(pago.montoCentavos)}`
 
     return (
-        <div className="max-w-xl mx-auto px-4 py-8">
-            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col gap-4 text-center">
-                {/* El monto viene del pago guardado en el servidor. */}
-                <p className="text-sm text-gray-500">Pago del alquiler: ${formatearDolares(pago.montoCentavos)}</p>
+        <div className="max-w-xl mx-auto px-4 py-10 flex flex-col gap-5">
+            {mostrarBotonesSimulador(pago, esSimulado) ? (
+                <section className="tarjeta-brillo p-8 flex flex-col items-center text-center gap-5 aparecer">
+                    <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-yellow-100 text-yellow-800">
+                        <HiOutlineBeaker size={14} /> Pasarela de demostración
+                    </span>
+                    <div className="flex flex-col gap-1">
+                        <p className="text-sm text-gray-500">Total a pagar</p>
+                        <p className="text-5xl font-extrabold texto-degradado font-[family-name:var(--font-display)]">${formatearDolares(pago.montoCentavos)}</p>
+                    </div>
+                    <p className="text-sm text-gray-600 max-w-sm">Aquí iría la página del proveedor de pago. Elige el resultado para probar el flujo; no se cobra dinero real.</p>
+                    <div className="flex flex-col sm:flex-row gap-3 w-full">
+                        <button
+                            type="button"
+                            onClick={() => confirmar('APROBADO')}
+                            disabled={confirmando}
+                            className="flex-1 bg-volare-verde text-white px-4 py-3 rounded-xl font-bold hover:opacity-90 transition disabled:opacity-50"
+                        >
+                            Simular pago aprobado
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => confirmar('RECHAZADO')}
+                            disabled={confirmando}
+                            className="flex-1 border border-red-300 text-red-600 px-4 py-3 rounded-xl font-bold hover:bg-red-50 transition disabled:opacity-50"
+                        >
+                            Simular pago rechazado
+                        </button>
+                    </div>
+                </section>
+            ) : (
+                <EstadoPagoPanel tono={texto.tono} titulo={texto.titulo} detalle={texto.detalle} monto={monto}>
+                    {pago.estado === 'PENDIENTE' && (
+                        <button type="button" onClick={cargarPago} className="text-sm text-volare-azul font-semibold hover:underline">
+                            Consultar de nuevo
+                        </button>
+                    )}
+                </EstadoPagoPanel>
+            )}
 
-                {mostrarBotonesSimulador(pago, esSimulado) ? (
-                    <>
-                        <p className="text-sm text-gray-600">Proveedor simulado: elige el resultado del pago.</p>
-                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                            <button
-                                type="button"
-                                onClick={() => confirmar('APROBADO')}
-                                disabled={confirmando}
-                                className="bg-volare-verde text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition disabled:opacity-50"
-                            >
-                                Simular pago aprobado
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => confirmar('RECHAZADO')}
-                                disabled={confirmando}
-                                className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition disabled:opacity-50"
-                            >
-                                Simular pago rechazado
-                            </button>
-                        </div>
-                    </>
-                ) : (
-                    <>
-                        <h1 className={`text-2xl font-bold ${COLOR_TONO[texto.tono]}`}>{texto.titulo}</h1>
-                        <p className="text-sm text-gray-600">{texto.detalle}</p>
-                        {pago.estado === 'PENDIENTE' && (
-                            <button type="button" onClick={cargarPago} className="self-center text-sm text-volare-azul hover:underline">
-                                Consultar de nuevo
-                            </button>
-                        )}
-                    </>
-                )}
-
-                <Link to="/reservas/mis-reservas" className="self-center text-sm text-volare-azul hover:underline">
-                    Ir a Mis Reservas
-                </Link>
-            </div>
+            <Link to="/reservas/mis-reservas" className="self-center text-sm text-volare-azul font-semibold hover:underline">
+                Ir a Mis Reservas
+            </Link>
         </div>
     )
 }
