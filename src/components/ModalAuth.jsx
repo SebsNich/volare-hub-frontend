@@ -295,18 +295,24 @@ function ModalAuth({ onClose, modoInicial }) {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <input
                                 type="text"
+                                inputMode="numeric"
+                                maxLength={2}
                                 value={manzana}
                                 placeholder="Manzana (ej. 07)"
                                 required
-                                onChange={(e) => setManzana(e.target.value)}
+                                // Solo números del 1 al 99: así no hay "A" ni "2" frente a "02".
+                                onChange={(e) => setManzana(e.target.value.replace(/\D/g, ''))}
                                 className={claseCampoRegistro('manzana')}
                             />
                             <input
                                 type="text"
+                                inputMode="numeric"
+                                maxLength={2}
                                 value={villa}
                                 placeholder="Villa (ej. 03)"
                                 required
-                                onChange={(e) => setVilla(e.target.value)}
+                                // Solo números del 1 al 99: así no hay "A" ni "2" frente a "02".
+                                onChange={(e) => setVilla(e.target.value.replace(/\D/g, ''))}
                                 className={claseCampoRegistro('villa')}
                             />
                         </div>
