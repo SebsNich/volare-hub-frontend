@@ -166,7 +166,7 @@ function ModalEditarPerfil({ usuario, onClose, onGuardado }) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <DatoProtegido etiqueta="Cédula" valor={enmascararCedula(yo?.cedula)} />
                         {ubicacion && <DatoProtegido etiqueta="Casa" valor={ubicacion} />}
-                        <DatoProtegido etiqueta="Correo de acceso" valor={enmascararEmail(yo?.email)} />
+                        <div className="sm:col-span-2"><DatoProtegido etiqueta="Correo de acceso" valor={enmascararEmail(yo?.email)} /></div>
                     </div>
                     <p className="text-xs text-gray-500">Estos datos identifican tu cuenta y tu casa. Para cambiarlos, escribe a la administración; el correo se cambia en Seguridad.</p>
                 </Seccion>

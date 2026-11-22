@@ -116,7 +116,7 @@ function PerfilPublico() {
                             <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 flex flex-col gap-3">
                                 {puedePublicar && (
                                     <div>
-                                        <Tooltip texto="Comparte algo con los residentes" posicion="abajo" className="w-full [&>div]:block [&>div]:w-full">
+                                        <Tooltip texto="Comparte algo con los residentes" className="w-full [&>div]:block [&>div]:w-full">
                                             <button
                                                 onClick={() => setModalCrearPostAbierto(true)}
                                                 className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-volare-naranja to-amber-400 text-white px-4 py-3 rounded-xl text-base font-bold shadow-lg shadow-orange-200 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-volare-naranja"
