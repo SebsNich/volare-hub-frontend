@@ -7,6 +7,7 @@ import { useToast } from '../context/ToastContext'
 import { useMetodosPago } from '../hooks/useMetodosPago'
 import { API_URL } from '../config/api'
 import { formatearDolares } from '../utilities/tarifas'
+import { etiquetaCasa } from '../utilities/perfil'
 import { nombrePeriodo, resumenCobro, estadoCuota } from '../utilities/alicuotas'
 import CuentasBancarias from '../components/CuentasBancarias'
 import TarjetaMetodo from '../components/pagos/TarjetaMetodo'
@@ -199,7 +200,7 @@ function Alicuotas() {
             <header className="flex flex-col gap-1">
                 <h1 className="text-3xl font-bold text-gray-800">Mis <span className="texto-degradado">alícuotas</span></h1>
                 <p className="text-sm text-gray-500">
-                    Manzana {villa.manzana} · Villa {villa.villa}. La alícuota es un valor fijo de ${formatearDolares(config.montoCentavos)} al mes;
+                    {etiquetaCasa(villa.manzana, villa.villa)}. La alícuota es un valor fijo de ${formatearDolares(config.montoCentavos)} al mes;
                     si la pagas en los primeros {config.diasPuntual} días del mes cuesta ${formatearDolares(config.montoPuntualCentavos)}.
                 </p>
             </header>

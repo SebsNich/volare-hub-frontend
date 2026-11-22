@@ -4,6 +4,7 @@ import ControlesPaginacion from './ControlesPaginacion'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
 import { nombreCompleto } from '../utilities/helpers'
+import { etiquetaCasa } from '../utilities/perfil'
 
 // Solo para mostrar el cupo; quien hace cumplir el límite es el backend.
 const LIMITE_CUENTAS_POR_CASA = 2
@@ -211,7 +212,7 @@ function SolicitudesPendientes({ onDecision }) {
                                             <p className="text-xs">Cel. {solicitud.celular}</p>
                                         </td>
                                         <td className="px-3 py-3 text-gray-500">
-                                            <p className="whitespace-nowrap mb-1">Mz. {solicitud.manzana} Villa {solicitud.villa}</p>
+                                            <p className="whitespace-nowrap mb-1">{etiquetaCasa(solicitud.manzana, solicitud.villa)}</p>
                                             <EtiquetaCupo cuentasEnCasa={solicitud.cuentasEnCasa} />
                                         </td>
                                         <td className="px-3 py-3 text-gray-500 whitespace-nowrap">{formatearFechaSolicitud(solicitud.creadoEn)}</td>
@@ -235,7 +236,7 @@ function SolicitudesPendientes({ onDecision }) {
                                     Cédula {solicitud.cedula} · Cel. {solicitud.celular}
                                 </p>
                                 <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
-                                    <span>Mz. {solicitud.manzana} Villa {solicitud.villa}</span>
+                                    <span>{etiquetaCasa(solicitud.manzana, solicitud.villa)}</span>
                                     <EtiquetaCupo cuentasEnCasa={solicitud.cuentasEnCasa} />
                                 </div>
                                 <p className="text-xs text-gray-400">Solicitada el {formatearFechaSolicitud(solicitud.creadoEn)}</p>
@@ -259,7 +260,7 @@ function SolicitudesPendientes({ onDecision }) {
                 <Modal onClose={() => !enviando && setSolicitudAAprobar(null)}>
                     <h3 className="text-lg font-bold text-volare-azul">Confirmar aprobación</h3>
                     <p className="text-sm text-gray-600">
-                        ¿Aprobar la cuenta de <strong>{nombreCompleto(solicitudAAprobar)}</strong> (Mz. {solicitudAAprobar.manzana}, Villa {solicitudAAprobar.villa})?
+                        ¿Aprobar la cuenta de <strong>{nombreCompleto(solicitudAAprobar)}</strong> ({etiquetaCasa(solicitudAAprobar.manzana, solicitudAAprobar.villa)})?
                         Podrá publicar y hacer reservas.
                     </p>
                     <div className="flex gap-3 self-start">
@@ -287,7 +288,7 @@ function SolicitudesPendientes({ onDecision }) {
                 <Modal onClose={() => !enviando && setSolicitudARechazar(null)}>
                     <h3 className="text-lg font-bold text-volare-azul">Rechazar solicitud</h3>
                     <p className="text-sm text-gray-600">
-                        Vas a rechazar la solicitud de <strong>{nombreCompleto(solicitudARechazar)}</strong> (Mz. {solicitudARechazar.manzana}, Villa {solicitudARechazar.villa}).
+                        Vas a rechazar la solicitud de <strong>{nombreCompleto(solicitudARechazar)}</strong> ({etiquetaCasa(solicitudARechazar.manzana, solicitudARechazar.villa)}).
                         Verá este motivo al intentar iniciar sesión.
                     </p>
                     {/* Con foco al abrir: si no, lo primero que se teclea se pierde. */}

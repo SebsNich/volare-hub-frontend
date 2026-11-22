@@ -3,6 +3,7 @@ import Modal from './Modal'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
 import { nombreCompleto } from '../utilities/helpers'
+import { etiquetaCasa } from '../utilities/perfil'
 
 // Reconsiderar un rechazo: se muestra el motivo anterior para que el ADMIN
 // decida sabiendo por qué se rechazó, y se pide confirmación explícita.
@@ -39,7 +40,7 @@ function AprobarCuentaRechazada({ usuario, onCerrar, onAprobada }) {
         <Modal onClose={() => !enviando && onCerrar()}>
             <h3 className="text-lg font-bold text-volare-azul">Aprobar cuenta rechazada</h3>
             <p className="text-sm text-gray-600">
-                La solicitud de <strong>{nombreCompleto(usuario)}</strong> (Mz. {usuario.manzana}, Villa {usuario.villa}) fue rechazada.
+                La solicitud de <strong>{nombreCompleto(usuario)}</strong> ({etiquetaCasa(usuario.manzana, usuario.villa)}) fue rechazada.
             </p>
             <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
                 <p className="text-xs font-semibold text-gray-500 uppercase">Motivo del rechazo</p>

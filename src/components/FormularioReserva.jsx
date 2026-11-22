@@ -8,6 +8,7 @@ import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
 import { NOMBRES_ESPACIO_RESERVA as NOMBRES_ESPACIO, NOMBRES_HORARIO_RESERVA as NOMBRES_HORARIO, BANCOS_ECUADOR } from '../utilities/constantes'
 import { esCedulaValida } from '../utilities/helpers'
+import { etiquetaCasa } from '../utilities/perfil'
 import { montosDeTarifa, formatearDolares } from '../utilities/tarifas'
 import SelectorBuscable from './SelectorBuscable'
 import CuentasBancarias from './CuentasBancarias'
@@ -649,7 +650,7 @@ function FormularioReserva({ reservaId, espacio: espacioProp, fecha: fechaProp, 
                             </>
                         )}
                         <hr className="border-gray-200" />
-                        <p><span className="font-semibold">Manzana/Villa:</span> Mz. {manzana} Villa {villa}</p>
+                        <p><span className="font-semibold">Manzana/Villa:</span> {etiquetaCasa(manzana, villa)}</p>
                         <p><span className="font-semibold">Nombres:</span> {nombres} {apellidos}</p>
                         <p><span className="font-semibold">Correo:</span> {correo}</p>
                         <p><span className="font-semibold">Celular:</span> {celular}</p>

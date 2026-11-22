@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
 import { formatearDolares } from '../utilities/tarifas'
+import { etiquetaCasa } from '../utilities/perfil'
 import { nombrePeriodo, estadoCuota, dolaresParaInput } from '../utilities/alicuotas'
 import { DecisionTransferencia } from './PagosReservaAdmin'
 import ArchivoAdjunto from './ArchivoAdjunto'
@@ -150,7 +151,7 @@ function AlicuotasAdmin() {
                             return (
                                 <li key={cuota.id} className="py-3 flex flex-col gap-2">
                                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                                        <span className="font-semibold text-gray-800">Mz {cuota.manzana} · Villa {cuota.villa}</span>
+                                        <span className="font-semibold text-gray-800">{etiquetaCasa(cuota.manzana, cuota.villa)}</span>
                                         <span className="text-gray-500">{nombrePeriodo(cuota.periodo)}</span>
                                         <span className="text-gray-600">${formatearDolares(cuota.montoBaseCentavos)} / ${formatearDolares(cuota.montoPuntualCentavos)} (hasta el día {cuota.diasPuntual})</span>
                                         <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${COLOR_TONO[tono]}`}>{texto}</span>

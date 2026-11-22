@@ -30,6 +30,7 @@ import {
     HiChevronDown
 } from 'react-icons/hi2'
 import { formatearFechaReserva, nombreCompleto } from '../utilities/helpers'
+import { etiquetaCasa } from '../utilities/perfil'
 import PagosReservaAdmin from '../components/PagosReservaAdmin'
 import AlicuotasAdmin from '../components/AlicuotasAdmin'
 import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA, PLATAFORMAS_RED_SOCIAL, ICONO_PLATAFORMA } from '../utilities/constantes'
@@ -701,7 +702,7 @@ function Admin() {
                                                 <td className="px-3 py-3 text-gray-500 break-all">{usuario.email}</td>
                                                 <td className="px-3 py-3 text-gray-500 whitespace-nowrap">{usuario.cedula || '—'}</td>
                                                 <td className="px-3 py-3 text-gray-500 whitespace-nowrap">{usuario.celular || '—'}</td>
-                                                <td className="px-3 py-3 text-gray-500 whitespace-nowrap">Mz. {usuario.manzana} Villa {usuario.villa}</td>
+                                                <td className="px-3 py-3 text-gray-500 whitespace-nowrap">{etiquetaCasa(usuario.manzana, usuario.villa)}</td>
                                                 <td className="px-3 py-3 whitespace-nowrap">
                                                     <p className="text-xs text-gray-500 mb-1">{usuario.rol}</p>
                                                     <span className={`px-2 py-0.5 rounded-full text-xs font-semibold text-white ${usuario.activo ? 'bg-volare-verde' : 'bg-gray-400'}`}>
@@ -809,7 +810,7 @@ function Admin() {
                                                     <div className="font-medium text-volare-azul">{sugerencia.nombre || 'Anónimo'}</div>
                                                     {(sugerencia.manzana || sugerencia.villa) && (
                                                         <div className="text-xs text-gray-400">
-                                                            {[sugerencia.manzana && `Mz. ${sugerencia.manzana}`, sugerencia.villa && `Villa ${sugerencia.villa}`].filter(Boolean).join(' ')}
+                                                            {[sugerencia.manzana && `Mz ${sugerencia.manzana}`, sugerencia.villa && `Vll ${sugerencia.villa}`].filter(Boolean).join(' ')}
                                                         </div>
                                                     )}
                                                 </td>
@@ -923,7 +924,7 @@ function Admin() {
                                                             )}
                                                         </div>
                                                     </td>
-                                                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">Mz. {reserva.manzana} Villa {reserva.villa}</td>
+                                                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{etiquetaCasa(reserva.manzana, reserva.villa)}</td>
                                                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{NOMBRES_ESPACIO_RESERVA[reserva.espacio]}</td>
                                                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatearFechaReserva(reserva.fecha)}</td>
                                                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{NOMBRES_HORARIO_RESERVA[reserva.horario]}</td>
@@ -1034,7 +1035,7 @@ function Admin() {
                     <h3 className="text-lg font-bold text-volare-azul">{sugerenciaSeleccionada.nombre || 'Anónimo'}</h3>
                     {(sugerenciaSeleccionada.manzana || sugerenciaSeleccionada.villa) && (
                         <p className="text-sm text-gray-400 -mt-3">
-                            {[sugerenciaSeleccionada.manzana && `Mz. ${sugerenciaSeleccionada.manzana}`, sugerenciaSeleccionada.villa && `Villa ${sugerenciaSeleccionada.villa}`].filter(Boolean).join(' ')}
+                            {[sugerenciaSeleccionada.manzana && `Mz ${sugerenciaSeleccionada.manzana}`, sugerenciaSeleccionada.villa && `Vll ${sugerenciaSeleccionada.villa}`].filter(Boolean).join(' ')}
                         </p>
                     )}
                     <span className="self-start px-2 py-0.5 rounded-full text-xs font-semibold text-white bg-volare-azul">
@@ -1110,7 +1111,7 @@ function Admin() {
 
                     <div className="flex flex-col gap-1 text-sm text-gray-600">
                         <p><span className="font-semibold text-gray-700">Residente (cuenta):</span> {nombreCompleto(reservaSeleccionada.usuario)}</p>
-                        <p><span className="font-semibold text-gray-700">Manzana/Villa:</span> Mz. {reservaSeleccionada.manzana} Villa {reservaSeleccionada.villa}</p>
+                        <p><span className="font-semibold text-gray-700">Manzana/Villa:</span> {etiquetaCasa(reservaSeleccionada.manzana, reservaSeleccionada.villa)}</p>
                         <p><span className="font-semibold text-gray-700">Nombres:</span> {reservaSeleccionada.nombres} {reservaSeleccionada.apellidos}</p>
                         <p><span className="font-semibold text-gray-700">Correo:</span> {reservaSeleccionada.correo}</p>
                         <p><span className="font-semibold text-gray-700">Celular:</span> {reservaSeleccionada.celular}</p>
