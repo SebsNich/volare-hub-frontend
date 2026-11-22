@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { leerCorreos, problemaConAdjuntos, resumenResultado, mensajeVacio, problemaConRemitente, enlaceValido } from '../src/utilities/informe.js'
+import { leerCorreos, problemaConAdjuntos, resumenResultado, mensajeVacio, problemaConRemitente, enlaceValido, anchoDeImagen } from '../src/utilities/informe.js'
 
 test('leerCorreos separa por punto y coma, quita repetidos y marca los mal escritos', () => {
     const r = leerCorreos('a@x.com; B@x.com ;a@x.com;roto;c@x.com\n')
@@ -50,4 +50,12 @@ test('los enlaces del editor solo pueden ser http, https o mailto', () => {
     assert.equal(enlaceValido('javascript:alert(1)'), null)
     assert.equal(enlaceValido('dos palabras'), null)
     assert.equal(enlaceValido(''), null)
+})
+
+test('el ancho mostrado de una imagen sale de su atributo o de su tamaño natural, con tope de 900', () => {
+    assert.equal(anchoDeImagen('300', 900), 300)
+    assert.equal(anchoDeImagen(null, 640), 640)
+    assert.equal(anchoDeImagen(null, 4000), 900)
+    assert.equal(anchoDeImagen(null, 0), 320)
+    assert.equal(anchoDeImagen('abc', 500), 500)
 })

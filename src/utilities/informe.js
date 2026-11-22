@@ -66,3 +66,10 @@ export function enlaceValido(texto) {
     if (/^[a-z][a-z0-9+.-]*:/i.test(limpio)) return null
     return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(limpio) ? `mailto:${limpio}` : `https://${limpio}`
 }
+
+// Ancho (px) que se muestra para una imagen del editor: el atributo "width" si lo tiene,
+// y si no, su ancho natural (nunca más de 900, que es el máximo al insertarla).
+export function anchoDeImagen(atributoWidth, anchoNatural = 0) {
+    const elegido = Number(atributoWidth)
+    return Math.min(900, Math.round(elegido > 0 ? elegido : anchoNatural || 320))
+}

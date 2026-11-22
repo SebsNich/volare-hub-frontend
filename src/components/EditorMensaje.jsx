@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
 import { useToast } from '../context/ToastContext'
 import { enlaceValido } from '../utilities/informe'
-import { imagenADataUrl } from '../utilities/imagenEditor'
+import { imagenADataUrl, MAX_ANCHO_IMAGEN } from '../utilities/imagenEditor'
+import { anchoDeImagen } from '../utilities/informe'
 
 // Editor de mensajes tipo correo (negrita, listas, enlaces, imágenes).
 // Usa el "contentEditable" del navegador, sin librerías nuevas. Es un campo no
@@ -15,6 +16,8 @@ function EditorMensaje({ onChange, placeholder }) {
     const seleccion = useRef(null)
     const inputImagen = useRef(null)
     const [enlace, setEnlace] = useState(null) // null = cerrado; texto = dirección que se escribe
+    const [imagenElegida, setImagenElegida] = useState(null) // la imagen del editor sobre la que se hizo clic
+    const [anchoActual, setAnchoActual] = useState(0)
 
     const avisar = () => onChange(editor.current.innerHTML)
 
@@ -64,6 +67,33 @@ function EditorMensaje({ onChange, placeholder }) {
 
     const evitarPerderSeleccion = (e) => e.preventDefault()
 
+    // Clic en una imagen: se marca y aparecen los botones de tamaño. Clic en otro lado: se desmarca.
+    function alHacerClic(evento) {
+        if (imagenElegida) imagenElegida.removeAttribute('data-elegida')
+        if (evento.target.tagName === 'IMG') {
+            evento.target.setAttribute('data-elegida', 'true')
+            setImagenElegida(evento.target)
+            setAnchoActual(anchoDeImagen(evento.target.getAttribute('width'), evento.target.naturalWidth))
+        } else {
+            setImagenElegida(null)
+        }
+    }
+
+    // El ancho va como atributo "width" (en píxeles); el servidor lo conserva entre 20 y 900.
+    function cambiarAncho(ancho) {
+        if (!imagenElegida) return
+        const nuevo = Math.min(MAX_ANCHO_IMAGEN, Math.max(40, ancho))
+        imagenElegida.setAttribute('width', String(nuevo))
+        setAnchoActual(nuevo)
+        avisar()
+    }
+
+    function quitarImagen() {
+        imagenElegida?.remove()
+        setImagenElegida(null)
+        avisar()
+    }
+
     return (
         <div className="border border-gray-300 rounded-lg overflow-hidden">
             <div className="flex flex-wrap gap-1.5 p-2 bg-gray-50 border-b border-gray-200" role="toolbar" aria-label="Formato del mensaje">
@@ -88,6 +118,17 @@ function EditorMensaje({ onChange, placeholder }) {
                     <button type="button" className={boton} onClick={() => setEnlace(null)}>Cancelar</button>
                 </div>
             )}
+            {imagenElegida && (
+                <div className="flex flex-wrap items-center gap-1.5 p-2 bg-blue-50 border-b border-blue-100" role="toolbar" aria-label="Tamaño de la imagen">
+                    <span className="text-sm text-gray-700 mr-1">Imagen: {anchoActual}px</span>
+                    <button type="button" className={boton} onMouseDown={evitarPerderSeleccion} onClick={() => cambiarAncho(anchoActual - 40)} aria-label="Hacer la imagen más pequeña">− Más pequeña</button>
+                    <button type="button" className={boton} onMouseDown={evitarPerderSeleccion} onClick={() => cambiarAncho(anchoActual + 40)} aria-label="Hacer la imagen más grande">+ Más grande</button>
+                    {[['Pequeña', 160], ['Mediana', 320], ['Grande', 480], ['Máximo', MAX_ANCHO_IMAGEN]].map(([nombre, px]) => (
+                        <button key={nombre} type="button" className={boton} onMouseDown={evitarPerderSeleccion} onClick={() => cambiarAncho(px)}>{nombre}</button>
+                    ))}
+                    <button type="button" className={`${boton} text-red-600`} onMouseDown={evitarPerderSeleccion} onClick={quitarImagen} aria-label="Quitar la imagen">Quitar</button>
+                </div>
+            )}
             <div
                 ref={editor}
                 contentEditable
@@ -97,8 +138,9 @@ function EditorMensaje({ onChange, placeholder }) {
                 aria-label="Mensaje"
                 data-placeholder={placeholder}
                 onInput={avisar}
+                onClick={alHacerClic}
                 onBlur={guardarSeleccion}
-                className="min-h-48 max-h-96 overflow-y-auto p-3 text-sm text-gray-800 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-volare-azul [&_a]:text-blue-600 [&_a]:underline [&_img]:max-w-full [&_img]:h-auto [&_img]:my-2"
+                className="min-h-48 max-h-96 overflow-y-auto p-3 text-sm text-gray-800 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-volare-azul [&_a]:text-blue-600 [&_a]:underline [&_img]:max-w-full [&_img]:h-auto [&_img]:my-2 [&_img]:cursor-pointer [&_img[data-elegida=true]]:outline-2 [&_img[data-elegida=true]]:outline-volare-azul"
             />
         </div>
     )
