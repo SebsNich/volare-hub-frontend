@@ -33,7 +33,7 @@ import { formatearFechaReserva, nombreCompleto } from '../utilities/helpers'
 import { etiquetaCasa } from '../utilities/perfil'
 import PagosReservaAdmin from '../components/PagosReservaAdmin'
 import AlicuotasAdmin from '../components/AlicuotasAdmin'
-import InformeEconomicoAdmin from '../components/InformeEconomicoAdmin'
+import EnviosMasivosAdmin from '../components/EnviosMasivosAdmin'
 import { NOMBRES_ESPACIO_RESERVA, NOMBRES_HORARIO_RESERVA, ESTILOS_ESTADO_RESERVA, PLATAFORMAS_RED_SOCIAL, ICONO_PLATAFORMA } from '../utilities/constantes'
 import { useToast } from '../context/ToastContext'
 import { API_URL } from '../config/api'
@@ -45,7 +45,7 @@ const SECCIONES = [
     { id: 'sugerencias', label: 'Buzón de Sugerencias', icono: HiOutlineInbox },
     { id: 'reservas', label: 'Gestión de Reservas', icono: HiOutlineCalendarDays },
     { id: 'alicuotas', label: 'Alícuotas', icono: HiOutlineBanknotes },
-    { id: 'informe', label: 'Informe económico', icono: HiOutlineEnvelope },
+    { id: 'envios', label: 'Envíos masivos', icono: HiOutlineEnvelope },
     { id: 'landing', label: 'Landing Page', icono: HiOutlineGlobeAlt },
 ]
 
@@ -975,7 +975,7 @@ function Admin() {
 
                     {seccionActiva === 'alicuotas' && <AlicuotasAdmin />}
 
-                    {seccionActiva === 'informe' && <InformeEconomicoAdmin />}
+                    {seccionActiva === 'envios' && <EnviosMasivosAdmin />}
 
                     {seccionActiva === 'landing' && (
                         <div className="flex flex-col gap-4">

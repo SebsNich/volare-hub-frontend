@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { leerCorreos, problemaConAdjuntos, resumenResultado } from '../src/utilities/informe.js'
+import { leerCorreos, problemaConAdjuntos, resumenResultado, mensajeVacio, problemaConRemitente, enlaceValido } from '../src/utilities/informe.js'
 
 test('leerCorreos separa por punto y coma, quita repetidos y marca los mal escritos', () => {
     const r = leerCorreos('a@x.com; B@x.com ;a@x.com;roto;c@x.com\n')
@@ -26,4 +26,28 @@ test('resumenResultado describe correo, fallidos y publicación', () => {
     assert.match(texto, /No se pudo enviar a 1/)
     assert.match(texto, /Comunicado publicado/)
     assert.match(resumenResultado({ correo: { enviados: 1, correosFallidos: [] }, publicacion: null }), /1 destinatario\./)
+})
+
+test('el mensaje del editor está vacío si solo tiene etiquetas o espacios', () => {
+    assert.equal(mensajeVacio(''), true)
+    assert.equal(mensajeVacio('<p><br></p>'), true)
+    assert.equal(mensajeVacio('<div>&nbsp;</div>'), true)
+    assert.equal(mensajeVacio('<p>Hola</p>'), false)
+    assert.equal(mensajeVacio('<p><br></p><img src="x">'), false)
+})
+
+test('el remitente debe ser un correo del dominio verificado', () => {
+    assert.equal(problemaConRemitente('contabilidad@urbvolare.com'), null)
+    assert.equal(problemaConRemitente(' Admin@UrbVolare.com '), null)
+    assert.match(problemaConRemitente('alguien@gmail.com'), /@urbvolare.com/)
+    assert.match(problemaConRemitente('roto'), /formato/)
+})
+
+test('los enlaces del editor solo pueden ser http, https o mailto', () => {
+    assert.equal(enlaceValido('https://urbvolare.com'), 'https://urbvolare.com')
+    assert.equal(enlaceValido('urbvolare.com/noticias'), 'https://urbvolare.com/noticias')
+    assert.equal(enlaceValido('a@urbvolare.com'), 'mailto:a@urbvolare.com')
+    assert.equal(enlaceValido('javascript:alert(1)'), null)
+    assert.equal(enlaceValido('dos palabras'), null)
+    assert.equal(enlaceValido(''), null)
 })

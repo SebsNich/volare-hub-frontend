@@ -41,3 +41,28 @@ export function resumenResultado(resultado) {
     if (resultado.errorPublicacion) partes.push(resultado.errorPublicacion)
     return partes.join(' ')
 }
+
+// El editor del mensaje deja etiquetas aunque esté vacío (por ejemplo "<p><br></p>"):
+// el mensaje está vacío si no tiene texto visible ni imágenes.
+export function mensajeVacio(html) {
+    const texto = String(html ?? '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim()
+    return texto === '' && !/<img\b/i.test(html ?? '')
+}
+
+// Resend solo envía desde el dominio verificado; el servidor lo vuelve a comprobar.
+export function problemaConRemitente(correo, dominio = 'urbvolare.com') {
+    const direccion = String(correo ?? '').trim().toLowerCase()
+    if (!EMAIL_VALIDO.test(direccion)) return 'El correo del remitente no tiene formato de correo'
+    if (!direccion.endsWith(`@${dominio}`)) return `El correo del remitente debe terminar en @${dominio}`
+    return null
+}
+
+// Convierte la dirección que escribe el administrador en un enlace permitido
+// (http, https o mailto). Si no trae esquema se asume https; si es otro, null.
+export function enlaceValido(texto) {
+    const limpio = String(texto ?? '').trim()
+    if (!limpio || /\s/.test(limpio)) return null
+    if (/^(https?:\/\/|mailto:)\S+$/i.test(limpio)) return limpio
+    if (/^[a-z][a-z0-9+.-]*:/i.test(limpio)) return null
+    return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(limpio) ? `mailto:${limpio}` : `https://${limpio}`
+}
