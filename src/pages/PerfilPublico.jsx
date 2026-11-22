@@ -10,36 +10,25 @@ import FormularioPost from '../components/FormularioPost'
 import AvatarUsuario from '../components/AvatarUsuario'
 import Tooltip from '../components/Tooltip'
 import FiltroTipoPublicacion, { obtenerMensajeVacio } from '../components/FiltroTipoPublicacion'
-import { HiXMark, HiOutlineEye } from 'react-icons/hi2'
+import { HiOutlineEye, HiOutlinePencil, HiOutlineShieldCheck, HiOutlinePencilSquare } from 'react-icons/hi2'
 import { API_URL } from '../config/api'
 import { nombreCompleto, esCuentaPendiente } from '../utilities/helpers'
-import AvisoContrasena from '../components/AvisoContrasena'
-import { validarContrasena } from '../utilities/contrasena'
+import ModalEditarPerfil from '../components/ModalEditarPerfil'
+import ModalSeguridad from '../components/ModalSeguridad'
 import { textoUbicacion } from '../utilities/perfil'
 
 function PerfilPublico() {
     const { id } = useParams()
     const [usuario, setUsuario] = useState(null)
     const [posts, setPosts] = useState([])
-    const [nombres, setNombres] = useState('')
-    const [apellidos, setApellidos] = useState('')
-    const [bio, setBio] = useState('')
-    const [foto, setFoto] = useState(null)
-    const [fotoPreview, setFotoPreview] = useState(null)
-    const [eliminarFoto, setEliminarFoto] = useState(false)
     const [modalPerfilAbierto, setModalPerfilAbierto] = useState(false)
     const [modalCrearPostAbierto, setModalCrearPostAbierto] = useState(false)
-    const [passwordActual, setPasswordActual] = useState('')
-    const [passwordNueva, setPasswordNueva] = useState('')
-    const [confirmarPassword, setConfirmarPassword] = useState('')
-    const [emailNuevo, setEmailNuevo] = useState('')
-    const [passwordParaEmail, setPasswordParaEmail] = useState('')
     const [modalSeguridadAbierto, setModalSeguridadAbierto] = useState(false)
     const [postAEliminar, setPostAEliminar] = useState(null)
     const [filtroTipo, setFiltroTipo] = useState('TODOS')
     const [errorPerfil, setErrorPerfil] = useState('')
 
-    const { usuario: usuarioLogueado, setUsuario: setUsuarioLogueado } = useContext(AuthContext)
+    const { usuario: usuarioLogueado } = useContext(AuthContext)
     const { mostrarToast } = useToast()
 
     const cargarPerfilPublico = useCallback(async () => {
@@ -57,9 +46,6 @@ function PerfilPublico() {
         }
         setErrorPerfil('')
         setUsuario(datos.user)
-        setNombres(datos.user.nombres || '')
-        setApellidos(datos.user.apellidos || '')
-        setBio(datos.user.bio || '')
         setPosts(datos.posts)
     }, [id])
 
@@ -89,123 +75,10 @@ function PerfilPublico() {
         cargarPerfilPublico()
     }, [id, cargarPerfilPublico])
 
-    function abrirModalEditarPerfil() {
-        setFoto(null)
-        setFotoPreview(null)
-        setEliminarFoto(false)
-        setModalPerfilAbierto(true)
-    }
-
-    function manejarFoto(archivo) {
-        if (!archivo) return
-        setFoto(archivo)
-        setFotoPreview(URL.createObjectURL(archivo))
-        setEliminarFoto(false)
-    }
-
-    function quitarFoto() {
-        if (fotoPreview) URL.revokeObjectURL(fotoPreview)
-        setFoto(null)
-        setFotoPreview(null)
-        setEliminarFoto(true)
-    }
-
-    async function handleSubmit(e) {
-        e.preventDefault()
-
-        const formData = new FormData()
-        if (foto) {
-            formData.append('foto', foto)
-        } else if (eliminarFoto) {
-            formData.append('eliminarFoto', 'true')
-        }
-        formData.append('nombres', nombres)
-        formData.append('apellidos', apellidos)
-        formData.append('bio', bio)
-
-        const respuesta = await fetch(`${API_URL}/api/auth/editar-perfil`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: formData
-        })
-
-        if (respuesta.ok) {
-            const datos = await respuesta.json()
-            setUsuarioLogueado(datos.user)
-            setFoto(null)
-            setFotoPreview(null)
-            setEliminarFoto(false)
-            setModalPerfilAbierto(false)
-            mostrarToast('Perfil actualizado', 'exito')
-            cargarPerfilPublico()
-        } else {
-            mostrarToast('No se pudo actualizar el perfil', 'error')
-        }
-    }
-
-    async function handleSubmitPassword(e) {
-    e.preventDefault()
-
-    const errorContrasena = validarContrasena(passwordNueva)
-    if (errorContrasena) {
-        mostrarToast(errorContrasena, 'error')
-        return
-    }
-
-    if (passwordNueva !== confirmarPassword) {
-        mostrarToast('Las contraseñas no coinciden', 'error')
-        return
-    }
-
-    const respuesta = await fetch(`${API_URL}/api/auth/cambiar-password`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ passwordActual, passwordNuevo: passwordNueva })
-    })
-
-    if (respuesta.ok) {
-        setPasswordActual('')
-        setPasswordNueva('')
-        setConfirmarPassword('')
-        mostrarToast('Contraseña actualizada', 'exito')
-    } else {
-        const datos = await respuesta.json()
-        mostrarToast(datos.mensaje || 'No se pudo actualizar la contraseña', 'error')
-    }
-}
-
-    async function handleSubmitEmail(e) {
-        e.preventDefault()
-
-        const respuesta = await fetch(`${API_URL}/api/auth/cambiar-email`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify({ emailNuevo, passwordActual: passwordParaEmail })
-        })
-
-        if (respuesta.ok) {
-            setEmailNuevo('')
-            setPasswordParaEmail('')
-            mostrarToast('Email actualizado', 'exito')
-        } else {
-            const datos = await respuesta.json()
-            mostrarToast(datos.mensaje || 'No se pudo actualizar el email', 'error')
-        }
-    }
-
     const esPropioPerfil = usuarioLogueado?.id === usuario?.id
     const esAdmin = usuarioLogueado?.rol === 'ADMIN'
     const puedePublicar = !esCuentaPendiente(usuarioLogueado)
     const ubicacion = textoUbicacion(usuario)
-    const fotoAMostrarEnPreview = eliminarFoto ? null : (fotoPreview || usuario?.foto)
     const postsFiltrados = filtroTipo === 'TODOS' ? posts : posts.filter(post => post.tipo === filtroTipo)
 
     if (errorPerfil) {
@@ -240,37 +113,38 @@ function PerfilPublico() {
                         </div>
 
                         {esPropioPerfil && (
-                            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
-                                <div className="flex flex-col divide-y divide-gray-200">
-                                    <div className="pb-4">
-                                        <button
-                                            onClick={abrirModalEditarPerfil}
-                                            className="bg-volare-azul text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:opacity-90 transition w-full"
-                                        >
-                                            Editar Perfil
-                                        </button>
-                                        <p className="text-sm text-gray-500 mt-1">Actualiza tu nombre, biografía y foto de perfil</p>
-                                    </div>
-                                    <div className={puedePublicar ? 'py-4' : 'pt-4'}>
-                                        <button
-                                            onClick={() => setModalSeguridadAbierto(true)}
-                                            className="bg-volare-verde text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:opacity-90 transition w-full"
-                                        >
-                                            Seguridad
-                                        </button>
-                                        <p className="text-sm text-gray-500 mt-1">Cambia tu contraseña o correo electrónico</p>
-                                    </div>
-                                    {puedePublicar && (
-                                        <div className="pt-4">
+                            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 flex flex-col gap-3">
+                                {puedePublicar && (
+                                    <div>
+                                        <Tooltip texto="Comparte algo con los residentes" posicion="abajo" className="w-full [&>div]:block [&>div]:w-full">
                                             <button
                                                 onClick={() => setModalCrearPostAbierto(true)}
-                                                className="bg-volare-naranja text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:opacity-90 transition w-full"
+                                                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-volare-naranja to-amber-400 text-white px-4 py-3 rounded-xl text-base font-bold shadow-lg shadow-orange-200 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-volare-naranja"
                                             >
-                                                Crear Publicación
+                                                <HiOutlinePencilSquare size={22} />
+                                                Crear publicación
                                             </button>
-                                            <p className="text-sm text-gray-500 mt-1">Comparte una publicación en tu perfil</p>
-                                        </div>
-                                    )}
+                                        </Tooltip>
+                                        <p className="text-xs text-gray-500 mt-1.5 text-center">Comparte una publicación en tu perfil</p>
+                                    </div>
+                                )}
+                                <div className={`flex flex-col gap-2 ${puedePublicar ? 'pt-3 border-t border-gray-100' : ''}`}>
+                                    <Tooltip texto="Nombre, foto, biografía y celular" posicion="abajo" className="[&>div]:block [&>div]:w-full">
+                                        <button
+                                            onClick={() => setModalPerfilAbierto(true)}
+                                            className="w-full flex items-center justify-center gap-1.5 border border-volare-azul text-volare-azul px-3 py-2 rounded-lg text-sm font-semibold hover:bg-volare-azul/10 transition"
+                                        >
+                                            <HiOutlinePencil size={16} /> Editar perfil
+                                        </button>
+                                    </Tooltip>
+                                    <Tooltip texto="Contraseña y correo de acceso" posicion="abajo" className="[&>div]:block [&>div]:w-full">
+                                        <button
+                                            onClick={() => setModalSeguridadAbierto(true)}
+                                            className="w-full flex items-center justify-center gap-1.5 border border-volare-verde text-green-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-volare-verde/10 transition"
+                                        >
+                                            <HiOutlineShieldCheck size={16} /> Seguridad
+                                        </button>
+                                    </Tooltip>
                                 </div>
                             </div>
                         )}
@@ -293,74 +167,16 @@ function PerfilPublico() {
 
             {usuario && (
                 <>
-                    {modalSeguridadAbierto && (
-                        <Modal onClose={() => setModalSeguridadAbierto(false)}>
-                            <h3 className="text-lg font-bold text-volare-azul">Cambiar Contraseña</h3>
-                            <form onSubmit={handleSubmitPassword} className="flex flex-col gap-4">
-                                <input type="password" value={passwordActual} onChange={(e) => setPasswordActual(e.target.value)} placeholder="Contraseña actual" className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul" />
-                                <input type="password" value={passwordNueva} onChange={(e) => setPasswordNueva(e.target.value)} placeholder="Nueva contraseña" className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul" />
-                                <div className="-mt-2"><AvisoContrasena password={passwordNueva} /></div>
-                                <input type="password" value={confirmarPassword} onChange={(e) => setConfirmarPassword(e.target.value)} placeholder="Confirmar contraseña" className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul" />
-                                <button type="submit" className="bg-volare-verde text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition">
-                                    Cambiar Contraseña
-                                </button>
-                            </form>
-                            <div className="border-t border-gray-100" />
-                            <h3 className="text-lg font-bold text-volare-azul">Cambiar Email</h3>
-                            <form onSubmit={handleSubmitEmail} className="flex flex-col gap-4">
-                                <input type="email" value={emailNuevo} onChange={(e) => setEmailNuevo(e.target.value)} placeholder="Nuevo email" className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul" />
-                                <input type="password" value={passwordParaEmail} onChange={(e) => setPasswordParaEmail(e.target.value)} placeholder="Confirma tu contraseña" className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul" />
-                                <button type="submit" className="bg-volare-azul text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition">
-                                    Cambiar Email
-                                </button>
-                            </form>
-                        </Modal>
-                    )}
+                    {modalSeguridadAbierto && <ModalSeguridad onClose={() => setModalSeguridadAbierto(false)} />}
                     {modalPerfilAbierto && (
-                        <Modal onClose={() => setModalPerfilAbierto(false)}>
-                            <h3 className="text-lg font-bold text-volare-azul">Editar Perfil</h3>
-                            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                                <div className="relative w-24 h-24 mx-auto">
-                                    <AvatarUsuario foto={fotoAMostrarEnPreview} size={96} />
-                                    {fotoAMostrarEnPreview && (
-                                        <Tooltip texto="Quitar foto" className="absolute -top-2 -right-2">
-                                            <button
-                                                type="button"
-                                                onClick={quitarFoto}
-                                                className="bg-white rounded-full shadow p-0.5 text-gray-600 hover:text-red-500 flex items-center justify-center"
-                                                aria-label="Quitar foto"
-                                            >
-                                                <HiXMark size={14} />
-                                            </button>
-                                        </Tooltip>
-                                    )}
-                                </div>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => manejarFoto(e.target.files[0])}
-                                    className="text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-volare-azul file:text-white file:font-semibold hover:file:opacity-90"
-                                />
-                                <input type="text" value={nombres} placeholder="Nombres" onChange={(e) => setNombres(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul" />
-                                <input type="text" value={apellidos} placeholder="Apellidos" onChange={(e) => setApellidos(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul" />
-                                <textarea
-                                    value={bio}
-                                    placeholder="Cuéntanos algo sobre ti"
-                                    onChange={(e) => setBio(e.target.value)}
-                                    rows={3}
-                                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-volare-azul resize-none"
-                                />
-                                {/* Texto, no input: la casa y el rol los gestiona la administración. */}
-                                {ubicacion && (
-                                    <p className="text-sm text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
-                                        {ubicacion}. Para cambiarla, escribe a la administración.
-                                    </p>
-                                )}
-                                <button type="submit" className="bg-volare-verde text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition">
-                                    Guardar Cambios
-                                </button>
-                            </form>
-                        </Modal>
+                        <ModalEditarPerfil
+                            usuario={usuario}
+                            onClose={() => setModalPerfilAbierto(false)}
+                            onGuardado={() => {
+                                setModalPerfilAbierto(false)
+                                cargarPerfilPublico()
+                            }}
+                        />
                     )}
                     {modalCrearPostAbierto && (
                         <Modal onClose={() => setModalCrearPostAbierto(false)}>

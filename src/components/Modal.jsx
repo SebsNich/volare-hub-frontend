@@ -1,13 +1,13 @@
 import { createPortal } from 'react-dom'
 
-function Modal({ children, onClose, className = '' }) {
+function Modal({ children, onClose, className = '', ancho = 'max-w-md' }) {
     return createPortal(
         <div
             className="fixed inset-0 z-[1075] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
             onClick={onClose}
         >
             <div
-                className="bg-white rounded-2xl shadow-xl p-5 sm:p-6 w-full max-w-md max-h-[85vh] overflow-y-auto relative"
+                className={`bg-white rounded-2xl shadow-xl p-5 sm:p-6 w-full ${ancho} max-h-[85vh] overflow-y-auto relative`}
                 onClick={(e) => e.stopPropagation()}
             >
                 <button
